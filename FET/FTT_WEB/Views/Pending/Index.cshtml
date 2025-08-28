@@ -1,4 +1,5 @@
 ﻿@{
+    var temp = config.GetBackendUrl();
     var _HandlerDesc = ViewData["HandlerDesc"] as string;
     var mapAttr = new
     {
@@ -51,38 +52,38 @@
 
 <div class="container-fluid">
 
-@*     <div class="card mb-2">
+    @*     <div class="card mb-2">
 
-        <div class="report-text">
+    <div class="report-text">
 
-            @_HandlerDesc.ToHtmlString()
+    @_HandlerDesc.ToHtmlString()
 
-        </div>
-        @*
-        <div class="card-body">
-        <div class="row gy-3 mb-3">
-        <div class="col-12">
-
-        </div>
-        </div>
-        </div> *@
     </div>
+    @*
+    <div class="card-body">
+    <div class="row gy-3 mb-3">
+    <div class="col-12">
 
-    <div class="card mb-2">
-        <div class="card-body">
-            <div id="@(mapAttr.IdGrid)"></div>
+    </div>
+    </div>
+    </div> *@
+</div>
 
-            <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
-                <div id="pageResizer" class="jsgrid-pager-page">
-                    <span>每頁筆數:</span>
-                    <select id="pageSelect">
-                    </select>
-                </div>
-                <div id="pagers">
-                </div>
+<div class="card mb-2">
+    <div class="card-body">
+        <div id="@(mapAttr.IdGrid)"></div>
+
+        <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
+            <div id="pageResizer" class="jsgrid-pager-page">
+                <span>每頁筆數:</span>
+                <select id="pageSelect">
+                </select>
+            </div>
+            <div id="pagers">
             </div>
         </div>
     </div>
+</div>
 </div>
 
 @section scripts
