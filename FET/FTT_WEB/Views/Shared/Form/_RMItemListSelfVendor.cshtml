@@ -1,0 +1,136 @@
+﻿@{
+    var mapData = new
+    {
+        IdModal = ViewData["ModalId2"],
+        IdBtnOk = Guid.NewGuid(),
+        IdGrid = Guid.NewGuid().ToString("N"),
+    };
+}
+<style>
+    .even .jsgrid-cell {
+        background-color: white;
+    }
+</style>
+
+<div class="modal fade max100vh" id="@(mapData.IdModal)" tabindex="-1" role="dialog" aria-labelledby="RMItemListSelfVendorModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered " role="document" style="min-width:60%">
+        <div class="modal-content">
+            <div class="modal-header text-center">
+                <h5>報修品項</h5>
+                <button class="btn-close" type="button" aria-label="Close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="@(mapData.IdGrid)"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" type="button" id="@(mapData.IdBtnOk)">確認</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var context = context || {};
+
+    $(function () {
+        if (!context['@(mapData.IdModal)']) {
+            context['@(mapData.IdModal)'] = {};
+        }
+
+        var ctx = context['@(mapData.IdModal)'];
+        ctx.selectedItem = null;
+        ctx.result = '';
+
+        $("#@(mapData.IdGrid)").jsGrid({
+            height: "auto",
+            autoload: false,
+            paging: true,
+            pageLoading: true,
+            rowClass: function (item, itemIndex) {
+                //設定行class
+                return itemIndex % 2 === 0 ? "even" : "odd";
+            },
+            rowClick: function (args) {
+                console.log(args);
+                ctx.selectedItem = args['item'];
+                //點擊行時，選中checkbox 單選
+                $("input[name='RMItemListSelfVendorCheckbox']").prop("checked", false);
+                $(args.event.target).closest("tr").find("input[name='RMItemListSelfVendorCheckbox']").prop("checked", true);
+            },
+            controller: {
+                loadData: function (filter) {
+                    var d = $.Deferred();
+                    $.ajax({
+                        type: "POST",
+                        url: "@Url.Action("GetCiDataSelfVendorPageList", "Api")",
+                        data: filter,
+                        dataType: "json",
+                        success: function (res) {
+                            if (res.Success === false) {
+                                swal({
+                                    text: res.Message,
+                                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                                    icon: 'error'
+                                });
+                                d.reject();
+                                return;
+                            }
+                            var da = {
+                                data: res.Data,
+                                itemsCount: res.Total
+                            }
+                            d.resolve(da);
+                        }
+                    });
+
+                    return d.promise();
+                }
+            },
+            fields: [
+                {
+                    type: 'control', align: "center",
+                    width: 80,
+                    editButton: false,
+                    deleteButton: false,
+                    headerTemplate: (value, item) => {
+                        return "";
+                    },
+                    itemTemplate: (value, item) => {
+                        //checkbox
+                        return $("<input>")
+                            .attr("type", "checkbox")
+                            .attr("name", "RMItemListSelfVendorCheckbox")
+                            .attr("value", item.CISID);
+                    }
+                },
+                { name: "@(nameof(CiDataVM.CATEGORY_ID))", type: "number", title: "CISID", width: 120 },
+                { name: "@(nameof(CiDataVM.CATEGORY_NAME_TMP))", type: "text", title: "品項名稱", width: 250 },
+                { name: "@(nameof(CiDataVM.CATEGORY_NAME))", type: "text", title: "品項描述", width: 350 },
+                { width: 'auto' }
+            ]
+        });
+
+        //RMItemListSelfVendorModal on show
+        $('#@(mapData.IdModal)').on('show.bs.modal', function (e) {
+            //清空checkbox
+            $("input[name='RMItemListSelfVendorCheckbox']").prop("checked", false);
+            //重新載入資料
+            $("#@(mapData.IdGrid)").jsGrid("loadData");
+        });
+        //RMItemListSelfVendorModal confirm button click
+        $('#@(mapData.IdBtnOk)').on('click', function (e) {
+            if (ctx.selectedItem) {
+                ctx.result = '1';
+                $('#@mapData.IdModal').modal('hide'); // 關閉模態框
+            }
+            else {
+                swal({
+                    text: '請選擇一個品項',
+                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                    icon: 'warning'
+                });
+            }
+        });
+    });
+
+</script>

@@ -1,0 +1,33 @@
+﻿@model AlertMsgRedirection
+@{
+    var paras = new Dictionary<string, object>();
+    paras.Add("className", Model.ClassName);
+    if (Model.Paras != null)
+    {
+        foreach (var item in Model.Paras)
+        {
+            paras.Add(item.Key, item.Value);
+        }
+    }
+
+}
+<script>
+    $(document).ready(function () {
+        var msg = `@Html.Raw(string.Join("\\r\\n", Model.Msgs))`;
+        var alertType = '@Model.AlertType';
+        swal({
+            text: msg,
+            button: '確認',
+            icon: alertType
+        }).then((result) => {
+            if (result) {
+            } else {
+
+            }
+
+            window.location = '@Html.Raw(Url.Action(Model.ActionName, Model.ControllerName, paras))';
+
+        });
+
+    });
+</script>

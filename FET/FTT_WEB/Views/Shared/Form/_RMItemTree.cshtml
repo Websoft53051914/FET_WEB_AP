@@ -1,0 +1,119 @@
+﻿@{
+    var mapData = new
+    {
+        IdModal = ViewData["TreeModalId"],
+        IdBtnOk = Guid.NewGuid(),
+        IdTree = Guid.NewGuid().ToString("N"),
+    };
+}
+
+<div class="modal fade max100vh" id="@mapData.IdModal" tabindex="-1" role="dialog" aria-labelledby="@mapData.IdModal" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header text-center">
+                <h5>維修品項</h5>
+                <button class="btn-close" type="button" aria-label="Close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="@(mapData.IdTree)"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" type="button" id="@mapData.IdBtnOk">確認</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var context = context || {};
+
+    $(document).ready(function () {
+        if (!context['@(mapData.IdModal)']) {
+            context['@(mapData.IdModal)'] = {};
+        }
+
+        var ctx = context['@(mapData.IdModal)'];
+        ctx.result = '';
+        ctx.selectedItem = null;
+        ctx.rootNode = {
+            id: "1006",
+            text: "報修品項",
+            children: true,     // 告訴 jsTree：此節點有子節點，展開時會觸發 AJAX
+            state: { opened: false }, // 一開始不打 API，等我們手動展開
+        };
+
+        $('#@(mapData.IdTree)').jstree({
+            core: {
+                data: function (obj, cb) {
+                    // 第一次初始化時，obj.id 為 "#"
+                    if (obj.id === "#") {
+                        // 回傳 root
+                        cb([ctx.rootNode]);
+                        return;
+                    }
+
+                    // 其餘情況：展開節點時 jsTree 會帶入該 node.id
+                    $.ajax({
+                        url: '@(Url.Action("GetTreeListTest","Api")?.ToHtmlString())',
+                        data: { parentId: obj.id },
+                        type: 'POST',
+                        dataType: 'json'
+                    }).done(function (response) {
+                        if (response.Success) {
+                            cb(response.Data || []);
+                        }
+                        else {
+                            swal({
+                                text: response['Message'],
+                                button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                                icon: 'error'
+                            });
+                            cb([]);
+                        }
+                    }).fail((err) => {
+                        console.log(err);
+                        cb([]);
+                    })
+                },
+                multiple: false,
+                plugins: ['checkbox'],
+                checkbox: {
+                    three_state: false,  // 不要自動勾選父節點
+                    cascade: ''           // 不連動子節點勾選
+                }
+            }
+        });
+
+        $('#@(mapData.IdTree)').on("ready.jstree", function (e, data) {
+            // 初始化完成後，預設展開第一階層
+            data.instance.open_node(ctx.rootNode.id);
+        });
+
+        $('#@(mapData.IdTree)').on("select_node.jstree", function (e, data) {
+            let instance = data.instance;
+            let node = data.node;
+            console.log("選取節點 ID:", data);
+            if (!node.state.loaded || node.children.length) {
+                ctx.selectedItem = null;
+                instance.deselect_node(node.id);
+            }
+            else {
+                ctx.selectedItem = node;
+            }
+        });
+
+        $("#@mapData.IdBtnOk").on("click", function () {
+            if (ctx.selectedItem) {
+                ctx.result = '1';
+                $('#@mapData.IdModal').modal('hide'); // 關閉模態框
+            }
+            else {
+                swal({
+                    text: '請選擇一個品項',
+                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                    icon: 'warning'
+                });
+            }
+        });
+    });
+</script>

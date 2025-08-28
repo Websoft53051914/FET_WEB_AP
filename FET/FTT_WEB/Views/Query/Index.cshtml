@@ -1,0 +1,320 @@
+﻿@{
+    var mapAttr = new
+    {
+        IdGrid = Guid.NewGuid(),
+    };
+}
+
+<div class="container-fluid">
+    <div class="page-header" style="padding-bottom:20px">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>查詢</h3>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Home" data-bs-original-title="" title="">首頁</a></li>
+                    <li class="breadcrumb-item">功能</li>
+                    <li class="breadcrumb-item active"><a href="" data-bs-original-title="" title="">查詢</a></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="card mb-2">
+        <div class="card-body py-3 card-body-reduction">
+            <div class="row none_hover row-cols-1  row-cols-md-2  row-cols-xl-3">
+                <div class="col mb-2">
+                    <label class="col-form-label websoft-form-label pt-2">報修日起訖時間</label>
+                    <div class="row align-items-center">
+                        <div class="col-12 col-md-6 col-lg-6">
+                            <div class="input-group initDatepicker " id="d1" data-target-input="nearest">
+                                <input class="form-control datetimepicker-input" type="text" data-target="#d1">
+                                <div class="input-group-text" data-target="#d1" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
+                                <label class="_custom_middle_label">~</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-6">
+                            <div class="input-group initDatepicker " id="d2" data-target-input="nearest">
+                                <input class="form-control datetimepicker-input" type="text" data-target="#d2">
+                                <div class="input-group-text" data-target="#d2" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col mb-2">
+                    <label class="col-form-label websoft-form-label pt-2">完修日起訖時間</label>
+                    <div class="row align-items-center">
+                        <div class="col-12 col-md-6 col-lg-6">
+                            <div class="input-group initDatepicker " id="d3" data-target-input="nearest">
+                                <input class="form-control datetimepicker-input" type="text" data-target="#d3">
+                                <div class="input-group-text" data-target="#d3" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
+                                <label class="_custom_middle_label">~</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-6">
+                            <div class="input-group initDatepicker " id="d4" data-target-input="nearest">
+                                <input class="form-control datetimepicker-input" type="text" data-target="#d4">
+                                <div class="input-group-text" data-target="#d4" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col mb-2">
+                    <label class="col-form-label websoft-form-label pt-2">結案日起訖時間</label>
+                    <div class="row align-items-center">
+                        <div class="col-12 col-md-6 col-lg-6">
+                            <div class="input-group initDatepicker " id="d5" data-target-input="nearest">
+                                <input class="form-control datetimepicker-input" type="text" data-target="#d5">
+                                <div class="input-group-text" data-target="#d5" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
+                                <label class="_custom_middle_label">~</label>
+                            </div>
+                        </div>
+                        <div class="col-12 col-md-6 col-lg-6">
+                            <div class="input-group initDatepicker " id="d6" data-target-input="nearest">
+                                <input class="form-control datetimepicker-input" type="text" data-target="#d6">
+                                <div class="input-group-text" data-target="#d6" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <div class="row  mb-2">
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">工單狀態</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                        <option value="1">審單中</option>
+                        <option value="2">等待系統派工</option>
+                    </select>
+                </div>
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">工單號碼</label>
+                    <input type="text" class="form-control" placeholder="">
+                </div>
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">報修型態</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                        <option value="1">一般</option>
+                        <option value="2">緊急 (新開單)</option>
+                        <option value="2">緊急 (補單)</option>
+                    </select>
+                </div>
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">報修類別</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                        <option>後場家具</option>
+                        <option>監視系統</option>
+                    </select>
+                </div>
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">報修廠商</label>
+                    <input type="text" class="form-control" placeholder="">
+                </div>
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">報修門市</label>
+                    <input type="text" class="form-control" placeholder="">
+                </div>
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">公司別</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                    </select>
+                </div>
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">店格</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                    </select>
+                </div>
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">通路</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                    </select>
+                </div>
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">區域</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                    </select>
+                </div>
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">區經理/業務</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                    </select>
+                </div>
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">門市自行尋商</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                        <option>Y</option>
+                        <option>N</option>
+                    </select>
+                </div>
+            </div>
+            <button class="btn btn-primary">送出查詢</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div id="@(mapAttr.IdGrid)"></div>
+
+            <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
+                <div id="pageResizer" class="jsgrid-pager-page">
+                    <span>每頁筆數:</span>
+                    <select id="pageSelect">
+                    </select>
+                </div>
+                <div id="pagers">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script>
+
+        const context = {
+            $Grid: $("#@(mapAttr.IdGrid)"),
+        };
+
+        $(function () {
+            initGrid(1);
+
+            $("#pageSelect").on("change", function () {
+                const val = this.value;
+                onPageLenghtSelect(val, context.$Grid);
+            })
+
+            $("#pageSelect").select2({
+                minimumResultsForSearch: -1,
+                data: pageDataSource
+            });
+            $("#pageSelect").data("select2").$container.addClass("w-auto");
+
+            $('.initDatepicker').datetimepicker({
+                format: 'YYYY/MM/DD',
+            });
+
+            $(".select2-Clear").select2({
+                placeholder: "請選擇",
+                allowClear: true,
+            });
+        });
+
+        function initGrid(cookiePageIndex) {
+            $("#@(mapAttr.IdGrid)").jsGrid({
+                pageIndex: cookiePageIndex,
+                paging: true,
+                width: "100%",
+                pageSize: pageDataSource[0].id,
+                pageButtonCount: 5,
+                pagerFormat: "{first} {prev} {pages} {next} {last}    第 {pageIndex} 頁 共 {pageCount} 頁",
+                pagePrevText: "上一頁",
+                pageNextText: "下一頁",
+                pageFirstText: "第一頁",
+                pageLastText: "最後一頁",
+                pageLoading: true,
+                autoload: true,
+                changePageSize: function (pageSize) {
+                    var $this = this;
+                    $this.pageSize = pageSize;
+
+                    context.$Grid.jsGrid("openPage", 1);
+                },
+                pagerContainer: "#pagers",
+                onDataLoaded: function () {
+                    feather.replace();
+                },
+                data: [
+                    {
+                        Id :10,
+                        OrderNumber: "123456",
+                        RepairType: "一般",
+                        RepairCategory: "監視系統",
+                        RepairItem: "數位錄影機",
+                        OrderDate: "2023-10-01 16:12:56",
+                        StoreName: "台北南昌",
+                        OrderStatusName: "等待系統派工",
+                        CurrentInchargeName: "王小明"
+                    }
+                ],
+                // controller: {
+                //     loadData: function (filter) {
+                //         var d = $.Deferred();
+                //         $.ajax({
+                //             type: "POST",
+                //             url: "@Url.Action("GetPageList")",
+                //             data: filter,
+                //             dataType: "json",
+                //             success: function (res) {
+                //                 if (res.Success === false) {
+                //                     swal({
+                //                         text: res.Message,
+                //                         icon: "error",
+                //                         button: "確認"
+                //                     });
+                //                     d.reject();
+                //                     return;
+                //                 }
+                //                 var da = {
+                //                     data: res.Data,
+                //                     itemsCount: res.Total
+                //                 }
+                //                 d.resolve(da);
+                //             }
+                //         })
+
+                //         return d.promise();
+                //     }
+                // },
+                fields: [
+                    { name: "Id", visible: false },
+                    {
+                        type: 'control', align: "center",
+                        width: 60,
+                        editButton: false,
+                        deleteButton: false,
+                        headerTemplate: (value, item) => {
+                            return $("<div>操作<div>").attr({ class: '' });
+                        },
+                        itemTemplate: (value, item) => {
+
+                            $viewButton = $('<a>')
+                                 .attr({
+                                     'class': 'd-inline-block fs-5 me-2 jsgrid-button ',
+                                     'title': '查看',
+                                     'href':"@Url.Action("Index", "FormEdit")"
+                                 }).append("<i class='fa fa-eye'></i>").css({ 'background': 'none', 'color': 'green' })
+                            // result.append($deleteButton);
+
+                            return $viewButton;
+                        }
+                    },
+                    { name: "OrderNumber", title: "工單號碼", type: "text", width: 100, align: "center" },
+                    { name: "RepairType", title: "報修型態", type: "text", width: 100, align: "center" },
+                    { name: "RepairCategory", title: "報修類別", type: "text", width: 100, align: "center" },
+                    { name: "RepairItem", title: "報修品項", type: "text", width: 150, align: "center" },
+                    { name: "OrderDate", title: "報修日期", type: "text", width: 120, align: "center" },
+                    { name: "StoreName", title: "店名", type: "text", width: 120, align: "center" },
+                    { name: "OrderStatusName", title: "工單狀態", type: "text", width: 100, align: "center" },
+                    { name: "CurrentInchargeName", title: "目前處理者", type: "text", width: 120, align: "center" },
+
+                ],
+
+        });
+
+            //分頁頁數紀錄相關
+            context.$Grid.jsGrid('_setPage', cookiePageIndex);//jsgrid bug 不會自動將頁碼設定成pageindex
+        }
+
+    </script>
+}

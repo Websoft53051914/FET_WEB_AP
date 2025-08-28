@@ -1,0 +1,89 @@
+﻿@{
+    var funcId = ViewData["FuncId"];
+    var mapText = new
+    {
+        Btn_Create = $"{config.GetMessage("BtnCreate")}",
+        Btn_Edit = $"{config.GetMessage("BtnEdit")}",
+
+        Btn_Confirm = config.GetMessage("BtnConfirm"),
+        Btn_Cancel = "取消",
+    };
+    var action = Html.ActionName().ToLower() == "create" ? "create" : "edit";
+    var actionName = action == "create" ? mapText.Btn_Create : mapText.Btn_Edit;
+}
+
+<div class="container-fluid">
+    <div class="page-header" style="padding-bottom:20px">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>廠商資料維護</h3>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Home" data-bs-original-title="" title="">首頁</a></li>
+                    <li class="breadcrumb-item">後端維護</li>
+                    <li class="breadcrumb-item active"><a href="" data-bs-original-title="" title="">廠商資料維護</a></li>
+                    <li class="breadcrumb-item">編輯</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header pb-0">
+            <h5>@(actionName.ToHtmlString())</h5>
+        </div>
+        <div class="card-body card-body-edit">
+            <form class="needs-validation" novalidate="" method="post" id="submitForm">
+                <div class="row gx-2 gy-1 mb-3">
+                  
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                        <label class="col-form-label websoft-form-label pt-2">廠商名稱</label>
+                        <input type="text" class="form-control" placeholder="">
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                        <label class="col-form-label websoft-form-label pt-2">聯絡人</label>
+                        <input type="text" class="form-control" placeholder="">
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                        <label class="col-form-label websoft-form-label pt-2">聯絡電話</label>
+                        <input type="text" class="form-control" placeholder="">
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                        <label class="col-form-label websoft-form-label pt-2">Email</label>
+                        <input type="text" class="form-control" placeholder="">
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                        <label class="col-form-label websoft-form-label pt-2">登入帳號</label>
+                        <input type="text" class="form-control" placeholder="">
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                        <label class="col-form-label websoft-form-label pt-2">登入密碼</label>
+                        <input type="text" class="form-control" placeholder="">
+                    </div>
+
+                </div>
+
+                <button class="btn btn-primary" type="submit" form="submitForm">儲存</button>
+                <a class="btn btn-info" href="@Url.Action("Index", new { FuncId = funcId, className = ViewData["className"] })">返回</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script>
+        $('.initDatepicker').datetimepicker({
+            format: 'YYYY/MM/DD',
+        });
+
+        $('.initTimepicker').datetimepicker({
+            format: 'HH:mm',
+        });
+
+        $(".select2-Clear").select2({
+            placeholder: "請選擇",
+            allowClear: true,
+        });
+    </script>
+}

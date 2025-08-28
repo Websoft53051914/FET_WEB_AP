@@ -1,0 +1,281 @@
+﻿@{
+    var funcId = ViewData["FuncId"];
+    var mapText = new
+    {
+        Btn_Create = $"{config.GetMessage("BtnCreate")}",
+        Btn_Edit = $"{config.GetMessage("BtnEdit")}",
+
+        Btn_Confirm = config.GetMessage("BtnConfirm"),
+        Btn_Cancel = "取消",
+    };
+
+    var action = Html.ActionName().ToLower() == "create" ? "create" : "edit";
+    var actionName = action == "create" ? mapText.Btn_Create : mapText.Btn_Edit;
+
+}
+
+<div class="container-fluid">
+    <div class="page-header" style="padding-bottom:20px">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>門市資料維護</h3>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Home" data-bs-original-title="" title="">首頁</a></li>
+                    <li class="breadcrumb-item">後端維護</li>
+                    <li class="breadcrumb-item active"><a href="" data-bs-original-title="" title="">門市資料維護</a></li>
+                    <li class="breadcrumb-item">編輯</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header pb-0">
+            <h5>@(actionName.ToHtmlString())</h5>
+        </div>
+        <div class="card-body card-body-edit">
+            <form class="needs-validation" novalidate="" method="post" id="submitForm">
+                <h4 class="mb-3">門市資料</h4>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row gx-2 gy-1 smb-5px">
+                            <div class=" col-xl-3 col-lg-4 col-md-6 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">公司別</label>
+                                <select class="form-control select2-Clear">
+                                    <option></option>
+                                    <option value="1">FET</option>
+                                </select>
+                            </div>
+
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">區域</label>
+                                <select class="form-control select2-Clear">
+                                    <option></option>
+                                    <option>N1</option>
+                                    <option>N2</option>
+                                </select>
+                            </div>
+
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">店格</label>
+                                <select class="form-control select2-Clear">
+                                    <option></option>
+                                    <option>RETAIL</option>
+                                    <option>FRANCHISE</option>
+                                    <option>MINI FRANCHISE</option>
+                                    <option>REGIONAL CENTER</option>
+                                    <option>BOOTH</option>
+                                    <option>G5</option>
+                                    <option>G5S</option>
+                                </select>
+                            </div>
+
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">店名</label>
+                                <input type="text" class="form-control" placeholder="">
+                            </div>
+
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">通路</label>
+                                <select class="form-control select2-Clear">
+                                    <option></option>
+                                    <option value="1">RETAIL</option>
+                                    <option value="2">FRANCHISE</option>
+                                </select>
+                            </div>
+
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">IVR Code</label>
+                                <input type="text" class="form-control" placeholder="">
+                            </div>
+
+
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">裝潢型態</label>
+                                <select class="form-control select2-Clear">
+                                    <option></option>
+                                    <option value="1">Remodel</option>
+                                </select>
+                            </div>
+
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">驗收日</label>
+                                <input type="text" class="form-control" placeholder="">
+                            </div>
+
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">備註</label>
+                                <textarea class="form-control" rows="3" placeholder=""></textarea>
+                            </div>
+
+
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
+
+
+
+                        </div>
+                    </div>
+                </div>
+
+                <h4 class="mb-3">門市聯絡資料</h4>
+                <div class="card">
+                    <div class="card-body">
+                        <div class="row gx-2 gy-1 smb-5px">
+
+
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">店長/聯絡人(中文)</label>
+                                <input type="text" class="form-control" placeholder="">
+                            </div>
+
+
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">店長/聯絡人(英文)</label>
+                                <input type="text" class="form-control" placeholder="">
+                            </div>
+
+
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">店長電話</label>
+                                <input type="text" class="form-control" placeholder="">
+                            </div>
+
+
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">Email</label>
+                                <input type="email" class="form-control" placeholder="">
+                            </div>
+
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">區經理/業務</label>
+                                <input type="email" class="form-control" placeholder="">
+                            </div>
+
+                            <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">緊急電話</label>
+                                <input type="email" class="form-control" placeholder="">
+                            </div>
+
+                            <div class="w-100"></div>
+                            <div class="col-xl-6 col-lg-7 col-md-8 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">地址</label>
+                                <input type="email" class="form-control" placeholder="">
+                            </div>
+
+                            <div class="w-100"></div>
+                            <div class="col-xl-7 col-lg-8 col-md-10 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">營業時間 (一~五)</label>
+                                <div class="row align-items-center">
+                                    <div class="col-12 col-md-6 col-lg-6">
+                                        <div class="input-group initTimepicker " id="r1" data-target-input="nearest">
+                                            <input class="form-control datetimepicker-input" type="text" data-target="#r1">
+                                            <div class="input-group-text" data-target="#r1" data-toggle="datetimepicker"><i class="fa fa-clock-o"></i></div>
+                                            <label class="_custom_middle_label">~</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-6">
+                                        <div class="input-group initTimepicker " id="r2" data-target-input="nearest">
+                                            <input class="form-control datetimepicker-input" type="text" data-target="#r2">
+                                            <div class="input-group-text" data-target="#r2" data-toggle="datetimepicker"><i class="fa fa-clock-o"></i></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-xl-7 col-lg-8 col-md-10 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">營業時間 (六)</label>
+                                <div class="row align-items-center">
+                                    <div class="col-12 col-md-6 col-lg-6">
+                                        <div class="input-group initTimepicker " id="r3" data-target-input="nearest">
+                                            <input class="form-control datetimepicker-input" type="text" data-target="#r3">
+                                            <div class="input-group-text" data-target="#r3" data-toggle="datetimepicker"><i class="fa fa-clock-o"></i></div>
+                                            <label class="_custom_middle_label">~</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-6">
+                                        <div class="input-group initTimepicker " id="r4" data-target-input="nearest">
+                                            <input class="form-control datetimepicker-input" type="text" data-target="#r4">
+                                            <div class="input-group-text" data-target="#r4" data-toggle="datetimepicker"><i class="fa fa-clock-o"></i></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-7 col-lg-8 col-md-10 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">營業時間 (日)</label>
+                                <div class="row align-items-center">
+                                    <div class="col-12 col-md-6 col-lg-6">
+                                        <div class="input-group initTimepicker " id="r5" data-target-input="nearest">
+                                            <input class="form-control datetimepicker-input" type="text" data-target="#r5">
+                                            <div class="input-group-text" data-target="#r5" data-toggle="datetimepicker"><i class="fa fa-clock-o"></i></div>
+                                            <label class="_custom_middle_label">~</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-6">
+                                        <div class="input-group initTimepicker " id="r6" data-target-input="nearest">
+                                            <input class="form-control datetimepicker-input" type="text" data-target="#r6">
+                                            <div class="input-group-text" data-target="#r6" data-toggle="datetimepicker"><i class="fa fa-clock-o"></i></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-xl-7 col-lg-8 col-md-10 col-12">
+                                <label class="col-form-label websoft-form-label pt-2">營業時間 (國定假日)</label>
+                                <div class="row align-items-center">
+                                    <div class="col-12 col-md-6 col-lg-6">
+                                        <div class="input-group initTimepicker " id="r7" data-target-input="nearest">
+                                            <input class="form-control datetimepicker-input" type="text" data-target="#r7">
+                                            <div class="input-group-text" data-target="#r7" data-toggle="datetimepicker"><i class="fa fa-clock-o"></i></div>
+                                            <label class="_custom_middle_label">~</label>
+                                        </div>
+                                    </div>
+                                    <div class="col-12 col-md-6 col-lg-6">
+                                        <div class="input-group initTimepicker " id="r8" data-target-input="nearest">
+                                            <input class="form-control datetimepicker-input" type="text" data-target="#r8">
+                                            <div class="input-group-text" data-target="#r8" data-toggle="datetimepicker"><i class="fa fa-clock-o"></i></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button class="btn btn-primary" type="submit" form="submitForm">儲存</button>
+                <a class="btn btn-info" href="@Url.Action("Index", new { FuncId = funcId, className = ViewData["className"] })">返回</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script>
+        $('.initDatepicker').datetimepicker({
+            format: 'YYYY/MM/DD',
+        });
+
+        $('.initTimepicker').datetimepicker({
+            format: 'HH:mm',
+        });
+
+        $(".select2-Clear").select2({
+            placeholder: "請選擇",
+            allowClear: true,
+        });
+    </script>
+}

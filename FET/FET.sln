@@ -1,0 +1,61 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36310.24
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Const", "Const\Const.csproj", "{A2E700F7-6A41-FC84-0271-D5C97018EADA}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.8.Utility", "Core.8.Utility\Core.8.Utility.csproj", "{AAADF45A-EEB3-B590-00C1-32EDB84A94E0}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Core.8.Utility.Web", "Core.8.Utility.Web\Core.8.Utility.Web.csproj", "{86FB7E37-AAB1-72DB-6D95-27C8C66E7043}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FTT_VENDER_WEB", "FTT_VENDER_WEB\FTT_VENDER_WEB.csproj", "{E7D705F6-5C94-4BB3-A40C-C4798A5FEB7D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FTT_WEB", "FTT_WEB\FTT_WEB.csproj", "{9149DF4C-82E0-406E-9CE8-A45C9FD8A6BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FTT_VENDER_API", "FTT_VENDER_API\FTT_VENDER_API.csproj", "{B4FAC458-0A9E-4946-8E1B-675314086231}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FTT_API", "FTT_API\FTT_API.csproj", "{D692E149-22E9-46C8-ADAB-0104593ACFC2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A2E700F7-6A41-FC84-0271-D5C97018EADA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A2E700F7-6A41-FC84-0271-D5C97018EADA}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A2E700F7-6A41-FC84-0271-D5C97018EADA}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A2E700F7-6A41-FC84-0271-D5C97018EADA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AAADF45A-EEB3-B590-00C1-32EDB84A94E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AAADF45A-EEB3-B590-00C1-32EDB84A94E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AAADF45A-EEB3-B590-00C1-32EDB84A94E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AAADF45A-EEB3-B590-00C1-32EDB84A94E0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{86FB7E37-AAB1-72DB-6D95-27C8C66E7043}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{86FB7E37-AAB1-72DB-6D95-27C8C66E7043}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{86FB7E37-AAB1-72DB-6D95-27C8C66E7043}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{86FB7E37-AAB1-72DB-6D95-27C8C66E7043}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E7D705F6-5C94-4BB3-A40C-C4798A5FEB7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E7D705F6-5C94-4BB3-A40C-C4798A5FEB7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E7D705F6-5C94-4BB3-A40C-C4798A5FEB7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E7D705F6-5C94-4BB3-A40C-C4798A5FEB7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9149DF4C-82E0-406E-9CE8-A45C9FD8A6BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9149DF4C-82E0-406E-9CE8-A45C9FD8A6BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9149DF4C-82E0-406E-9CE8-A45C9FD8A6BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9149DF4C-82E0-406E-9CE8-A45C9FD8A6BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4FAC458-0A9E-4946-8E1B-675314086231}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4FAC458-0A9E-4946-8E1B-675314086231}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4FAC458-0A9E-4946-8E1B-675314086231}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4FAC458-0A9E-4946-8E1B-675314086231}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D692E149-22E9-46C8-ADAB-0104593ACFC2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D692E149-22E9-46C8-ADAB-0104593ACFC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D692E149-22E9-46C8-ADAB-0104593ACFC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D692E149-22E9-46C8-ADAB-0104593ACFC2}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {03BDE275-5A93-4027-9A1E-F0061B196CA8}
+	EndGlobalSection
+EndGlobal

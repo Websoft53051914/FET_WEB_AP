@@ -1,0 +1,189 @@
+﻿@{
+    var _HandlerDesc = ViewData["HandlerDesc"] as string;
+    var mapAttr = new
+    {
+        IdGrid = Guid.NewGuid(),
+    };
+}
+
+<style>
+
+    .report-text {
+        padding: 30px;
+        border-radius: 8px;
+        line-height: 2.5;
+        font-size: 19px;
+    }
+
+    .contact {
+        color: red;
+        font-weight: bold;
+    }
+
+    .highlight-yellow {
+        background-color: yellow;
+        padding: 0 4px;
+        border-radius: 2px;
+    }
+
+    .highlight-red {
+        background-color: red;
+        color: white;
+        padding: 0 4px;
+        border-radius: 2px;
+    }
+</style>
+
+<div class="container-fluid">
+    <div class="page-header" style="padding-bottom:20px">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>待處理</h3>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Home" data-bs-original-title="" title="">首頁</a></li>
+                    <li class="breadcrumb-item">功能</li>
+                    <li class="breadcrumb-item active"><a href="" data-bs-original-title="" title="">待處理</a></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+
+@*     <div class="card mb-2">
+
+        <div class="report-text">
+
+            @_HandlerDesc.ToHtmlString()
+
+        </div>
+        @*
+        <div class="card-body">
+        <div class="row gy-3 mb-3">
+        <div class="col-12">
+
+        </div>
+        </div>
+        </div> *@
+    </div>
+
+    <div class="card mb-2">
+        <div class="card-body">
+            <div id="@(mapAttr.IdGrid)"></div>
+
+            <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
+                <div id="pageResizer" class="jsgrid-pager-page">
+                    <span>每頁筆數:</span>
+                    <select id="pageSelect">
+                    </select>
+                </div>
+                <div id="pagers">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script>
+
+        const context = {
+            $Grid: $("#@(mapAttr.IdGrid)"),
+        };
+
+        $(function () {
+            initGrid(1);
+
+            $("#pageSelect").on("change", function () {
+                const val = this.value;
+                onPageLenghtSelect(val, context.$Grid);
+            })
+
+            $("#pageSelect").select2({
+                minimumResultsForSearch: -1,
+                data: pageDataSource
+            });
+            $("#pageSelect").data("select2").$container.addClass("w-auto");
+        });
+
+        function initGrid(cookiePageIndex) {
+            $("#@(mapAttr.IdGrid)").jsGrid({
+                pageIndex: cookiePageIndex,
+                paging: true,
+                width: "100%",
+                pageSize: pageDataSource[0].id,
+                pageButtonCount: 5,
+                pagerFormat: "{first} {prev} {pages} {next} {last}    第 {pageIndex} 頁 共 {pageCount} 頁",
+                pagePrevText: "上一頁",
+                pageNextText: "下一頁",
+                pageFirstText: "第一頁",
+                pageLastText: "最後一頁",
+                pageLoading: true,
+                autoload: true,
+                rowDoubleClick: function (args, item) {
+                    var form_no = args.item.form_no;
+
+                    var newTab = window.open('@(Url.Action("Detail", new { formNo = "tempid" }))'.replace("tempid", form_no), '_blank');
+                    newTab.location;
+
+                },
+                changePageSize: function (pageSize) {
+                    var $this = this;
+                    $this.pageSize = pageSize;
+
+                    context.$Grid.jsGrid("openPage", 1);
+                },
+                pagerContainer: "#pagers",
+                onDataLoaded: function () {
+                    feather.replace();
+                },
+                controller: {
+                    loadData: function (filter) {
+                        var d = $.Deferred();
+                        $.ajax({
+                            type: "POST",
+                            url: "@Url.Action("GetPageList")",
+                            data: filter,
+                            dataType: "json",
+                            success: function (res) {
+                                if (res.Success === false) {
+                                    swal({
+                                        text: res.Message,
+                                        icon: "error",
+                                        button: "確認"
+                                    });
+                                    d.reject();
+                                    return;
+                                }
+                                var da = {
+                                    data: res.Data,
+                                    itemsCount: res.Total
+                                }
+                                d.resolve(da);
+                            }
+                        })
+
+                        return d.promise();
+                    }
+                },
+                fields: [
+                    { name: "Id", visible: false },
+                    { name: "form_no", title: "工單號碼", type: "text", width: 100, align: "center" },
+                    { name: "tt_category", title: "報修型態", type: "text", width: 100, align: "center" },
+                    { name: "l2_desc", title: "報修類別", type: "text", width: 150, align: "center" },
+                    { name: "ciname", title: "報修品項", type: "text", width: 150, align: "center" },
+                    { name: "createtime", title: "報修日期", type: "text", width: 120, align: "center" },
+                    { name: "shop_name", title: "店名", type: "text", width: 120, align: "center" },
+                    { name: "statusname", title: "工單狀態", type: "text", width: 100, align: "center" },
+                    { name: "updatetime", title: "更新日期", type: "text", width: 120, align: "center" },
+                ],
+            });
+
+            //分頁頁數紀錄相關
+            context.$Grid.jsGrid('_setPage', cookiePageIndex);//jsgrid bug 不會自動將頁碼設定成pageindex
+        }
+
+    </script>
+}

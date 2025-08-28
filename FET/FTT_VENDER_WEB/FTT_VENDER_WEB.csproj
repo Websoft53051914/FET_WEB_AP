@@ -1,0 +1,15 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Const\Const.csproj" />
+    <ProjectReference Include="..\Core.8.Utility.Web\Core.8.Utility.Web.csproj" />
+    <ProjectReference Include="..\Core.8.Utility\Core.8.Utility.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,89 @@
+﻿@model FormEditVM
+@{
+    var mapAttr = new
+    {
+        IdStatusLogGrid = Guid.NewGuid().ToString(),
+        IdContentLogGrid = Guid.NewGuid().ToString(),
+    };
+}
+
+<div class="my-4">
+    <h5>表單狀態異動紀錄</h5>
+    <div id="@mapAttr.IdStatusLogGrid"></div>
+</div>
+<div >
+    <h5>表單內容異動紀錄</h5>
+    <div id="@mapAttr.IdContentLogGrid"></div>
+</div>
+
+<script>
+    $(document).ready(function () {
+
+        $("#@(mapAttr.IdStatusLogGrid)").jsGrid(
+            {
+                width: "100%",
+                height: "auto",
+                autoload: true,
+                controller: {
+                    loadData: function (filter) {
+                        // return $.ajax({
+                        //     type: "GET",
+                        //     url: "@Url.Action("GetUpdateLog", "Form")",
+                        //     data: filter
+                        // });
+                        //先用假資料
+                        return [
+
+                        ];
+                    }
+                },
+                fields: [
+                    { name: "Seq", type: "text", title: "項目", width: 50, visible: false },
+                    { name: "UpdateTime", type: "text", title: "異動時間" },
+                    { name: "USER_TYPE", type: "text", title: "角色" },
+                    { name: "UpdateUserName", type: "text", title: "異動人員" },
+                    { name: "Desc", type: "text", title: "描述" },
+                    { name: "BeforeStatus", type: "text", title: "異動前狀態" },
+                    { name: "Status", type: "text", title: "狀態" }
+                ]
+            }
+        );
+
+        $("#@(mapAttr.IdContentLogGrid)").jsGrid(
+            {
+                width: "100%",
+                height: "auto",
+                autoload: true,
+                controller: {
+                    loadData: function (filter) {
+                        // return $.ajax({
+                        //     type: "GET",
+                        //     url: "@Url.Action("GetUpdateLog", "Form")",
+                        //     data: filter
+                        // });
+                        //先用假資料
+                        return [
+                            {
+                                Seq: 1,
+                                UpdateTime: "2023-10-01 12:00",
+                                UpdateContent: "開立工單",
+                                UpdateBefore: "",
+                                UpdateAfter: "",
+                                UpdateUserName: "使用者A"
+                            },
+                        ];
+                    }
+                },
+                fields: [
+                    { name: "Seq", type: "text", title: "項目", width: 50, visible: false },
+                    { name: "UpdateTime", type: "text", title: "異動時間" },
+                    { name: "UpdateContent", type: "text", title: "異動欄位" },
+                    { name: "UpdateBefore", type: "text", title: "異動前" },
+                    { name: "UpdateAfter", type: "text", title: "異動後" },
+                    { name: "UpdateUserName", type: "text", title: "異動人員" },
+
+                ]
+            }
+        );
+    });
+</script>

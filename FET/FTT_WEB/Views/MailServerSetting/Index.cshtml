@@ -1,0 +1,204 @@
+﻿@model MailServerSettingVM
+@{
+    var mapAttr = new
+    {
+        IdGrid = Guid.NewGuid(),
+    };
+}
+
+<style>
+    #PdEye {
+        width: 20px;
+    }
+</style>
+<div class="container-fluid">
+    <div class="page-header" style="padding-bottom:20px">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>Mail Server 設定</h3>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Home" data-bs-original-title="" title="">首頁</a></li>
+                    <li class="breadcrumb-item">功能</li>
+                    <li class="breadcrumb-item active"><a href="" data-bs-original-title="" title="">Mail Server 設定</a></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-header pb-0">
+            <h5>編輯</h5>
+        </div>
+        <div class="card-body">
+            <form class="needs-validation" novalidate="" method="post" id="submitForm" action="@Url.Action("Update","MailServerSetting")">
+                @Html.HiddenFor(m => m.Id)
+                <div class="row gx-2 gy-1 ">
+                    <div class=" col-xl-4 col-lg-6 col-md-12 mb-2">
+                        <label class="col-form-label websoft-form-label pt-0 required" asp-for="Server">主機</label>
+                        @(Html.TextBoxFor(m => m.Server,  new { @class = "form-control", @maxlength = "50", required="required" }))
+                        <div class="invalid-feedback">請輸入主機</div>
+                    </div>
+                    <div class=" col-xl-4 col-lg-6 col-md-12 mb-2">
+                        <label class="col-form-label websoft-form-label pt-0 required" asp-for="Port">Port</label>
+                        @(Html.TextBoxFor(m => m.Port, new { @class = "form-control", @maxlength = "20", required = "required" }))
+                        <div class="invalid-feedback">請輸入 Port</div>
+                    </div>
+                    <div class=" col-xl-4 col-lg-6 col-md-12 mb-2 ">
+                        <label class="col-form-label websoft-form-label pt-0 required" asp-for="Sender">寄件者</label>
+                        @(Html.TextBoxFor(m => m.Sender, new { @class = "form-control", @maxlength = "100", required = "required" }))
+                        <div class="invalid-feedback">請輸入寄件者</div>
+                    </div>
+
+                    <div class=" col-xl-4 col-lg-6 col-md-12 mb-2">
+                        <label class="col-form-label  websoft-form-label pt-0 required" asp-for="SenderAddress">寄件者 Mail</label>
+                        @(Html.TextBoxFor(m => m.SenderAddress, new { @class = "form-control", @maxlength = "100", required = "required" }))
+                        <div class="invalid-feedback">請輸入寄件者 Mail</div>
+                    </div>
+
+                    <div class=" col-xl-4 col-lg-6 col-md-12 mb-2">
+                        <label class="col-form-label websoft-form-label pt-0 required" asp-for="UserName">帳號</label>
+                        @(Html.TextBoxFor(m => m.UserName, new { @class = "form-control", @maxlength = "100", required = "required" }))
+                        <div class="invalid-feedback">請輸入帳號</div>
+
+                    </div>
+
+                    <div class=" col-xl-4 col-lg-6 col-md-12 mb-2">
+                        <label class="col-form-label  websoft-form-label pt-0 required" asp-for="Password">密碼</label>
+                        <div class="input-group">
+                            @(Html.TextBoxFor(m => m.Password, new { @class = "form-control", @maxlength = "20", required = "required", type="password" }))
+                            <div id="PdDisplay" class="input-group-text">
+                                <i class="fa fa-eye" id="PdEye"></i>
+                            </div>
+                        </div>
+
+                        @*<div class="invalid-feedback col-12">請輸入密碼</div>*@
+                    </div>
+
+                        <div class=" col-xl-1 col-lg-2 col-md-6 mb-2">
+                            <div class="col-12 form-check form-check-inline checkbox">
+                                @Html.CheckBoxFor(m => m.IsEnabled, new { @class = "form-check-input", id = "IsEnabled" })
+                                <label for="IsEnabled" class="form-check-label">啟用</label>
+                            </div>
+                        </div>
+                        <div class=" col-xl-2 col-lg-2 col-md-6 mb-2">
+                            <div class="col-12 form-check form-check-inline checkbox">
+                                @Html.CheckBoxFor(m => m.EnableSSL, new { @class = "form-check-input", id = "EnableSSL" })
+
+                                <label for="EnableSSL" class="form-check-label">啟用SSL</label>
+                            </div>
+                        </div>
+
+                    </div>
+               
+            </form>           
+
+            <button class="btn btn-primary" type="submit" form="submitForm">確認送出</button>
+            <a class="btn btn-info" href="@Url.Action("Index","Home")">返回</a>
+        </div>
+    </div>
+</div>
+
+
+
+
+@section scripts
+{
+    <script>
+
+        const context = {
+            $Grid: $("#@(mapAttr.IdGrid)"),
+        };
+
+        $(function () {
+
+
+
+            $(".select2-Clear").select2({
+                placeholder: "請選擇",
+                allowClear: true,
+            });
+        });
+
+
+        $(document).ready(function ()
+        {
+
+            @*$('#@Html.IdFor(m=>m.Password)').prop('type', 'password')*@
+            $('#PdDisplay').click(function (e)
+            {
+                $('#PdEye').toggleClass('fa-eye')
+                $('#PdEye').toggleClass('fa-eye-slash')
+                let setPdType = $('#@Html.IdFor(m=>m.Password)').prop('type') == 'password' ? 'text' : 'password'
+                $('#@Html.IdFor(m=>m.Password)').prop('type', setPdType)
+            });
+
+            $("#submitForm").on("submit", function (e)
+            {
+                var formData = new FormData($("#submitForm")[0])
+                event.preventDefault()
+                if (!$(this)[0].checkValidity())
+                {
+                    var list = $(this)[0].querySelectorAll(':invalid')
+                    console.log(list)
+
+                    event.preventDefault()
+                    event.stopPropagation()
+                    return
+
+                }
+                $.ajax({
+                    url: '@Url.Action("Update", "MailServerSetting")',
+                    dataType: "json",
+                    type: "POST",
+                    data: formData,
+                    processData: false,   // 阻止 jQuery 自動轉成 query string
+                    contentType: false,   // 讓瀏覽器自己設定 multipart/form-data 邊界
+                    beforeSend: function (xhr)
+                    {
+                        showLoader()
+
+                    },
+                    success: function (data)
+                    {
+                        console.log('aa')
+                        if (data.Success)
+                        {
+                            swal({
+                                text: data.Data,
+                                button: '確認',
+                                icon: "success"
+                            }).then(function() {
+                                window.location.href = '@Url.Action("Index", "Home")'
+                            })
+
+                        } else
+                        {
+                            var msg = data.Message
+
+                            swal({
+                                text: msg,
+                                button: '確認',
+                                icon: "error"
+                            })
+                        }
+                    },
+                    error: function (error)
+                    {
+                        @*console.log(@config.Config[$"Message:SystemErrorMsg"].ToHtmlString())*@
+                        swal({
+                            text: `錯誤，請聯絡系統管理員`,
+                            button: '確認',
+                            icon: "error"
+                        })
+                    }
+                }).always(() =>
+                {
+                    hideLoader()
+                })
+
+
+            })
+        })
+
+
+    </script>
+}

@@ -1,0 +1,261 @@
+﻿
+
+@model CommonPartailVM
+
+@{
+    Layout = null;
+
+    var mapAttr = new
+    {
+
+        KeySearch = Guid.NewGuid(),
+
+        ItemTreeSearch = Guid.NewGuid(),
+        ItemJsTree = Guid.NewGuid(),
+
+        ItemModal = "M" + Guid.NewGuid(),
+        ItemTagPool = Guid.NewGuid(),
+        ItemTreeOK = Guid.NewGuid()
+    };
+}
+
+<style>
+    .no_checkbox > i.jstree-checkbox {
+        display: none
+    }
+</style>
+
+<div id="@Model.ComponentId" class="partialDisplayPool" data-bs-toggle="modal" data-bs-target="#@(mapAttr.ItemModal)">
+
+</div>
+@if (!string.IsNullOrEmpty(Model.PropertyName))
+{
+    <input type="hidden" name="@(Model.PropertyName)" value="@(Model.Id)" />
+}
+
+
+
+<div class="modal fade max100vh" id="@(mapAttr.ItemModal)" tabindex="-1" role="dialog" aria-labelledby="@(mapAttr.ItemModal)" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header text-center">
+                <h5 class="modal-title w-100 text-center">報修品項</h5>
+                <button class="btn-close" type="button" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+
+            
+                <div id="@(mapAttr.ItemTagPool)" class="partialSelectedPool mb-3"></div>
+                <div id="@(mapAttr.ItemJsTree)" class="partialSelectTree"></div>
+            </div>
+
+            <div class="modal-footer">
+                @* <button class="btn btn-info" type="button" id="ItemTreeCancel">取消</button> *@
+                <button class="btn btn-primary" type="button" id="@mapAttr.ItemTreeOK">確認</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+
+
+
+    var selectedItem = [];
+    var selectedItem_Temp = [];
+    var selectedItemVal = '@Model.Id';//Set Value用
+
+    var $ProjDisplayPool = $('#@(Model.ComponentId)');
+    var $ProjJsTree = $('#@(mapAttr.ItemJsTree)');
+    var required = Number('@Model.required');
+
+    $(function () {
+
+        $("#ItemTreeCancel").on('click', function () {
+
+            $("#@(mapAttr.ItemModal)").modal('hide');
+        });
+
+        $(".btn-close").on('click', function () {
+
+            $("#@(mapAttr.ItemModal)").modal('hide');
+        });
+
+        $('#@mapAttr.ItemTreeOK').on('click', function () {
+            let domParser = new DOMParser();
+            selectedItem = selectedItem_Temp;
+            if (required) {
+                if (selectedItem.length == 0) {
+                    swal({
+                        text: "必填",
+                        icon: "warning",
+                        button: "確認"
+                    })
+                    return;
+                }
+            }
+            $ProjDisplayPool.empty();
+
+            var selectedValue = null;
+            for (var i = 0; i < selectedItem.length; i++) {
+                let htm = `<div data-id ='${selectedItem[i].value}' > ${selectedItem[i].text}</div>`;
+                let cntNode = domParser.parseFromString(htm, "text/html").body.childNodes;
+
+                document.getElementById('@(Model.ComponentId)').appendChild(cntNode[0]);
+
+                selectedValue = selectedItem[i].value;
+            }
+
+            if ($('[name="@(Model.PropertyName)"]').length) {
+                $('[name="@(Model.PropertyName)"]').val(selectedValue);
+            }
+
+
+            $("#@(mapAttr.ItemModal)").modal('hide');
+        })
+
+
+
+
+        $('#@(mapAttr.ItemModal)').on('show.bs.modal', function () {
+
+            let selected = selectedItem.map(function (item) {
+                return item.id;
+            });
+
+            let tree = $ProjJsTree.jstree(true);
+            tree.deselect_all();
+            tree.select_node(selected);
+        })
+
+
+
+        $ProjJsTree.jstree({
+            core: {
+                themes: {
+                    icons: true,
+                },
+                data: [
+                    {
+                        "id": "r",
+                        "parent": "#",
+                        "text": "報修品項",
+                        "state": { "opened": true }
+                    },
+                    {
+                        "id": "r1",
+                        "parent": "r",
+                        "text": "保全"
+                    },
+                    {
+                        "id": "r1-1",
+                        "parent": "r1",
+                        "text": "保全系統"
+                    },
+                    { "id": "r1-1-1", "parent": "r1-1", "text": "保全主機" },
+                    { "id": "r1-1-2", "parent": "r1-1", "text": "保全卡" },
+                    { "id": "r1-1-3", "parent": "r1-1", "text": "玻璃破碎感知器" },
+                    { "id": "r1-1-4", "parent": "r1-1", "text": "磁簧感知器" },
+                    { "id": "r1-1-5", "parent": "r1-1", "text": "空間感知器" },
+                    { "id": "r1-1-6", "parent": "r1-1", "text": "緊急押扣" },
+                    { "id": "r1-1-7", "parent": "r1-1", "text": "金庫感知器" },
+                    { "id": "r1-1-8", "parent": "r1-1", "text": "護欄周圍感知器" },
+
+                    { "id": "r1-2", "parent": "r1", "text": "商品保全" },
+                    { "id": "r1-3", "parent": "r1", "text": "監視系統" },
+                    { "id": "r1-4", "parent": "r1", "text": "系統測試" },
+
+                    { "id": "r2", "parent": "r", "text": "停車區域設備" },
+                    { "id": "r3", "parent": "r", "text": "傢俱設備" },
+                    { "id": "r4", "parent": "r", "text": "小型設備" },
+                    { "id": "r5", "parent": "r", "text": "影音設備" },
+                    { "id": "r6", "parent": "r", "text": "招牌設備" },
+                    { "id": "r7", "parent": "r", "text": "機電設備" },
+                    { "id": "r8", "parent": "r", "text": "直營取叫號機" },
+                    { "id": "r9", "parent": "r", "text": "空調設備" },
+                    { "id": "r10", "parent": "r", "text": "裝潢設備" },
+                    { "id": "r11", "parent": "r", "text": "門市多媒體設備" },
+                    { "id": "r11-1", "parent": "r11", "text": "測試" }
+                ],
+                multiple: false
+
+            },
+            plugins: ["themes", 'search'],
+        }).on('loaded.jstree', function (e, data) {
+
+            let jsonArr = $('#@(mapAttr.ItemJsTree)').jstree(true).get_json("#", { flat: true });
+            let nodeIds = [];
+            let domParser = new DOMParser();
+            for (let i = 0; i < jsonArr.length; i++) {
+                let node = data.instance.get_node(jsonArr[i].id);
+                if (node.original.value) {
+                    const value = node.original.value;
+                    if (selectedItemVal == value) {
+                        nodeIds.push(node.id);
+                        let htm = `<span class="partialDisplayTag" data-id = '${value}' > ${node.text}</span>`;
+                        let cntNode = domParser.parseFromString(htm, "text/html").body.childNodes;
+                        $ProjDisplayPool[0].appendChild(cntNode[0]);
+                        selectedItem.push({ text: node.text, value: node.original.value, id: node.id })
+                    }
+                }
+                else {
+                    node.a_attr['class'] = "no_checkbox";
+                }
+            }
+            $('#@(mapAttr.ItemJsTree)').jstree(true).settings.core.data = data;
+            $('#@(mapAttr.ItemJsTree)').jstree(true).redraw(true);
+            $('#@(mapAttr.ItemJsTree)').jstree('select_node', nodeIds);
+        });
+
+
+
+        $ProjJsTree.on('changed.jstree', function (e, data) {
+
+            let selectedNodes = data.selected;
+            let $ItemTagPool = $('#@(mapAttr.ItemTagPool)');
+
+            $ItemTagPool.empty();
+            selectedItem_Temp = [];
+
+            let domParser = new DOMParser();
+
+          
+            for (var i = 0; i < selectedNodes.length; i++) {
+                var node = data.instance.get_node(selectedNodes[i]);
+                if (node.original.id) {
+                    let htm = `<span class="partialTag"> ${node.text} <button class="partialRemove" data-node-id='${node.id}'>x</button></span>`;
+                    let cntNode = domParser.parseFromString(htm, "text/html").body.childNodes;
+                    document.getElementById('@(mapAttr.ItemTagPool)').appendChild(cntNode[0]);
+                    selectedItem_Temp.push({ text: node.text, value: node.original.value, id: node.id });
+                }
+            }
+
+
+
+        });
+
+
+        $('#@(mapAttr.ItemTagPool)').on('click', '.partialRemove', function () {
+
+            var tree = $ProjJsTree.jstree(true);
+            var nodeId = $(this).data('node-id');
+            tree.deselect_node(nodeId);
+            $(this).closest('.partialTag').remove();
+        });
+
+
+
+        $('#@(mapAttr.ItemTreeSearch)').on('click', function () {
+
+            $ProjJsTree.jstree('search', $('#@(mapAttr.KeySearch)').val());
+
+        })
+
+
+
+
+    });
+
+
+
+</script>

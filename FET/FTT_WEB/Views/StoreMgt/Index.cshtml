@@ -1,0 +1,387 @@
+﻿@{
+    var mapAttr = new
+    {
+        IdGrid = Guid.NewGuid(),
+    };
+}
+
+<div class="container-fluid">
+    <div class="page-header" style="padding-bottom:20px">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>門市資料維護</h3>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Home" data-bs-original-title="" title="">首頁</a></li>
+                    <li class="breadcrumb-item">功能</li>
+                    <li class="breadcrumb-item active"><a href="" data-bs-original-title="" title="">門市資料維護</a></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="card mb-2">
+        <div class="card-body py-3 card-body-reduction">
+            <div class="row  mb-2">
+
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">報修門市</label>
+                    <input type="text" class="form-control" placeholder="">
+                </div>
+
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">公司別</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                        <option value="1">FET</option>
+                    </select>
+                </div>
+
+
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">店格</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                        <option>RETAIL</option>
+                        <option>FRANCHISE</option>
+                        <option>MINI FRANCHISE</option>
+                        <option>REGIONAL CENTER</option>
+                        <option>BOOTH</option>
+                        <option>G5</option>
+                        <option>G5S</option>
+                    </select>
+                </div>
+
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">通路</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                        <option value="1">RETAIL</option>
+                        <option value="2">FRANCHISE</option>
+                    </select>
+                </div>
+
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">區域</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                        <option>N1</option>
+                        <option>N2</option>
+                    </select>
+                </div>
+
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">區經理/業務</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                    </select>
+                </div>
+
+            </div>
+            <button class="btn btn-primary">送出查詢</button>
+            <button class="btn  btn-info" data-bs-toggle="modal" data-bs-target="#areaModal">區域更新</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="mb-2">
+                <a class="btn btn-primary" href="@(Url.Action("Edit"))">新增</a>
+            </div>
+            <div id="@(mapAttr.IdGrid)"></div>
+            <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
+                <div id="pageResizer" class="jsgrid-pager-page">
+                    <span>每頁筆數:</span>
+                    <select id="pageSelect">
+                    </select>
+                </div>
+                <div id="pagers">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* bootstrap modal for area *@
+<div class="modal fade" id="areaModal" tabindex="-1" role="dialog" aria-labelledby="areaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="areaModalLabel">區域更新</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-5">
+                    <h5>直營門市</h5>
+                    <hr/>
+                    <input type="file" class="form-control" id="" accept=".xlsx, .xls">
+                    <button class="btn btn-primary mt-2">匯入資料</button>
+                    <button class="btn btn-primary mt-2">匯出資料</button>
+                </div>
+                <div class="mt-5">
+                    <h5>加盟門市</h5>
+                    <hr />
+                    <input type="file" class="form-control" id="" accept=".xlsx, .xls">
+                    <button class="btn btn-primary mt-2">匯入資料</button>
+                    <button class="btn btn-primary mt-2">匯出資料</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script>
+
+        const context = {
+            $Grid: $("#@(mapAttr.IdGrid)"),
+        };
+
+        $(function () {
+            initGrid(1);
+
+            $("#pageSelect").on("change", function () {
+                const val = this.value;
+                onPageLenghtSelect(val, context.$Grid);
+            })
+
+            $("#pageSelect").select2({
+                minimumResultsForSearch: -1,
+                data: pageDataSource
+            });
+            $("#pageSelect").data("select2").$container.addClass("w-auto");
+
+            $('.initDatepicker').datetimepicker({
+                format: 'YYYY/MM/DD',
+            });
+
+            $(".select2-Clear").select2({
+                placeholder: "請選擇",
+                allowClear: true,
+            });
+        });
+
+        function initGrid(cookiePageIndex) {
+            $("#@(mapAttr.IdGrid)").jsGrid({
+                pageIndex: cookiePageIndex,
+                paging: true,
+                width: "100%",
+                pageSize: pageDataSource[0].id,
+                pageButtonCount: 5,
+                pagerFormat: "{first} {prev} {pages} {next} {last}    第 {pageIndex} 頁 共 {pageCount} 頁",
+                pagePrevText: "上一頁",
+                pageNextText: "下一頁",
+                pageFirstText: "第一頁",
+                pageLastText: "最後一頁",
+                // pageLoading: true,
+                // autoload: true,
+                changePageSize: function (pageSize) {
+                    var $this = this;
+                    $this.pageSize = pageSize;
+
+                    context.$Grid.jsGrid("openPage", 1);
+                },
+                pagerContainer: "#pagers",
+                onDataLoaded: function () {
+                    feather.replace();
+                },
+                data: [
+                    {
+                        Id :1,
+                        ShopName: "門市A",
+                        Company_Leaves: "FET",
+                        Area: "N1",
+                        StoreType: "RETAIL",
+                        Channel: "RETAIL",
+                        Owner_CName: "王小明",
+                        AS_CName: "李大華"
+                    },
+                    {
+                        Id :2,
+                        ShopName: "門市B",
+                        Company_Leaves: "FET",
+                        Area: "N2",
+                        StoreType: "FRANCHISE",
+                        Channel: "FRANCHISE",
+                        Owner_CName: "張小美",
+                        AS_CName: "陳大志"
+                    },
+                    {
+                        Id :3,
+                        ShopName: "門市C",
+                        Company_Leaves: "FET",
+                        Area: "N1",
+                        StoreType: "MINI FRANCHISE",
+                        Channel: "RETAIL",
+                        Owner_CName: "李小華",
+                        AS_CName: "王大明"
+                    },
+                    {
+                        Id :4,
+                        ShopName: "門市D",
+                        Company_Leaves: "FET",
+                        Area: "N2",
+                        StoreType: "REGIONAL CENTER",
+                        Channel: "FRANCHISE",
+                        Owner_CName: "陳小美",
+                        AS_CName: "李大志"
+                    },
+                    {
+                        Id :5,
+                        ShopName: "門市E",
+                        Company_Leaves: "FET",
+                        Area: "N1",
+                        StoreType: "BOOTH",
+                        Channel: "RETAIL",
+                        Owner_CName: "王小華",
+                        AS_CName: "陳大明"
+                    },
+                    {
+                        Id :6,
+                        ShopName: "門市F",
+                        Company_Leaves: "FET",
+                        Area: "N2",
+                        StoreType: "G5",
+                        Channel: "FRANCHISE",
+                        Owner_CName: "李小美",
+                        AS_CName: "王大志"
+                    },
+                    {
+                        Id :7,
+                        ShopName: "門市G",
+                        Company_Leaves: "FET",
+                        Area: "N1",
+                        StoreType: "G5S",
+                        Channel: "RETAIL",
+                        Owner_CName: "陳小華",
+                        AS_CName: "李大明"
+                    },
+                    {
+                          Id :8,
+                        ShopName: "門市H",
+                        Company_Leaves: "FET",
+                        Area: "N2",
+                        StoreType: "RETAIL",
+                        Channel: "FRANCHISE",
+                        Owner_CName: "王小美",
+                        AS_CName: "陳大志"
+                    },
+                    {
+                        Id :9,
+                        ShopName: "門市I",
+                        Company_Leaves: "FET",
+                        Area: "N1",
+                        StoreType: "FRANCHISE",
+                        Channel: "RETAIL",
+                        Owner_CName: "李小華",
+                        AS_CName: "王大明"
+                    },
+                    {
+                        Id :10,
+                        ShopName: "門市J",
+                        Company_Leaves: "FET",
+                        Area: "N2",
+                        StoreType: "MINI FRANCHISE",
+                        Channel: "FRANCHISE",
+                        Owner_CName: "陳小美",
+                        AS_CName: "李大志"
+                    },
+                    {
+                        Id :11,
+                        ShopName: "門市K",
+                        Company_Leaves: "FET",
+                        Area: "N1",
+                        StoreType: "REGIONAL CENTER",
+                        Channel: "RETAIL",
+                        Owner_CName: "王小華",
+                        AS_CName: "陳大明"
+                    },
+                    {
+                        Id :12,
+                        ShopName: "門市L",
+                        Company_Leaves: "FET",
+                        Area: "N2",
+                        StoreType: "BOOTH",
+                        Channel: "FRANCHISE",
+                        Owner_CName: "李小美",
+                        AS_CName: "王大志"
+                    }
+                ],
+                // controller: {
+                //     loadData: function (filter) {
+                //         var d = $.Deferred();
+                //         $.ajax({
+                //             type: "POST",
+                //             url: "@Url.Action("GetPageList")",
+                //             data: filter,
+                //             dataType: "json",
+                //             success: function (res) {
+                //                 if (res.Success === false) {
+                //                     swal({
+                //                         text: res.Message,
+                //                         icon: "error",
+                //                         button: "確認"
+                //                     });
+                //                     d.reject();
+                //                     return;
+                //                 }
+                //                 var da = {
+                //                     data: res.Data,
+                //                     itemsCount: res.Total
+                //                 }
+                //                 d.resolve(da);
+                //             }
+                //         })
+
+                //         return d.promise();
+                //     }
+                // },
+                fields: [
+                    { name: "Id", visible: false },
+                    {
+                        type: 'control', align: "center",
+                        width: 60,
+                        editButton: false,
+                        deleteButton: false,
+                        headerTemplate: (value, item) => {
+                            return $("<div>操作<div>").attr({ class: '' });
+                        },
+                        itemTemplate: (value, item) => {
+
+                            $editButton = $('<a>')
+                                .attr({
+                                    'class': 'jsgrid-button jsgrid-edit-button d-inline-block',
+                                    'href': "",
+                                })
+
+                            $deleteButton = $('<button>')
+                                .attr({
+                                    'class': 'exclick jsgrid-button jsgrid-delete-button',
+                                })
+
+                            var result = $('<div>').append($editButton);
+                            result.append($deleteButton);
+
+                            return result;
+                        }
+                    },
+                    // 1. 店名 ShopName 2.公司別 Company_Leaves 3.區域 Area 4.店格 StoreType 5.通路 Channel  6.Owner_CName 7.區經理/業務 AS_CName
+                    {name:"ShopName" , title: "店名", type: "text", width: 150, align: "center"},
+                    {name:"Company_Leaves" , title: "公司別", type: "text", width: 100, align: "center"},
+                    {name:"Area" , title: "區域", type: "text", width: 100, align: "center"},
+                    {name:"StoreType" , title: "店格", type: "text", width: 120, align: "center"},
+                    {name:"Channel" , title: "通路", type: "text", width: 120, align: "center"},
+                    {name:"Owner_CName" , title: "店長/聯絡人", type: "text", width: 120, align: "center"},
+                    {name:"AS_CName" , title: "區經理/業務", type: "text", width: 120, align: "center"},
+                ],
+
+        });
+
+            //分頁頁數紀錄相關
+            context.$Grid.jsGrid('_setPage', cookiePageIndex);//jsgrid bug 不會自動將頁碼設定成pageindex
+        }
+
+    </script>
+}

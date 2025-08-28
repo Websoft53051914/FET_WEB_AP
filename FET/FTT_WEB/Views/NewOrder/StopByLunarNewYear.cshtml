@@ -1,0 +1,7 @@
+﻿@{ 
+    string StartDateText = FTT_WEB.Common.Const.LUNAR_NEW_YEAR_START.ToTaiwanCalendarString("yyy.MM.dd");
+    string EndDateText = FTT_WEB.Common.Const.LUNAR_NEW_YEAR_END.ToTaiwanCalendarString("yyy.MM.dd");
+    string OkDateText = FTT_WEB.Common.Const.LUNAR_NEW_YEAR_END.AddDays(1).ToTaiwanCalendarString("yyy.MM.dd");
+}
+
+<center><h3>『親愛的門市人員您好，年節期間<font color='red'>(@(StartDateText.ToHtmlString())~@(EndDateText.ToHtmlString()))</font>暫停設備報修，<BR><font color='red'>@(OkDateText.ToHtmlString())</font>恢復正常運作，敬祝新春愉快，恭喜發財』</h3></center>

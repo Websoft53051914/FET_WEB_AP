@@ -1,0 +1,104 @@
+﻿@{
+    var funcId = ViewData["FuncId"];
+    var mapText = new
+    {
+        Btn_Create = $"{config.GetMessage("BtnCreate")}",
+        Btn_Edit = $"{config.GetMessage("BtnEdit")}",
+
+        Btn_Confirm = config.GetMessage("BtnConfirm"),
+        Btn_Cancel = "取消",
+    };
+
+    var mapAttr = new
+    {
+        IdCategory = Guid.NewGuid(),
+    };
+    var action = Html.ActionName().ToLower() == "create" ? "create" : "edit";
+    var actionName = action == "create" ? mapText.Btn_Create : mapText.Btn_Edit;
+}
+
+<div class="container-fluid">
+    <div class="page-header" style="padding-bottom:20px">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>派工規則維護</h3>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Home" data-bs-original-title="" title="">首頁</a></li>
+                    <li class="breadcrumb-item">後端維護</li>
+                    <li class="breadcrumb-item active"><a href="" data-bs-original-title="" title="">派工規則維護</a></li>
+                    <li class="breadcrumb-item">編輯</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-header pb-0">
+            <h5>@(actionName.ToHtmlString())</h5>
+        </div>
+        <div class="card-body card-body-edit">
+            <form class="needs-validation" novalidate="" method="post" id="submitForm">
+                <div class="row gx-2 gy-1 mb-3">
+
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                        <label class="col-form-label websoft-form-label pt-2">廠商</label>
+                        <select class="form-control select2-Clear">
+                            <option></option>
+                            <option value="1">廠商A</option>
+                            <option value="2">廠商B</option>
+                            <option value="3">廠商C</option>
+                            <option value="4">廠商D</option>
+                            <option value="5">廠商E</option>
+                        </select>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                        <label class="col-form-label websoft-form-label pt-2">保固</label>
+                        <select class="form-control select2-Clear">
+                            <option></option>
+                            <option value="1">Y</option>
+                            <option value="2">N</option>
+                        </select>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                        <label class="col-form-label websoft-form-label pt-2">IVR CODE</label>
+                        <select class="form-control select2-Clear" multiple>
+                            <option value="1">2266 高雄草衙</option>
+                            <option value="2">N12  三重自強一加盟</option>
+                            <option value="3">N21  桃園大溪特約服務中心</option>
+                            <option value="3">1801373  新竹新埔加盟門市</option>
+
+                        </select>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                        <label class="col-form-label websoft-form-label pt-2">類別</label>
+                        @await Html.PartialAsync("Form/_ItemsTreeMuti", new CommonPartailVM() { ComponentId = mapAttr.IdCategory.ToString() })
+                    </div>
+
+
+                </div>
+
+                <button class="btn btn-primary" type="submit" form="submitForm">儲存</button>
+                <a class="btn btn-info" href="@Url.Action("Index", new { FuncId = funcId, className = ViewData["className"] })">返回</a>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script>
+        $('.initDatepicker').datetimepicker({
+            format: 'YYYY/MM/DD',
+        });
+
+        $('.initTimepicker').datetimepicker({
+            format: 'HH:mm',
+        });
+
+        $(".select2-Clear").select2({
+            placeholder: "請選擇",
+            allowClear: true,
+        });
+    </script>
+}

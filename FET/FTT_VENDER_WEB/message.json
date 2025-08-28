@@ -1,0 +1,21 @@
+{
+
+  "Message": {
+    "zh-tw": {
+   
+      // filepond
+      "labelMaxFileSizeExceeded": "檔案過大，不可超過{0}",
+      "labelFileTypeNotAllowed": "不支援此類型檔案",
+      // 共用
+      "PagerFormat": "{first} {prev} {pages} {next} {last}    第 {pageIndex} 頁 共 {pageCount} 頁",
+      "PagePrevText": "上一頁",
+      "PageNextText": "下一頁",
+      "PageFirstText": "第一頁",
+      "PageLastText": "最後一頁",
+      "SystemErrorMsg": "錯誤，請聯絡系統管理員"
+    },
+    "en-us": {
+    }
+  }
+
+}

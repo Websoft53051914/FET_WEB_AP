@@ -1,0 +1,448 @@
+﻿
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <style>
+        :root {
+            --main_color: #cd424d;
+            /* --main_color: rgba(113, 113, 113, 0.8); */
+        }
+    </style>
+    <style>
+        body {
+            background-color: #f5f7fb !important;
+        }
+
+        header.main-nav {
+            top: 65px !important;
+            width: 250px !important;
+            padding-top: 1rem;
+        }
+
+        .page-wrapper .page-body-wrapper .page-body {
+            padding: 0 0 0 15px !important;
+        }
+
+        .page-main-header .main-header-right .main-header-left {
+            padding: 15px 30px !important;
+            width: 250px !important;
+        }
+
+        .page-wrapper.compact-wrapper .page-body-wrapper header.main-nav .main-navbar .nav-menu > li {
+            padding: 1px 15px !important;
+        }
+
+        .card {
+            border-radius: 5px !important;
+        }
+
+            .card .card-header {
+                border-top-left-radius: inherit !important;
+                border-top-right-radius: inherit !important;
+            }
+
+            .card .card-body {
+                padding: 25px !important;
+            }
+
+                .card .card-body.card-body-edit {
+                    padding-top: 5px !important;
+                }
+
+        .websoft-function-row {
+            display: none;
+        }
+
+        label.smb-5px, div.smb-5px, input.smb-5px {
+            margin-bottom: 5px !important;
+        }
+
+        .text-warningv2 {
+            color: #ff662e !important;
+        }
+    </style>
+    <style>
+
+        .partialTag {
+            display: inline-block;
+            position: relative;
+            font-weight: normal;
+            vertical-align: baseline;
+            white-space: nowrap;
+            background-color: rgb(141 141 141 / 85%);
+            color: #FFF;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.15);
+            padding: 4px 22px 5px 9px;
+            margin-bottom: 3px;
+            margin-right: 3px;
+            -webkit-transition: all 0.2s;
+            -o-transition: all 0.2s;
+            transition: all 0.2s;
+            border-radius: 3px;
+            border-color: rgb(141 141 141 / 85%);
+        }
+
+        .partialDisplayTag {
+            display: inline-block;
+            position: relative;
+            font-weight: normal;
+            vertical-align: baseline;
+            white-space: nowrap;
+            background-color: rgb(141 141 141 / 85%);
+            color: #FFF;
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.15);
+            padding: 5px 10px 5px 10px;
+            margin-bottom: 3px;
+            margin-right: 3px;
+            border-radius: 3px;
+            border-color: rgb(141 141 141 / 85%);
+        }
+
+        .partialRemove {
+            font-size: 15px;
+            line-height: 20px;
+            opacity: 1;
+            color: #FFF;
+            text-shadow: none;
+            float: none;
+            position: absolute;
+            right: 0;
+            top: 0;
+            bottom: 0;
+            width: 18px;
+            text-align: center;
+            -webkit-appearance: none;
+            padding: 0;
+            cursor: pointer;
+            background: transparent;
+            border: 0;
+        }
+
+        .partialSelectedPool {
+            border: 1px solid;
+            border-color: darkgray;
+            border-radius: 3px;
+            padding: 10px;
+            min-height: 8vh;
+            max-height: 15vh;
+            overflow-y: auto;
+        }
+
+
+        .partialDisplayPool {
+            border: 1px solid;
+            cursor: pointer;
+            border-radius: 0.25rem !important;
+            border: 1px solid #ced4da;
+            min-height: 35px;
+            padding: 0.375rem 0.75rem;
+            line-height: 1.5;
+        }
+
+        .disabledPartialDisplayPool {
+            border: 1px solid;
+            cursor: not-allowed;
+            border-radius: 0.25rem !important;
+            border: 1px solid #ced4da;
+            min-height: 35px;
+            padding: 0.375rem 0.75rem;
+        }
+
+        .jstree-default .jstree-clicked {
+            background-color: #91b8d042 !important;
+        }
+
+        .max100vh {
+            max-height: 100vh;
+        }
+
+        .partialSelectTree {
+            max-height: 42vh;
+            overflow-y: auto;
+        }
+    </style>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="viho admin is super flexible, powerful, clean &amp; modern responsive bootstrap 4 admin template with unlimited possibilities.">
+    <meta name="keywords" content="admin template, viho admin template, dashboard template, flat admin template, responsive admin template, web app">
+    <meta name="author" content="pixelstrap">
+    @RenderSection("header", false)
+    <link rel="icon" href="~/favicon.ico" type="image/x-icon">
+    <link rel="shortcut icon" href="~/favicon.ico" type="image/x-icon">
+    <title>FET</title>
+    <!-- Google font-->
+    <link href="~/css/Montserrat.css" rel="stylesheet">
+    <link href="~/css/Roboto.css" rel="stylesheet">
+    <link href="~/css/Rubik.css" rel="stylesheet">
+    <!-- Font Awesome-->
+    <link rel="stylesheet" type="text/css" href="~/lib/viho/assets/css/fontawesome.css">
+    <!-- ico-font-->
+    <link rel="stylesheet" type="text/css" href="~/lib/viho/assets/css/icofont.css">
+    <!-- Themify icon-->
+    <link rel="stylesheet" type="text/css" href="~/lib/viho/assets/css/themify.css">
+    <!-- Flag icon-->
+    <link rel="stylesheet" type="text/css" href="~/lib/viho/assets/css/flag-icon.css">
+    <!-- Feather icon-->
+    <link rel="stylesheet" type="text/css" href="~/lib/viho/assets/css/feather-icon.css">
+    <!-- Plugins css start-->
+    <link rel="stylesheet" type="text/css" href="~/lib/viho/assets/css/animate.css">
+    <link rel="stylesheet" type="text/css" href="~/lib/viho/assets/css/chartist.css">
+    <link rel="stylesheet" type="text/css" href="~/lib/viho/assets/css/prism.css">
+    <link rel="stylesheet" type="text/css" href="~/lib/viho/assets/css/vector-map.css">
+    <link rel="stylesheet" type="text/css" href="~/lib/viho/assets/css/select2.css">
+    <link rel="stylesheet" type="text/css" href="~/lib/viho/assets/css/jsgrid.css">
+    <link rel="stylesheet" type="text/css" href="~/lib/viho/assets/css/sweetalert2.css">
+    <!-- Plugins css Ends-->
+    <!-- Bootstrap css-->
+    <link rel="stylesheet" type="text/css" href="~/lib/viho/assets/css/bootstrap.css">
+    <!-- App css-->
+    <link rel="stylesheet" type="text/css" href="~/lib/viho/assets/css/style.css?20250203">
+    <link id="color" rel="stylesheet" href="~/lib/viho/assets/css/color-1.css" media="screen">
+
+    <!-- Responsive css-->
+    <link rel="stylesheet" type="text/css" href="~/lib/viho/assets/css/responsive.css">
+    <link rel="stylesheet" type="text/css" href="~/css/site.css?20250122">
+    <link rel="stylesheet" href="~/lib/jsTree/themes/default/style.css" />
+    @*     <link rel="stylesheet" type="text/css" href="~/lib/viho/assets/css/tree.css"> *@
+
+
+
+    <!-- latest jquery-->
+    <script src="~/lib/viho/assets/js/jquery-3.5.1.min.js"></script>
+    <script src="~/lib/jsCookie/js.cookie.min.js"></script>
+    <script src="~/lib//CommonUI/custom.js?202506051406"></script>
+
+    <script src="~/lib/jsTree/jstree3.3.17.min.js"></script>
+    <link rel="stylesheet" type="text/css" href="/lib/viho/assets/css/bootstrap-datetimepicker.min.css?20221007">
+
+</head>
+<body>
+    <style>
+        .invalidcopy {
+            border-color: #dc3545 !important;
+            padding-right: calc(1.5em + 0.75rem) !important;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12' width='12' height='12' fill='none' stroke='%23dc3545'%3e%3ccircle cx='6' cy='6' r='4.5'/%3e%3cpath stroke-linejoin='round' d='M5.8 3.6h.4L6 6.5z'/%3e%3ccircle cx='6' cy='8.2' r='.6' fill='%23dc3545' stroke='none'/%3e%3c/svg%3e") !important;
+            background-repeat: no-repeat !important;
+            background-position: right calc(0.375em + 0.1875rem) center !important;
+            background-size: calc(0.75em + 0.375rem) calc(0.75em + 0.375rem) !important;
+        }
+
+            .invalidcopy:focus {
+                border-color: #dc3545 !important;
+                box-shadow: 0 0 0 0.25rem rgba(220, 53, 69, 0.25) !important;
+            }
+
+
+        .jsgrid-header-row > .jsgrid-header-cell {
+            background-color: rgba(0, 36, 116,0.1);
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__clear {
+            font-size: 21px;
+        }
+    </style>
+
+    @RenderSection("style", false)
+    <script>
+        $(function () {
+            // jsGrid 預設設定
+            jsGrid.setDefaults({
+                width: '100%',
+                pageButtonCount: 5,
+                pageSize: pageDataSource[0].id,
+            });
+            jsGrid.locale("zh-tw");
+            moment.locale('zh-tw');
+            // select2 預設設定
+            $.fn.select2.defaults.set('language', 'zh-TW');
+            $.fn.select2.defaults.set('width', '100%');
+            $.fn.select2.defaults.set('placeholder', { id: '', text: '請選擇', selected: 'selected' });
+
+            $.extend(FormSerializer.patterns, {
+                validate: /^[a-z][a-z0-9_]*(?:\.[a-z0-9_]+)*(?:\[\])?$/i
+            });
+
+            //------HandleBars Helper(start)------
+            //驗證是否為空或是空白
+            Handlebars.registerHelper('ifEmptyOrWhitespace', function (value, options) {
+                if (!value) { return options.fn(this); }
+                return value.replace(/\s*/g, '').length === 0
+                    ? options.fn(this)
+                    : options.inverse(this);
+            });
+            //------HandleBars Helper(end)------
+
+            $.fn.Getids = function () {
+                var dataIds = [];
+                this.find('[data-id]').each(function () {
+                    dataIds.push($(this).data('id'));
+                });
+                return dataIds;
+            };
+
+            $.fn.Getid = function(){
+                var dataIds = [];
+                this.find('[data-id]').each(function () {
+                    dataIds.push($(this).data('id'));
+                });
+                if(dataIds.length==1){
+                    return dataIds[0];
+                }
+                return null;
+            }
+
+            $.fn.Enable = function(){
+                $(this).removeClass('disabledPartialDisplayPool').addClass('partialDisplayPool').attr('data-bs-toggle','modal');
+            }
+
+            $.fn.Disable = function () {
+                $(this).removeClass('partialDisplayPool').addClass('disabledPartialDisplayPool').removeAttr('data-bs-toggle');
+            }
+
+            $.fn.SetTreeDisplayBlock = function(displayList){
+                if (!Array.isArray(displayList)) {
+                    return;
+                }
+                $(this).empty();
+                let domParser = new DOMParser();
+                for (var i = 0; i < displayList.length; i++) {
+                    let htm = `<span class="partialDisplayTag"  > ${displayList[i]}</span>`;
+                    let cntNode = domParser.parseFromString(htm, "text/html").body.childNodes;
+
+                    $(this)[0].appendChild(cntNode[0]);
+                }
+            }
+        });
+    </script>
+    <div class="page-wrapper null compact-wrapper" id="pageWrapper">
+        <!-- Page Header Start-->
+        @await Component.InvokeAsync("FET_RM_Vender.ViewComponents.Header")
+        <!-- Page Header Ends-->
+        <!-- Page Body Start-->
+        <div class="page-body-wrapper null">
+            <!-- Page Sidebar Start-->
+            @await Component.InvokeAsync("FET_RM_Vender.ViewComponents.Menu")
+            <!-- Page Sidebar Ends-->
+            <div class="page-body">
+                <!-- Container-fluid starts-->
+                <div class="container-fluid">
+                    @RenderBody()
+                </div>
+                <!-- Container-fluid Ends-->
+            </div>
+            <!-- footer start-->
+            @*<footer class="footer">
+            <div class="container-fluid">
+            <div class="row">
+            <div class="col-md-6 footer-copyright">
+            <p class="mb-0">Copyright 2021-22 © viho All rights reserved.</p>
+            </div>
+            </div>
+            </div>
+            </footer>*@
+        </div>
+    </div>
+    <script>
+        $(function () {
+            var alertMsg = `@((TempData["Alert"]?.ToString().ToHtmlString()))`;
+            var alertType = '@TempData["AlertType"]?.ToString()';
+            if (!alertType) {
+                alertType = "warning";
+            }
+            if (alertMsg) {
+                swal({
+                    text: alertMsg,
+                    button: '確認',
+                    icon: alertType
+                })
+            }
+
+            $('form').on('submit', function () {
+                $(this).find('.required-cb-group').each(function () {
+                    let cbList = $(this).find('.required-cb')
+                    if (cbList.length > 0) {
+                        let filterList = cbList.filter(':checked')
+                        if (filterList.length == 0) {
+                            $(this).find('.invalid-feedback').css('display', 'block')
+                        }
+                    }
+                    else {
+                        $(this).find('.invalid-feedback').css('display','block')
+                    }
+                })
+            })
+
+            $('.required-cb').on('change',function(){
+                if ($('form[id="submitForm"]').hasClass('was-validated')) {
+                    let cbGroup = $(this).closest('.required-cb-group');
+                    let cbList = cbGroup.find('.required-cb')
+                    if (cbList.length > 0) {
+                        let filterList = cbList.filter(':checked')
+                        if (filterList.length == 0) {
+                            cbGroup.find('.invalid-feedback').css('display', 'block')
+                        }
+                        else {
+                            cbGroup.find('.invalid-feedback').css('display', 'none')
+                        }
+                    }
+                }
+            })
+
+
+
+        });
+
+
+
+
+    </script>
+    <script>
+        $(document)
+        $.ajaxSetup({
+            complete: function (x, e) {
+                if (x.status === 440) {
+                    alert('已登出，請重新登入');
+                    window.location.href = '@Url.Action("Index", "Logout")';
+                } else if (x.status === 403) {
+                    alert("無權限執行此動作");
+                }
+            }
+        });
+    </script>
+    <!-- feather icon js-->
+    <script src="~/lib/viho/assets/js/icons/feather-icon/feather.min.js"></script>
+    <script src="~/lib/viho/assets/js/icons/feather-icon/feather-icon.js"></script>
+    <!-- Sidebar jquery-->
+    <script src="~/lib/viho/assets/js/config.js"></script>
+    <!-- Bootstrap js-->
+    <script src="~/lib/viho/assets/js/bootstrap/popper.min.js"></script>
+    <script src="~/lib/viho/assets/js/bootstrap/bootstrap.min.js"></script>
+    <!-- Plugins JS start-->
+    <script src="~/lib/viho/assets/js/datepicker/date-time-picker/moment.min.js"></script>
+    <script src="~/lib/viho/assets/js/datepicker/date-time-picker/moment-with-locales.min.js"></script>
+    <script src="~/lib/viho/assets/js/datepicker/date-time-picker/i18n/zh-tw.js"></script>
+    <script src="~/lib/viho/assets/js/datepicker/date-time-picker/tempusdominus-bootstrap-4.min.js"></script>
+    <script src="~/lib/viho/assets/js/select2/select2.full.min.js"></script>
+    <script src="~/lib/viho/assets/js/jsgrid/jsgrid.min.js"></script>
+    <script src="~/lib/viho/assets/js/jsgrid/i18n/zh-tw.js"></script>
+    <script src="~/lib/viho/assets/js/form-validation-custom.js"></script>
+    <script src="~/lib/viho/assets/js/sweet-alert/sweetalert.min.js"></script>
+    <script src="~/lib/date/date.js"></script>
+    <!-- Plugins JS Ends-->
+    <!-- Theme js-->
+    <script src="~/lib/viho/assets/js/script.js"></script>
+    <script src="~/lib/viho/assets/js/theme-customizer/customizer.js"></script>
+    <!-- login js-->
+    <!-- Plugin used-->
+    <script src="~/lib/viho/assets/js/sidebar-menu.js?20250122"></script>
+    <script src="~/js/jquery.serialize-object.min.js"></script>
+    <script src="~/js/site.js?20250122"></script>
+    <script src="~/js/handlebars.min-v4.7.7.js"></script>
+    <script src="~/js/common.js?20250218"></script>
+@*     <script src="~/lib/draw/draw.js?20250122"></script> *@
+    <partial name="_Loader">
+    <partial name="_ValidationScriptsPartial">
+    @RenderSection("scripts", false)
+</body>
+</html>

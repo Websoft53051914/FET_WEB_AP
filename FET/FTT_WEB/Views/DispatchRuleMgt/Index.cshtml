@@ -1,0 +1,299 @@
+﻿@{
+    var mapAttr = new
+    {
+        IdGrid = Guid.NewGuid(),
+        IdCategory = Guid.NewGuid(),
+    };
+}
+
+<div class="container-fluid">
+    <div class="page-header" style="padding-bottom:20px">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>派工規則維護</h3>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Home" data-bs-original-title="" title="">首頁</a></li>
+                    <li class="breadcrumb-item">功能</li>
+                    <li class="breadcrumb-item active"><a href="" data-bs-original-title="" title="">派工規則維護</a></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="card mb-2">
+        <div class="card-body py-3 card-body-reduction">
+            <div class="row  mb-2">
+
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">報修類別</label>
+                    @await Html.PartialAsync("Form/_ItemsTree", new CommonPartailVM() { ComponentId = mapAttr.IdCategory.ToString() })
+                </div>
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">報修廠商</label>
+                    <input class="form-control" />
+                </div>
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">報修門市</label>
+                    <input class="form-control" />
+                </div>
+
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">公司別</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                        <option value="1">FET</option>
+                    </select>
+                </div>
+
+
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">店格</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                        <option>RETAIL</option>
+                        <option>FRANCHISE</option>
+                        <option>MINI FRANCHISE</option>
+                        <option>REGIONAL CENTER</option>
+                        <option>BOOTH</option>
+                        <option>G5</option>
+                        <option>G5S</option>
+                    </select>
+                </div>
+
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">通路</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                        <option value="1">RETAIL</option>
+                        <option value="2">FRANCHISE</option>
+                    </select>
+                </div>
+
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">區域</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                        <option>N1</option>
+                        <option>N2</option>
+                    </select>
+                </div>
+
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">是否保固</label>
+                    <select class="form-control select2-Clear">
+                        <option></option>
+                        <option>Y</option>
+                        <option>N</option>
+                    </select>
+                </div>
+
+            </div>
+            <button class="btn btn-primary">送出查詢</button>
+            <button class="btn  btn-info">匯出Excel</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="mb-2">
+                <a class="btn btn-primary" href="@(Url.Action("Edit"))">新增</a>
+            </div>
+            <div id="@(mapAttr.IdGrid)"></div>
+            <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
+                <div id="pageResizer" class="jsgrid-pager-page">
+                    <span>每頁筆數:</span>
+                    <select id="pageSelect">
+                    </select>
+                </div>
+                <div id="pagers">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@* bootstrap modal for area *@
+<div class="modal fade" id="areaModal" tabindex="-1" role="dialog" aria-labelledby="areaModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="areaModalLabel">區域更新</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-5">
+                    <h5>直營門市</h5>
+                    <hr />
+                    <input type="file" class="form-control" id="" accept=".xlsx, .xls">
+                    <button class="btn btn-primary mt-2">匯入資料</button>
+                    <button class="btn btn-primary mt-2">匯出資料</button>
+                </div>
+                <div class="mt-5">
+                    <h5>加盟門市</h5>
+                    <hr />
+                    <input type="file" class="form-control" id="" accept=".xlsx, .xls">
+                    <button class="btn btn-primary mt-2">匯入資料</button>
+                    <button class="btn btn-primary mt-2">匯出資料</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script>
+
+        const context = {
+            $Grid: $("#@(mapAttr.IdGrid)"),
+        };
+
+        $(function () {
+            initGrid(1);
+
+            $("#pageSelect").on("change", function () {
+                const val = this.value;
+                onPageLenghtSelect(val, context.$Grid);
+            })
+
+            $("#pageSelect").select2({
+                minimumResultsForSearch: -1,
+                data: pageDataSource
+            });
+            $("#pageSelect").data("select2").$container.addClass("w-auto");
+
+            $('.initDatepicker').datetimepicker({
+                format: 'YYYY/MM/DD',
+            });
+
+            $(".select2-Clear").select2({
+                placeholder: "請選擇",
+                allowClear: true,
+            });
+        });
+
+        function initGrid(cookiePageIndex) {
+            $("#@(mapAttr.IdGrid)").jsGrid({
+                pageIndex: cookiePageIndex,
+                paging: true,
+                width: "100%",
+                pageSize: pageDataSource[0].id,
+                pageButtonCount: 5,
+                pagerFormat: "{first} {prev} {pages} {next} {last}    第 {pageIndex} 頁 共 {pageCount} 頁",
+                pagePrevText: "上一頁",
+                pageNextText: "下一頁",
+                pageFirstText: "第一頁",
+                pageLastText: "最後一頁",
+                // pageLoading: true,
+                // autoload: true,
+                changePageSize: function (pageSize) {
+                    var $this = this;
+                    $this.pageSize = pageSize;
+
+                    context.$Grid.jsGrid("openPage", 1);
+                },
+                pagerContainer: "#pagers",
+                onDataLoaded: function () {
+                    feather.replace();
+                },
+                data: [
+                    { Id: 1, VendorId: 54, VendorName: "廠商A", IVR_CODE: "1515,454,45,48,7,8,9,41,445", CategoryId: "",
+
+                        CategoryName: "機電設備-燈具 -賣場天花板3U燈具,招牌設備-招牌燈 -包柱燈箱燈管,招牌設備-招牌本體-包柱燈箱 -騎樓招牌",
+                        Warranty: "Y"
+                    },
+                    {
+                        Id: 2,
+                        VendorId: 487,
+                        VendorName: "廠商B",
+                        IVR_CODE: "877,7,879,8,745,49,8489",
+                        CategoryId: "",
+                        CategoryName: "傢俱設備-傢俱本體 -G5S－形象牆(無投射燈),保全-系統測試 -遠端視訊,空調設備-空調 -後場空調",
+                        Warranty: "N"
+                    },
+                    { Id: 3, VendorId: 4894, VendorName: "廠商C",
+                        IVR_CODE: "2351,564,874,98,45,7,984",
+                        CategoryId: "",
+                        CategoryName: "裝潢設備-騎樓 -騎樓二丁掛磁磚包柱,機電設備-燈泡 -騎樓天花板3U燈泡(管) ,機電設備-燈泡 -軌道投射燈泡(管)",
+                        Warranty: "Y"
+                    }
+                ],
+                // controller: {
+                //     loadData: function (filter) {
+                //         var d = $.Deferred();
+                //         $.ajax({
+                //             type: "POST",
+                //             url: "@Url.Action("GetPageList")",
+                //             data: filter,
+                //             dataType: "json",
+                //             success: function (res) {
+                //                 if (res.Success === false) {
+                //                     swal({
+                //                         text: res.Message,
+                //                         icon: "error",
+                //                         button: "確認"
+                //                     });
+                //                     d.reject();
+                //                     return;
+                //                 }
+                //                 var da = {
+                //                     data: res.Data,
+                //                     itemsCount: res.Total
+                //                 }
+                //                 d.resolve(da);
+                //             }
+                //         })
+
+                //         return d.promise();
+                //     }
+                // },
+                fields: [
+                    { name: "Id", visible: false },
+                    {
+                        type: 'control', align: "center",
+                        width: 60,
+                        editButton: false,
+                        deleteButton: false,
+                        headerTemplate: (value, item) => {
+                            return $("<div>操作<div>").attr({ class: '' });
+                        },
+                        itemTemplate: (value, item) => {
+
+                            $editButton = $('<a>')
+                                .attr({
+                                    'class': 'jsgrid-button jsgrid-edit-button d-inline-block',
+                                    'href': "",
+                                })
+
+                            $deleteButton = $('<button>')
+                                .attr({
+                                    'class': 'exclick jsgrid-button jsgrid-delete-button',
+                                })
+
+                            var result = $('<div>').append($editButton);
+                            result.append($deleteButton);
+
+                            return result;
+                        }
+                    },
+                    // 1. 編號 2.IVR_CODE 3.類別ID 4.類別名稱 5.保固 6.廠商ID 7.廠商名稱
+                    { name: "Id", title: "編號", type: "text", width: 50, align: "center" },
+                    { name: "VendorId", title: "廠商ID", type: "text", width: 100, align: "center" },
+                    { name: "VendorName", title: "廠商名稱", type: "text", width: 150, align: "center" },
+                    { name: "IVR_CODE", title: "IVR_CODE", type: "text", width: 100, align: "center" },
+                    { name: "CategoryId", title: "類別ID", type: "text", width: 100, align: "center" },
+                    { name: "CategoryName", title: "類別名稱", type: "text", width: 150, align: "center" },
+                    { name: "Warranty", title: "保固", type: "text", width: 80, align: "center" },
+
+                ],
+
+        });
+
+            //分頁頁數紀錄相關
+            context.$Grid.jsGrid('_setPage', cookiePageIndex);//jsgrid bug 不會自動將頁碼設定成pageindex
+        }
+
+    </script>
+}

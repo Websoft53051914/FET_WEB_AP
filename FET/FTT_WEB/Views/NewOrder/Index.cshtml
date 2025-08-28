@@ -1,0 +1,90 @@
+﻿@model NewOrderVM
+
+<div class="container-fluid">
+    <div class="page-header" style="padding-bottom:20px">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>新開單</h3>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Home" data-bs-original-title="" title="">首頁</a></li>
+                    <li class="breadcrumb-item">功能</li>
+                    <li class="breadcrumb-item active"><a href="" data-bs-original-title="" title="">新開單</a></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-body" style="margin:0 !important ; padding:20px !important">
+            @await Html.PartialAsync("Form/_FormTable_NewOrder", Model, ViewData)
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script>
+        var context = context || {};
+
+        $(function () {
+            initFormTable({
+                Type: 1
+            });
+        });
+
+        $('#rmBtn_Create').on('click', function (e) {
+            if (context.TTItemList.count == 0) {
+                swal({
+                    text: '請先新增報修資料，謝謝！',
+                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            let formData = $('#form').serializeObject();
+            let data = {};
+            $.extend(data, formData);
+            showLoader();
+            $.ajax({
+                url: '@(Url.Action("Create")?.ToHtmlString())',
+                dataType: 'json',
+                type: 'POST',
+                data: data,
+                cache: false
+            })
+                .done((response) => {
+                    if (response.Success) {
+                        swal({
+                            text: response['Data'],
+                            button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                            icon: 'success'
+                        }).then((result) => {
+                            console.log('window.opener', window.opener);
+                            if (window.opener) {
+                                window.opener.location.reload();
+                            }
+                            else {
+                                location.reload();
+                            }
+                        });
+                    }
+                    else {
+                        swal({
+                            text: response['Message'],
+                            button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                            icon: 'error'
+                        });
+                    }
+                })
+                .fail((err) => {
+                    console.log(err);
+                })
+                .always(() => {
+                    hideLoader();
+                });
+        });
+    </script>
+}

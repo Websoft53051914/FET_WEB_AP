@@ -1,0 +1,281 @@
+﻿@{
+    ViewData["EventName"] = "CategorySelected";
+
+    string TreeModalId = Guid.NewGuid().ToString();
+    ViewData["TreeModalId"] = TreeModalId;
+}
+
+<style>
+    .table-header {
+        background-color: #e9e9e9 !important;
+    }
+</style>
+<div  >
+    <div class="table-responsive  bg-white" style="overflow-y: hidden;">
+        <table class="table table-bordered align-middle" style="table-layout: fixed;">
+            <tbody>
+                <tr>
+                    <th colspan="6" class="table-header text-primary fs-6 ps-3 rmTable_Header" id="rmTable_Header1">
+                        請填寫相關資料，以利後續報修處理 !
+                    </th>
+                </tr>
+                <tr>
+                    <th class="table-header ">公司別</th>
+                    <td>KGT</td>
+                    <th class="table-header ">店格</th>
+                    <td>CONCEPT STORE</td>
+                    <th class="table-header">IVR Code</th>
+                    <td>2401</td>
+                </tr>
+                <tr>
+                    <th class="table-header">通路</th>
+                    <td>CONCEPT</td>
+                    <th class="table-header">區域</th>
+                    <td>N</td>
+                    <th class="table-header">店名</th>
+                    <td>遠傳集團-旗艦店</td>
+                </tr>
+                <tr>
+                    <th class="table-header">eMails</th>
+                    <td>KGFLAGSHIP</td>
+                    <th class="table-header">店長/聯絡人</th>
+                    <td>王美虹</td>
+                    <th class="table-header">緊急電話</th>
+                    <td>02-23888825 轉1680</td>
+                </tr>
+                <tr>
+                    <th class="table-header">區經理 / 業務</th>
+                    <td>朱欣文</td>
+                    <th class="table-header">店長電話</th>
+                    <td>0936-062-442</td>
+                    <th rowspan="4" class="table-header">營業時間</th>
+                    <td rowspan="4" style="text-wrap:wrap">
+                        週一～五 1100～2030，
+                        星期六 1100～2100
+                    </td>
+                </tr>
+                <tr>
+                    <th class="table-header">裝潢型態</th>
+                    <td>Deployment</td>
+                    <th class="table-header">傳真電話</th>
+                    <td></td>
+                </tr>
+                <tr>
+                    <th class="table-header">地址</th>
+                    <td colspan="3">XXXXX</td>
+                </tr>
+                <tr>
+                    <th class="table-header">備註</th>
+                    <td colspan="3"></td>
+                </tr>
+
+                <tr>
+                    <th class="table-header">開單者</th>
+                    <td>
+                        <input class="form-control" />
+                    </td>
+                    <th class="table-header">開單者連絡電話</th>
+                    <td>
+                        <input class="form-control" />
+                    </td>
+                    <th class="table-header">報修型態</th>
+                    <td>
+                        <select class="form-control initSelect2">
+                            <option></option>
+                            <option>一般</option>
+                            <option>緊急 (新開單)</option>
+                            <option>緊急 (補單)</option>
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th class="table-header">報修品項</th>
+                    <td colspan="2">
+                        <button class="btn  btn-info" id="rmBtn_SelectItems">選擇項目</button>
+                    </td>
+                    <th colspan="3"></th>
+                </tr>
+
+                <tr>
+                    <th class="table-header">一個月內覆修</th>
+                    <td>
+                        <div class="d-flex gap-4 justify-content-center align-items-center" >
+                            <label role="button">
+                                <input type="radio" name="r1" /> 是
+                            </label>
+                            <label role="button">
+                                <input type="radio" name="r1" /> 否
+                            </label>
+                        </div>
+                    </td>
+
+                    <th class="table-header">補單</th>
+                    <td>
+                        <div class="d-flex gap-4 justify-content-center align-items-center">
+                            <label>
+                                <input type="radio" name="r2" /> 是
+                            </label>
+                            <label>
+                                <input type="radio" name="r2" /> 否
+                            </label>
+                        </div>
+                    </td>
+
+                    <th class="table-header">門市自尋尋商</th>
+                    <td id="SelfFindBussiness">
+                        
+                    </td>
+                </tr>
+
+                <tr>
+                    <th class="table-header">報修日期</th>
+                    <td>
+                        <input class="form-control" type="date" />
+                    </td>
+                    <th class="table-header" rowspan="3">報修品項圖樣</th>
+                    <td rowspan="3">
+                    </td>
+                    <th class="table-header">報修廠商</th>
+                    <td>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th class="table-header">驗收日</th>
+                    <td>
+                        <input class="form-control" type="date" />
+                    </td>
+                    <th class="table-header">報修廠商聯絡人</th>
+                    <td>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th class="table-header">保固期日期</th>
+                    <td>
+                        <input class="form-control" type="date" />
+                    </td>
+                    <th class="table-header">報修廠商聯絡電話</th>
+                    <td>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th colspan="6" class="table-header text-primary fs-6 ps-3 rmTable_Header" id="rmTable_Header2">
+                        報修品項事項及狀況描述
+                    </th>
+                </tr>
+
+                <tr>
+                    <th class="table-header">報修品項檢查事項</th>
+                    <td colspan="5"></td>
+                </tr>
+
+                <tr>
+                    <th class="table-header">報修品項狀況描述</th>
+                    <td colspan="5">
+                        <label>
+                            <input type="checkbox" name="c1" /> 脫落或損壞
+                        </label>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th class="table-header">報修描述與備註</th>
+                    <td colspan="5" class="p-1">
+                        <textarea class="form-control" rows="3"></textarea>
+                    </td>
+                </tr>
+
+                <tr>
+                    <th colspan="6" class="text-end">
+                        <button class="btn btn-info" id="rmBtn_Add">新增資料</button>
+                    </th>
+                </tr>
+
+                <tr>
+                    <td colspan="6">
+                        <div class="table-responsive  bg-white pt-1">
+                            <table class="table table-bordered align-middle" style="table-layout: fixed;">
+                                <tbody>
+                                    <tr>
+                                        <th style="width:50px">刪</th>
+                                        <th>維修品項</th>
+                                        <th>維修廠商</th>
+                                        <th>狀況描述</th>
+                                        <th>報修備註</th>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <i class="icofont icofont-ui-delete text-danger  rmClass_DeleteDetail" role="button"></i>
+                                        </td>
+                                        <td>保全系統</td>
+                                        <td>XX</td>
+                                        <td>保全主機損壞</td>
+                                        <td>請儘速處理</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td colspan="6" class="text-center">
+                        <button class="btn btn-primary" id="rmBtn_Create">開立報修單</button>
+                    </td>
+                </tr>
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<partial name="Form/_RMItemListSelfVendor" view-data='new ViewDataDictionary(ViewData)' />
+<partial name="Form/_RMItemTree" view-data='new ViewDataDictionary(ViewData)' />
+
+
+<script>
+
+    //initModel.Type : 1.新開單  , 2.自行尋商
+    function initFormTable (initModel) {
+        if (initModel.Type === 1) {
+            $("#rmBtn_SelectItems").on("click", function () {
+                $("#@(TreeModalId)").modal("show");
+            });
+            $("#SelfFindBussiness").text("N");
+        }
+        else if (initModel.Type === 2)
+        {
+            $("#rmBtn_SelectItems").on("click", function () {
+                $("#RMItemListSelfVendorModal").modal("show");
+            });
+            $("#SelfFindBussiness").text("Y");
+        }
+        else if (initModel.Type === 3){
+            $("#rmBtn_SelectItems").remove();
+            $("#rmBtn_Add").remove();
+            $("#rmBtn_Create").remove();
+            $(".rmClass_DeleteDetail").remove();
+            $("#rmTable_Header1").html("");
+            $("#rmTable_Header1").append("門市資訊")
+
+            let statusSpan = $("<span class='text-success' style='float:right;background-color: cornsilk;'></span").html("*目前表單狀態: 審單中")
+            $("#rmTable_Header1").append(statusSpan);
+        }
+    }
+
+    $(document).on("CategorySelected",function(event,data){
+        $("#rmBtn_SelectItems").text(data.selectedItemText);
+    });
+
+    $(function () {
+        //initSelect2
+        $(".initSelect2").select2({
+            placeholder: "請選擇",
+            allowClear: true
+        });
+    });
+
+</script>

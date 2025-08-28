@@ -1,0 +1,114 @@
+﻿@model HomeMenuVM
+
+@{
+
+    var account = ViewData["account"];
+
+}
+@functions {
+    private void BuildMenu(string previouCode)
+    {
+        <div id="mainnav">
+            <ul class="nav-menu custom-scrollbar" style="display: block; height: calc(100vh - 83px); padding-top: 30px">
+                <li class="back-btn">
+                    <div class="mobile-back text-end"><span>Back</span><i class="fa fa-angle-right ps-2" aria-hidden="true"></i></div>
+                </li>
+
+
+                <li class="sidebar-main-title">
+                    @*<div>
+                        <h6></h6>
+                    </div>*@
+                </li>
+                @foreach (var node in Model.TreeData)
+                {
+
+                    bool isNodeActive = node.Value.Any(item => item.IsActive);
+                    string aClass = isNodeActive ? "active" : "";
+                    string ulStyle = isNodeActive ? "block" : "none";
+                    <li class="dropdown first">
+                        <a class="nav-link menu-title @(aClass)  " href="javascript:void(0)">
+                            <i data-feather="align-justify">
+                            </i>
+                            <span>@node.Key</span>
+                        </a>
+                        <ul class="nav-submenu menu-content" style="display:@ulStyle">
+
+                            @foreach (var item in node.Value)
+                            {
+                                <li>
+                                    <a class="spa-link" href="@Url.Content(item.Url)?FuncId=@(item.FuncId)&className=@(Uri.EscapeUriString(node.Key))" data-feature="@item.Url">
+                                        @Html.Raw(item.FuncName)
+                                        @if (item.DataCount != null)
+                                        {
+                                            <span class="txt-cnt">(@item.DataCount)</span>
+                                        }
+                                    </a>
+                                </li>
+                            }
+                        </ul>
+                    </li>
+                }
+            </ul>
+        </div>
+
+
+        //<h3 id="firstTitle" style="color: var(--main_color); font-weight: 600; cursor: pointer;">長照系統</h3>
+        //foreach (var node in Model.TreeData)
+        //{
+        //    <li class="dropdown first">
+        //        <a class="nav-link menu-title" href="javascript:void(0)">
+        //            <i data-feather="@node.Value.FirstOrDefault().Icon">
+        //            </i>
+        //            <span>@node.Key</span>
+        //        </a>
+        //        <ul class="nav-submenu menu-content">
+
+        //            @foreach (var item in node.Value)
+        //            {
+        //                <li>
+        //                    <a href="@Url.Content(item.Url)?className=@(Uri.EscapeUriString(node.Key))" data-bs-original-title="" title="">@item.FuncName</a>
+        //                </li>
+        //            }
+        //        </ul>
+        //    </li>
+        //}
+
+
+        //if (Model.TreeData2 != null && Model.TreeData2.Count > 0)
+        //{
+        //    <hr />
+        //    <h3 id="secondTitle" style=" color: var(--main_color); font-weight: 600; cursor: pointer;">關懷服務</h3>
+        //    foreach (var node in Model.TreeData2)
+        //    {
+        //        <li class="dropdown second">
+        //            <a class="nav-link menu-title" href="javascript:void(0)">
+        //                <i data-feather="@node.Value.FirstOrDefault().Icon">
+        //                </i>
+        //                <span>@node.Key</span>
+        //            </a>
+        //            <ul class="nav-submenu menu-content">
+
+        //                @foreach (var item in node.Value)
+        //                {
+        //                    <li>
+        //                        <a href="@Url.Content(item.Url)?className=@(Uri.EscapeUriString(node.Key))" data-bs-original-title="" title="">@item.FuncName</a>
+        //                    </li>
+        //                }
+        //            </ul>
+        //        </li>
+        //    }
+        //}
+    }
+}
+<header class="main-nav">
+    <nav>
+        <div class="main-navbar">
+            <div class="left-arrow" id="left-arrow"><i data-feather="arrow-left"></i></div>
+            @{
+                BuildMenu("");
+            }
+            <div class="right-arrow" id="right-arrow"><i data-feather="arrow-right"></i></div>
+        </div>
+    </nav>
+</header>

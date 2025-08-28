@@ -1,0 +1,183 @@
+﻿@{
+    var mapAttr = new
+    {
+        IdGrid = Guid.NewGuid(),
+    };
+}
+
+<div class="container-fluid">
+    <div class="page-header" style="padding-bottom:20px">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>例外派工維護</h3>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Home" data-bs-original-title="" title="">首頁</a></li>
+                    <li class="breadcrumb-item">功能</li>
+                    <li class="breadcrumb-item active"><a href="" data-bs-original-title="" title="">例外派工維護</a></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+
+    <div class="card mb-2">
+        <div class="card-body py-3 card-body-reduction">
+            <div class="row  mb-2">
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">門市</label>
+                    <input type="text" class="form-control" placeholder="">
+                </div>
+            </div>
+            <button class="btn btn-primary">送出查詢</button>
+            <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#BatchModal">資料更新</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div id="@(mapAttr.IdGrid)"></div>
+            <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
+                <div id="pageResizer" class="jsgrid-pager-page">
+                    <span>每頁筆數:</span>
+                    <select id="pageSelect">
+                    </select>
+                </div>
+                <div id="pagers">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="BatchModal" tabindex="-1" role="dialog" aria-labelledby="BatchModal" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="BatchModalLabel">資料匯入</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input class="form-control" type="file" style="max-width:500px" />
+                <div class="text-warningv2 mt-2" role="alert">
+                    <p>執行註記 (A:新增  U:更新  D:刪除 )</p>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" type="button">匯入資料</button>
+                <button class="btn btn-primary" type="button">匯出資料</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts
+{
+    <script>
+
+        const context = {
+            $Grid: $("#@(mapAttr.IdGrid)"),
+        };
+
+        $(function () {
+            initGrid(1);
+
+            $("#pageSelect").on("change", function () {
+                const val = this.value;
+                onPageLenghtSelect(val, context.$Grid);
+            })
+
+            $("#pageSelect").select2({
+                minimumResultsForSearch: -1,
+                data: pageDataSource
+            });
+            $("#pageSelect").data("select2").$container.addClass("w-auto");
+
+            $('.initDatepicker').datetimepicker({
+                format: 'YYYY/MM/DD',
+            });
+
+            $(".select2-Clear").select2({
+                placeholder: "請選擇",
+                allowClear: true,
+            });
+        });
+
+        function initGrid(cookiePageIndex) {
+            $("#@(mapAttr.IdGrid)").jsGrid({
+                pageIndex: cookiePageIndex,
+                paging: true,
+                width: "100%",
+                pageSize: pageDataSource[0].id,
+                pageButtonCount: 5,
+                pagerFormat: "{first} {prev} {pages} {next} {last}    第 {pageIndex} 頁 共 {pageCount} 頁",
+                pagePrevText: "上一頁",
+                pageNextText: "下一頁",
+                pageFirstText: "第一頁",
+                pageLastText: "最後一頁",
+                // pageLoading: true,
+                // autoload: true,
+                changePageSize: function (pageSize) {
+                    var $this = this;
+                    $this.pageSize = pageSize;
+
+                    context.$Grid.jsGrid("openPage", 1);
+                },
+                pagerContainer: "#pagers",
+                onDataLoaded: function () {
+                    feather.replace();
+                },
+                data: [
+                    { Id: 1, CISID: 123456, VendorId: 1001, VendorName: "廠商A", IVR_CODE: "IVR001", StoreName: "門市A", InspectionDate: "2023/10/01" },
+                    { Id: 2, CISID: 123457, VendorId: 1002, VendorName: "廠商B", IVR_CODE: "IVR002", StoreName: "門市B", InspectionDate: "2023/10/02" },
+                    { Id: 3, CISID: 123458, VendorId: 1003, VendorName: "廠商C", IVR_CODE: "IVR003", StoreName: "門市C", InspectionDate: "2023/10/03" }
+                ],
+                // controller: {
+                //     loadData: function (filter) {
+                //         var d = $.Deferred();
+                //         $.ajax({
+                //             type: "POST",
+                //             url: "@Url.Action("GetPageList")",
+                //             data: filter,
+                //             dataType: "json",
+                //             success: function (res) {
+                //                 if (res.Success === false) {
+                //                     swal({
+                //                         text: res.Message,
+                //                         icon: "error",
+                //                         button: "確認"
+                //                     });
+                //                     d.reject();
+                //                     return;
+                //                 }
+                //                 var da = {
+                //                     data: res.Data,
+                //                     itemsCount: res.Total
+                //                 }
+                //                 d.resolve(da);
+                //             }
+                //         })
+
+                //         return d.promise();
+                //     }
+                // },
+                fields: [
+                    // CISID , 報修類別 , 廠商代碼 , 廠商名稱 , IVR_CODE , 門市名稱 ,驗收日期
+                    { name: "CISID", title: "CISID", type: "number", width: 100, align: "center" },
+                    { name: "VendorId", title: "廠商代碼", type: "number", width: 100, align: "center" },
+                    { name: "VendorName", title: "廠商名稱", type: "text", width: 150, align: "center" },
+                    { name: "IVR_CODE", title: "IVR_CODE", type: "text", width: 200, align: "center" },
+                    { name: "StoreName", title: "門市名稱", type: "text", width: 200, align: "center" },
+                    { name: "InspectionDate", title: "驗收日期", type: "text", width: 200, align: "center" },
+                ],
+
+        });
+
+            //分頁頁數紀錄相關
+            context.$Grid.jsGrid('_setPage', cookiePageIndex);//jsgrid bug 不會自動將頁碼設定成pageindex
+        }
+
+    </script>
+}

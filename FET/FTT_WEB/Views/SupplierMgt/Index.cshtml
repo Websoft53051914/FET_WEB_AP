@@ -1,0 +1,230 @@
+﻿@{
+    var mapAttr = new
+    {
+        IdGrid = Guid.NewGuid(),
+    };
+}
+
+<div class="container-fluid">
+    <div class="page-header" style="padding-bottom:20px">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>廠商資料維護</h3>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Home" data-bs-original-title="" title="">首頁</a></li>
+                    <li class="breadcrumb-item">後端功能</li>
+                    <li class="breadcrumb-item active"><a href="" data-bs-original-title="" title="">廠商資料維護</a></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="card mb-2">
+        <div class="card-body py-3 card-body-reduction">
+            <div class="row  mb-2">
+
+                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                    <label class="col-form-label websoft-form-label pt-2">報修門市</label>
+                    <input type="text" class="form-control" placeholder="">
+                </div>
+            </div>
+            <button class="btn btn-primary">送出查詢</button>
+        </div>
+    </div>
+
+    <div class="card">
+        <div class="card-body">
+            <div class="mb-2">
+                <a class="btn btn-primary" href="@(Url.Action("Edit"))">新增</a>
+            </div>
+            <div id="@(mapAttr.IdGrid)"></div>
+            <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
+                <div id="pageResizer" class="jsgrid-pager-page">
+                    <span>每頁筆數:</span>
+                    <select id="pageSelect">
+                    </select>
+                </div>
+                <div id="pagers">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+@section scripts
+{
+    <script>
+
+        const context = {
+            $Grid: $("#@(mapAttr.IdGrid)"),
+        };
+
+        $(function () {
+            initGrid(1);
+
+            $("#pageSelect").on("change", function () {
+                const val = this.value;
+                onPageLenghtSelect(val, context.$Grid);
+            })
+
+            $("#pageSelect").select2({
+                minimumResultsForSearch: -1,
+                data: pageDataSource
+            });
+            $("#pageSelect").data("select2").$container.addClass("w-auto");
+
+            $('.initDatepicker').datetimepicker({
+                format: 'YYYY/MM/DD',
+            });
+
+            $(".select2-Clear").select2({
+                placeholder: "請選擇",
+                allowClear: true,
+            });
+        });
+
+        function initGrid(cookiePageIndex) {
+            $("#@(mapAttr.IdGrid)").jsGrid({
+                pageIndex: cookiePageIndex,
+                paging: true,
+                width: "100%",
+                pageSize: pageDataSource[0].id,
+                pageButtonCount: 5,
+                pagerFormat: "{first} {prev} {pages} {next} {last}    第 {pageIndex} 頁 共 {pageCount} 頁",
+                pagePrevText: "上一頁",
+                pageNextText: "下一頁",
+                pageFirstText: "第一頁",
+                pageLastText: "最後一頁",
+                // pageLoading: true,
+                // autoload: true,
+                changePageSize: function (pageSize) {
+                    var $this = this;
+                    $this.pageSize = pageSize;
+
+                    context.$Grid.jsGrid("openPage", 1);
+                },
+                pagerContainer: "#pagers",
+                onDataLoaded: function () {
+                    feather.replace();
+                },
+                data: [
+                    // Sample data for initial load
+                    {
+                        Id: 1,
+                        Order_Id: "001",
+                        Merchant_Name: "廠商A",
+                        CP_Name: "聯絡人A",
+                        CP_Tel: "0912345678",
+                        Email: "fsfsfdsf@@gmail.com.",
+                        Merchant_Login: "merchantA",
+                        Merchant_Password: "passwordA"
+                    },
+                    {
+                        Id: 2,
+                        Order_Id: "002",
+                        Merchant_Name: "廠商B",
+                        CP_Name: "聯絡人B",
+                        CP_Tel: "0987654321",
+                        Email: "fsfsfdsf@@gmail.com.",
+                        Merchant_Login: "merchantB",
+                        Merchant_Password: "passwordB"
+                    },
+                    {
+                        Id: 3,
+                        Order_Id: "003",
+                        Merchant_Name: "廠商C",
+                        CP_Name: "聯絡人C",
+                        CP_Tel: "0922333444",
+                        Email: "fsfsfdsf@@gmail.com.",
+                        Merchant_Login: "merchantC",
+                        Merchant_Password: "passwordC"
+                    }
+                ],
+                // controller: {
+                //     loadData: function (filter) {
+                //         var d = $.Deferred();
+                //         $.ajax({
+                //             type: "POST",
+                //             url: "@Url.Action("GetPageList")",
+                //             data: filter,
+                //             dataType: "json",
+                //             success: function (res) {
+                //                 if (res.Success === false) {
+                //                     swal({
+                //                         text: res.Message,
+                //                         icon: "error",
+                //                         button: "確認"
+                //                     });
+                //                     d.reject();
+                //                     return;
+                //                 }
+                //                 var da = {
+                //                     data: res.Data,
+                //                     itemsCount: res.Total
+                //                 }
+                //                 d.resolve(da);
+                //             }
+                //         })
+
+                //         return d.promise();
+                //     }
+                // },
+                fields: [
+                    { name: "Id", visible: false },
+                    {
+                        type: 'control', align: "center",
+                        width: 100,
+                        editButton: false,
+                        deleteButton: false,
+                        headerTemplate: (value, item) => {
+                            return $("<div>操作<div>").attr({ class: '' });
+                        },
+                        itemTemplate: (value, item) => {
+
+                            $div = $('<div>')
+
+                            $editButton = $('<a>')
+                                .attr({
+                                    'class': 'jsgrid-button jsgrid-edit-button d-inline-block',
+                                    'href': "",
+                                })
+
+                            $deleteButton = $('<button>')
+                                .attr({
+                                    'class': 'd-inline-block exclick jsgrid-button jsgrid-delete-button',
+                                })
+
+                            $sendEmail = $('<button>').attr({
+                                    'class': 'jsgrid-button  d-inline-block',
+                                    'title': '送出密碼郵件'
+                                }).append('<i class="fa fa-envelope" aria-hidden="true"></i>').css({ 'background': 'none' , 'font-size':'17px','color': 'cadetblue'})
+
+                            var result = $div.append($editButton);
+                            result.append($deleteButton);
+                            result.append($sendEmail);
+
+                            return result;
+                        }
+                    },
+                    // 1. 編號 Order_Id  2.廠商名稱 merchant_name 3.聯絡人姓名 CP_Name 4.聯絡人電話 CP_Tel  5.Email 6.登入帳號Merchant_Login 7.登入密碼Merchant_Password
+                    {name: "Order_Id", title: "編號", type: "text", width: 150, align: "center"},
+                    {name: "Merchant_Name", title: "廠商名稱", type: "text", width: 150, align: "center"},
+                    {name: "CP_Name", title: "聯絡人姓名", type: "text", width: 150, align: "center"},
+                    {name: "CP_Tel", title: "聯絡人電話", type: "text", width: 150, align: "center"},
+                    {name: "Email", title: "Email", type: "text", width: 150, align: "center"},
+                    {name: "Merchant_Login", title: "登入帳號", type: "text", width: 150, align: "center"},
+                    {name: "Merchant_Password", title: "登入密碼", type: "text", width: 150, align: "center"},
+
+                ],
+
+        });
+
+            //分頁頁數紀錄相關
+            context.$Grid.jsGrid('_setPage', cookiePageIndex);//jsgrid bug 不會自動將頁碼設定成pageindex
+        }
+
+    </script>
+}

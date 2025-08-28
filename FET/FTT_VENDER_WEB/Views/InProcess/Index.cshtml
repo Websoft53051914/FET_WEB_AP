@@ -1,0 +1,177 @@
+﻿@{
+    var mapAttr = new
+    {
+        IdGrid = Guid.NewGuid(),
+    };
+}
+
+<div class="container-fluid">
+    <div class="page-header" style="padding-bottom:20px">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>處理中</h3>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Home" data-bs-original-title="" title="">首頁</a></li>
+                    <li class="breadcrumb-item">功能</li>
+                    <li class="breadcrumb-item active"><a href="" data-bs-original-title="" title="">處理中</a></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-body">
+            <div id="@(mapAttr.IdGrid)"></div>
+
+            <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
+                <div id="pageResizer" class="jsgrid-pager-page">
+                    <span>每頁筆數:</span>
+                    <select id="pageSelect">
+                    </select>
+                </div>
+                <div id="pagers">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script>
+
+        const context = {
+            $Grid: $("#@(mapAttr.IdGrid)"),
+        };
+
+        $(function () {
+            initGrid(1);
+
+            $("#pageSelect").on("change", function () {
+                const val = this.value;
+                onPageLenghtSelect(val, context.$Grid);
+            })
+
+            $("#pageSelect").select2({
+                minimumResultsForSearch: -1,
+                data: pageDataSource
+            });
+            $("#pageSelect").data("select2").$container.addClass("w-auto");
+        });
+
+        function initGrid(cookiePageIndex) {
+            $("#@(mapAttr.IdGrid)").jsGrid({
+                pageIndex: cookiePageIndex,
+                paging: true,
+                width: "100%",
+                pageSize: pageDataSource[0].id,
+                pageButtonCount: 5,
+                pagerFormat: "{first} {prev} {pages} {next} {last}    第 {pageIndex} 頁 共 {pageCount} 頁",
+                pagePrevText: "上一頁",
+                pageNextText: "下一頁",
+                pageFirstText: "第一頁",
+                pageLastText: "最後一頁",
+                pageLoading: true,
+                autoload: true,
+                changePageSize: function (pageSize) {
+                    var $this = this;
+                    $this.pageSize = pageSize;
+
+                    context.$Grid.jsGrid("openPage", 1);
+                },
+                pagerContainer: "#pagers",
+                onDataLoaded: function () {
+                    feather.replace();
+                },
+                data: [
+                    {
+                        Id :10,
+                        OrderNumber: "123456",
+                        RepairType: "一般",
+                        RepairCategory: "監視系統",
+                        RepairItem: "數位錄影機",
+                        OrderDate: "2023-10-01 16:12:56",
+                        StoreName: "台北南昌",
+                        OrderStatusName: "等待系統派工",
+                        CurrentInchargeName: "王小明"
+                    }
+                ],
+                // controller: {
+                //     loadData: function (filter) {
+                //         var d = $.Deferred();
+                //         $.ajax({
+                //             type: "POST",
+                //             url: "@Url.Action("GetPageList")",
+                //             data: filter,
+                //             dataType: "json",
+                //             success: function (res) {
+                //                 if (res.Success === false) {
+                //                     swal({
+                //                         text: res.Message,
+                //                         icon: "error",
+                //                         button: "確認"
+                //                     });
+                //                     d.reject();
+                //                     return;
+                //                 }
+                //                 var da = {
+                //                     data: res.Data,
+                //                     itemsCount: res.Total
+                //                 }
+                //                 d.resolve(da);
+                //             }
+                //         })
+
+                //         return d.promise();
+                //     }
+                // },
+                fields: [
+                    { name: "Id", visible: false },
+                    {
+                        type: 'control', align: "center",
+                        width: 60,
+                        editButton: false,
+                        deleteButton: false,
+                        headerTemplate: (value, item) => {
+                            return $("<div>操作<div>").attr({ class: '' });
+                        },
+                        itemTemplate: (value, item) => {
+
+                            $editButton = $('<a>')
+                                .attr({
+                                    'class': 'jsgrid-button jsgrid-edit-button d-inline-block',
+                                    'href': "@Url.Action("Index", "FormEdit")",
+                                })
+
+                            $deleteButton = $('<button>')
+                                .attr({
+                                    'class': 'exclick jsgrid-button jsgrid-delete-button',
+                                })
+
+                            var result = $('<div>').append($editButton);
+                            // result.append($deleteButton);
+
+                            return result;
+                        }
+                    },
+                    { name: "OrderNumber", title: "工單號碼", type: "text", width: 100, align: "center" },
+                    { name: "RepairType", title: "報修型態", type: "text", width: 100, align: "center" },
+                    { name: "RepairCategory", title: "報修類別", type: "text", width: 100, align: "center" },
+                    { name: "RepairItem", title: "報修品項", type: "text", width: 150, align: "center" },
+                    { name: "OrderDate", title: "報修日期", type: "text", width: 120, align: "center" },
+                    { name: "StoreName", title: "店名", type: "text", width: 120, align: "center" },
+                    { name: "OrderStatusName", title: "工單狀態", type: "text", width: 100, align: "center" },
+                    { name: "CurrentInchargeName", title: "目前處理者", type: "text", width: 120, align: "center" },
+
+                ],
+
+        });
+
+            //分頁頁數紀錄相關
+            context.$Grid.jsGrid('_setPage', cookiePageIndex);//jsgrid bug 不會自動將頁碼設定成pageindex
+        }
+
+    </script>
+}
