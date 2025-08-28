@@ -4,6 +4,7 @@ using FTT_VENDER_API.Models;
 
 namespace FTT_VENDER_API.Controllers.AlertMsg
 {
+    [Route("[controller]")]
     public partial class AlertMsgController : BaseController
     {
         public AlertMsgController()
@@ -11,6 +12,7 @@ namespace FTT_VENDER_API.Controllers.AlertMsg
 
         }
 
+        [HttpGet("[action]")]
         public IActionResult Redirection(AlertMsgRedirection vm)
         {
             ViewData["IsShowLayout"] = "false";

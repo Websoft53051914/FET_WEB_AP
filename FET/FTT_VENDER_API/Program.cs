@@ -1,9 +1,11 @@
 
 using FTT_VENDER_API.Common.ConfigurationHelper;
 using Microsoft.Extensions.FileProviders;
+
+
 using Microsoft.OpenApi.Models;
 using System.Reflection;
-using static Org.BouncyCastle.Math.EC.ECCurve;
+
 
 IConfiguration Config = new ConfigurationBuilder().AddJsonFile("appSettings.json").Build();
 
@@ -23,8 +25,8 @@ localizationoptions.ApplyCurrentCultureToResponseHeaders = true;
 #endregion
 
 // Add services to the container.
-builder.Services.AddRazorPages();
- 
+//builder.Services.AddRazorPages();
+
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddDistributedMemoryCache();
@@ -51,16 +53,16 @@ builder.Services.AddSession(options =>
 {
     options.Cookie.Name = ".FET_RM_Vender.Session";
     options.IdleTimeout = TimeSpan.FromMinutes(15);
-    options.Cookie.IsEssential = true;
+    //options.Cookie.IsEssential = true; //架設http 非 https 要註解
 
-    options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    //options.Cookie.HttpOnly = true; //架設http 非 https 要註解
+    //options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解
 });
 
 builder.Services.AddAntiforgery(options =>
 {
 
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    //options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解
 });
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -77,6 +79,16 @@ builder.Configuration.AddJsonFile("message.json", optional: true, reloadOnChange
 
 
 builder.Services.AddSingleton<ConfigurationHelper>();
+
+
+
+
+
+
+
+
+
+
 
 var app = builder.Build();
 
@@ -95,7 +107,7 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts();
+    //app.UseHsts(); //架設http 非 https 要註解
 }
 
 app.UseHttpsRedirection();
@@ -109,6 +121,7 @@ app.UseRequestLocalization(localizationoptions);
 app.UseRouting();
 
 
+
 //app.UseCors();
 
 
@@ -116,11 +129,11 @@ app.UseAuthorization();
 
 app.UseSession();
 
-app.MapRazorPages();
+//app.MapRazorPages();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=login}/{action=Index}/{id?}");
+    pattern: "swagger/index.html");
 //pattern: "triptest/{controller=Home}/{action=Index}/{id?}");
 
 app.UseStaticFiles(new StaticFileOptions
