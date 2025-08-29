@@ -1,18 +1,18 @@
-﻿
-
-using Core.Utility.Helper.Message;
+﻿using Core.Utility.Helper.Message;
 using Core.Utility.Web.Base;
-using Microsoft.AspNetCore.Mvc;
 using FTT_API.Common;
 using FTT_API.Models;
-using static Const.Enums;
-using NPOI.SS.Formula.Functions;
+using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 
 namespace FTT_API.Controllers
 {
     public class BaseProjectController : BaseController
     {
+        /// <summary>
+        /// 登入資訊
+        /// </summary>
+        public SessionVO _sessionVO = new();
 
         #region -- Instance --
 
