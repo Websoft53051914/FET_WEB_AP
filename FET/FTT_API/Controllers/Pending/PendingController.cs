@@ -7,6 +7,7 @@ using System.Runtime.Intrinsics.X86;
 
 namespace FTT_API.Controllers.Pending
 {
+    [Route("[controller]")]
     public partial class PendingController : BaseProjectController
     {
         private readonly IConfiguration _config;
@@ -17,17 +18,7 @@ namespace FTT_API.Controllers.Pending
             _hostingEnvironment = hostingEnvironment;
         }
 
-        public IActionResult Index()
-        {
-            maintain_configSQL _maintain_configSQL = new maintain_configSQL();
-            maintain_configDTO dto = _maintain_configSQL.FindByConfigName("HANDLER");
-            if (dto != null)
-            {
-                ViewData["HandlerDesc"] = dto.config_value;
-            }
-            return View();
-        }
-
+        [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, v_ftt_form2DTO vm)
         {
             try

@@ -39,7 +39,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddSession(options =>
 {
-    options.Cookie.Name = ".FTT_WEB.Session";
+    options.Cookie.Name = ".net.core.Session";
     options.IdleTimeout = TimeSpan.FromMinutes(15);
     //options.Cookie.IsEssential = true; //架設http 非 https 要註解
 

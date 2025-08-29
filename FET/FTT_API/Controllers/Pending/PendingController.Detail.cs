@@ -27,6 +27,7 @@ namespace FTT_API.Controllers.Pending
         //protected string RequireField = "";
         //protected string ActionName = "";
 
+        [HttpGet("[action]")]
         public IActionResult Detail(string formNo)
         {
             ViewData["FORM_NO"] = formNo;
@@ -557,7 +558,7 @@ namespace FTT_API.Controllers.Pending
             public string ExpenseType { get; set; }
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         public ActionResult SelectDesc(SelectDescVM vm)
         {
             string ip = Method.GetClientIPAddress();
@@ -591,7 +592,7 @@ namespace FTT_API.Controllers.Pending
             public string REMARK { get; set; }
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         public ActionResult ShowDesc(TemplateConfigVM vm)
         {
             try
@@ -628,7 +629,7 @@ namespace FTT_API.Controllers.Pending
             public decimal form_no { get; set; }
         }
 
-        [HttpPost]
+        [HttpPost("[action]")]
         public ActionResult Add_FTT_FORM_AMOUNT(Add_FTT_FORM_AMOUNT_VM vm)
         {
             //m_Logger.Debug("FORM_ACTION：" + Request.QueryString["FORM_ACTION"]);
@@ -724,7 +725,7 @@ namespace FTT_API.Controllers.Pending
         }
 
 
-        [HttpPost]
+        [HttpPost("[action]")]
         public IActionResult Detail(ftt_formDTO vm)
         {
             var ttt = vm.form_no;

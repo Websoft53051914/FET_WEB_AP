@@ -14,7 +14,7 @@ namespace FTT_WEB.Controllers
             _logger = logger;
         }
 
-        [CustomAuthorizationAttribute(FuncID.Home_View)]
+        //[CustomAuthorizationAttribute(FuncID.Home_View)]
         public IActionResult Index()
         {
             return View();

@@ -51,7 +51,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddSession(options =>
 {
-    options.Cookie.Name = ".FET_RM.Session";
+    options.Cookie.Name = ".net.core.Session";
     options.IdleTimeout = TimeSpan.FromMinutes(15);
     //options.Cookie.IsEssential = true; //架設http 非 https 要註解
 
@@ -88,7 +88,20 @@ builder.Services.AddHangfire(config =>
           );
 builder.Services.AddHangfireServer();
 //builder.Services.AddSingleton<SendMailHandler>();
-builder.Services.AddScoped<SendMailHandler>(); 
+builder.Services.AddScoped<SendMailHandler>();
+
+// 註冊 CORS
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost7234",
+        policy =>
+        {
+            policy.WithOrigins("https://localhost:7234") // 允許的來源
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        });
+});
 
 var app = builder.Build();
 
@@ -121,8 +134,8 @@ app.UseRequestLocalization(localizationoptions);
 app.UseRouting();
 app.UseHangfireDashboard();
 
-
-//app.UseCors();
+// 使用 CORS
+app.UseCors("AllowLocalhost7234");
 
 
 app.UseAuthorization();

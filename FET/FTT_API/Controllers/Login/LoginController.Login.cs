@@ -1,4 +1,5 @@
 ﻿using Core.Utility.Helper.CaptchaCode;
+using DocumentFormat.OpenXml.EMMA;
 using FTT_API.Common;
 using FTT_API.Common.Attribute;
 using FTT_API.Common.ConfigurationHelper;
@@ -10,6 +11,7 @@ using static Const.Enums;
 
 namespace FTT_API.Controllers.Login
 {
+    [Route("[controller]")]
     public partial class LoginController : BaseProjectController
     {
         private readonly IWebHostEnvironment _hostingEnvironment;
@@ -19,26 +21,6 @@ namespace FTT_API.Controllers.Login
             _hostingEnvironment = hostingEnvironment;
             _configHelper = configHelper;
         }
-        public IActionResult Index(string goalURL = "")
-        {
-
-            var LoginHanlder = new LoginHanlder(_configHelper, HttpContext);
-
-            if (LoginSession.Current != null && LoginSession.Current.empno != null)
-            {
-                if (!string.IsNullOrEmpty(goalURL))
-                {
-                    return Redirect(goalURL);
-                }
-                else
-                {
-                    return RedirectToAction("Index", "Home", new { area = "" });
-                }
-            }
-
-            return View();
-        }
-
 
         /// <summary>
         /// 登入
@@ -46,7 +28,7 @@ namespace FTT_API.Controllers.Login
         /// <param name="vm"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        [HttpPost]
+        [HttpPost("[action]")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Login(LoginVM vm)
         {
@@ -74,6 +56,7 @@ namespace FTT_API.Controllers.Login
         /// 畫出 圖形驗證碼
         /// </summary>
         /// <returns></returns>
+        [HttpGet("[action]")]
         public ActionResult CaptchaCode()
         {
             //自製的土炮驗證碼
@@ -88,14 +71,8 @@ namespace FTT_API.Controllers.Login
             return File(result.CaptchaImage, "image/jpeg");
         }
 
-        [AllowAnonymous]
-        public ActionResult PermissionDenied()
-        {
-            return View();
-        }
-
-
-        [CustomAuthorization(FuncID.Home_View)]
+        //[CustomAuthorization(FuncID.Home_View)]
+        [HttpGet("[action]")]
         public ActionResult CheckLogin()
         {
             if (LoginSession.Current.empno != null)

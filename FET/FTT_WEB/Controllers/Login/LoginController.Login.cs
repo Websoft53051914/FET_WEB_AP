@@ -95,7 +95,7 @@ namespace FTT_WEB.Controllers.Login
         }
 
 
-        [CustomAuthorization(FuncID.Home_View)]
+        //[CustomAuthorization(FuncID.Home_View)]
         public ActionResult CheckLogin()
         {
             if (LoginSession.Current.empno != null)

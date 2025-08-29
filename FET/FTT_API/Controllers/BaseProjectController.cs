@@ -21,6 +21,7 @@ namespace FTT_API.Controllers
         /// 錯誤訊息資訊
         /// </summary>
         /// <returns></returns>
+        [ApiExplorerSettings(IgnoreApi = true)]
         public MessageHelper GetMessage()
         {
             _msgHelper ??= new MessageHelper();
@@ -32,6 +33,7 @@ namespace FTT_API.Controllers
         /// SelectListHandler
         /// </summary>
         /// <returns></returns>
+        [ApiExplorerSettings(IgnoreApi = true)]
         public SelectListHandler GetSelectListHandler()
         {
             _selectListHandler ??= new SelectListHandler();
@@ -48,6 +50,7 @@ namespace FTT_API.Controllers
         /// <param name="message"></param>
         /// <param name="alertType"></param>
         /// <returns></returns>
+        [ApiExplorerSettings(IgnoreApi = true)]
         protected IActionResult RedirectToAlertMsg(string actionName, string controllerName, string message, string alertType = "success")
         {
             var paras = new AlertMsgRedirection()
@@ -66,6 +69,7 @@ namespace FTT_API.Controllers
             return RedirectToAction("Redirection", "AlertMsg", paras);
         }
 
+        [ApiExplorerSettings(IgnoreApi = true)]
         protected void LogError(Exception ex)
         {
             Trace.Write("<font color=red>Source:" + ex.Source + "</font>");
