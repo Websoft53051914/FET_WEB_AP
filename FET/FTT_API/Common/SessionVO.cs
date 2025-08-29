@@ -30,6 +30,7 @@ namespace FTT_API.Common
         public string ivrcode { get; set; } = "1805318";
 
         public string userrole { get; set; } = "SUBMITTER";
+        public string shop_name { get; set; }
 
 
         public IEnumerable<FuncID> Functions { get; set; } = Enumerable.Empty<FuncID>();

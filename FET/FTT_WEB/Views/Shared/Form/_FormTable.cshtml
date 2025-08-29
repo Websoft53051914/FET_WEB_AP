@@ -1,71 +1,11 @@
-﻿@using FTT_WEB.Common.OriginClass.EntiityClass
-@model FormTableVM
-@{
-    List<SelectListItem> TT_CATEGORY_List = new List<SelectListItem>() { new SelectListItem() { Text = "一般", Value = "一般" } };
-
-    if (Model.ftt_formDTO.tt_category == "緊急(新開單)")
-    {
-        TT_CATEGORY_List.Add(new SelectListItem() { Text = "緊急(新開單)", Value = "緊急(新開單)" });
-    }
+﻿@{
+    ViewData["EventName"] = "CategorySelected";
 
     string TreeModalId = Guid.NewGuid().ToString();
     ViewData["TreeModalId"] = TreeModalId;
 
-    var createTime = ViewData["CREATE_TIME"];
-    var approvalDate = ViewData["APPROVALDATE"];
-    var warrantyTime = ViewData["WARRANTYTIME"];
-    var preHandleDesc = ViewData["PreHandleDesc"];
-    var TicketPanelVisible = ViewData["TicketPanelVisible"] as bool?;
+    var form_no = ViewData["form_no"];
 
-    var _TicketInfo = ViewData["TicketInfo"] as TicketInfoVM;
-    if (_TicketInfo == null)
-        _TicketInfo = new TicketInfoVM();
-
-    var SubmitButton = ViewData["SubmitButton"];
-
-    var mRunScriptStoreInfo = ViewData["mRunScriptStoreInfo"];
-    bool? hasTT_IMAGE = ViewData["hasTT_IMAGE"] as bool?;
-    var newImageSRC = ViewData["newImageSRC"] as string;
-
-    var StoreName = ViewData["StoreName"];
-    var mShowAmount = ViewData["mShowAmount"] as bool?;
-
-    string mShowAmountStr = "none";
-    if (mShowAmount == true)
-    {
-        mShowAmountStr = "";
-    }
-
-
-    var Role = ViewData["Role"];
-    var UpdateField = ViewData["UpdateField"];
-    var RequireField = ViewData["RequireField"];
-
-    var EXPENSE_TYPE_List = ViewData["EXPENSE_TYPE_List"] as List<SelectListItem>;
-
-    var AMOUNT_COST = ViewData["AMOUNT_COST"];
-    var AMOUNT_MAX_IDX = ViewData["AMOUNT_MAX_IDX"] as int?;
-    if (AMOUNT_MAX_IDX == null)
-        AMOUNT_MAX_IDX = 0;
-
-    var CATEGORY_ID = ViewData["CATEGORY_ID"];
-    var Totals = ViewData["Totals"];
-    var AMOUNT_CONFIG = ViewData["AMOUNT_CONFIG"];
-
-    var ftt_form_amountDTOs = ViewData["ftt_form_amountDTOs"] as List<ftt_form_amountDTO>;
-
-    var showEXPENSE_DESC_TEXT = ViewData["showEXPENSE_DESC_TEXT"] as bool?;
-    var showEXPENSE_DESC_SEL = ViewData["showEXPENSE_DESC_SEL"] as bool?;
-    var Hide_dele = ViewData["Hide_dele"] as bool?;
-
-    var FORM_NO = ViewData["FORM_NO"];
-    var STATUS_NAME = ViewData["STATUS_NAME"];
-    var FORM = _TicketInfo.TTType;
-    var FORM_TYPE = _TicketInfo.TTType;
-    var STATUS = _TicketInfo.TTStatus;
-    var ACTION_NAME = ViewData["ACTION_NAME"];
-
-    var CATEGORY_NAME = Model.ftt_formDTO.category_name;
 }
 
 <style>
@@ -74,26 +14,34 @@
     }
 </style>
 
-<input type="hidden" id="FORM_NO" value="@FORM_NO" />
-<input type="hidden" id="USER_TYPE" value="@Role" />
-<input TYPE="hidden" id="STATUS_DESC" value="@STATUS_NAME" />
-<input TYPE="hidden" id="FORM" value="@FORM" />
-<input TYPE="hidden" id="STATUS" value="@STATUS" />
-<input TYPE="hidden" id="ACTION_NAME" value="@ACTION_NAME" />
+<form id="form1">
+    <input type=hidden name="FORM_NO" id="FORM_NO" value="@form_no" />
+    <input type=hidden name="USER_TYPE" id="USER_TYPE" value="" />
+    <input type=hidden name="STATUS_DESC" id="STATUS_DESC" value="" />
+    <input type=hidden name="FORM" id="FORM" value="" />
+    <input type=hidden name="STATUSWORDING" id="STATUSWORDING" value="" />
+    <input type=hidden name="FORM_TYPE" id="FORM_TYPE" value="" />
+    <input type=hidden name="STATUS" id="STATUS" value="" />
+    <input type=hidden name="ACTION_NAME" id="ACTION_NAME" value="" />
+
+    <input type="hidden" id="TICKET_INFO" name="TICKET_INFO" value="" />
+
+    <input type="hidden" id="CATEGORY_ID" name="CATEGORY_ID" value="" />
+    <input type="hidden" id="CATEGORY_NAME" name="CATEGORY_NAME" value="" />
+    <input type="hidden" id="CATEGORY_NAME_TMP" name="CATEGORY_NAME_TMP" value="" />
+    <input type="hidden" id="storeType" />
 
 
-<input type="hidden" id="STORE_TYPE" value="@Model.StoreClass.StoreType" />
-<input type="hidden" id="IVRCode" value="@Model.StoreClass.IVRCode" />
+    <input type="hidden" id="STORE_TYPE" value="" />
+    <input type="hidden" id="IVRCODE" name="IVRCODE" value="" />
 
-<input type="hidden" id="TICKET_INFO" name="TICKET_INFO" value="" />
+    <input type="hidden" id="SELFCONFIG" name="SELFCONFIG" value="N" />
+    <input type="hidden" id="VENDER_ID" name="VENDER_ID" value="" />
 
+    <input type="hidden" id="FORM_ACTION" name="FORM_ACTION" value="" />
+    <input type="hidden" id="AMOUNT_CONFIG" name="AMOUNT_CONFIG" value="" />
 
-<input type="hidden" name="STATUSWORDING" id="STATUSWORDING">
-<input type="hidden" id="AMOUNT_MAX_IDX" value="@AMOUNT_MAX_IDX" />
-<input type="hidden" id="FORM_TYPE" value="@FORM_TYPE" />
-
-<div>
-    <form class="needs-validation" novalidate="" method="post" id="submitForm">
+    <div>
         <div class="table-responsive  bg-white" style="overflow-y: hidden;">
             <table class="table table-bordered align-middle" style="table-layout: fixed;">
                 <tbody>
@@ -104,97 +52,67 @@
                     </tr>
                     <tr>
                         <th class="table-header ">公司別</th>
-                        <td>@(Model.StoreClass.Company)</td>
+                        <td>KGT</td>
                         <th class="table-header ">店格</th>
-                        <td>@Model.StoreClass.StoreType</td>
+                        <td>CONCEPT STORE</td>
                         <th class="table-header">IVR Code</th>
-                        <td>@Model.StoreClass.IVRCode</td>
+                        <td>2401</td>
                     </tr>
                     <tr>
                         <th class="table-header">通路</th>
-                        <td>@Model.StoreClass.Channel</td>
+                        <td>CONCEPT</td>
                         <th class="table-header">區域</th>
-                        <td>@Model.StoreClass.Area</td>
+                        <td>N</td>
                         <th class="table-header">店名</th>
-                        <td>@Model.StoreClass.StoreName</td>
+                        <td>遠傳集團-旗艦店</td>
                     </tr>
                     <tr>
                         <th class="table-header">eMails</th>
-                        <td>@Model.StoreClass.eMail</td>
+                        <td>KGFLAGSHIP</td>
                         <th class="table-header">店長/聯絡人</th>
-                        <td>@Model.StoreClass.Owner</td>
+                        <td>王美虹</td>
                         <th class="table-header">緊急電話</th>
-                        <td>@Model.StoreClass.PhoneUrgent</td>
+                        <td>02-23888825 轉1680</td>
                     </tr>
                     <tr>
                         <th class="table-header">區經理 / 業務</th>
-                        <td>@Model.StoreClass.Manager</td>
+                        <td>朱欣文</td>
                         <th class="table-header">店長電話</th>
-                        <td>@Model.StoreClass.Phone</td>
+                        <td>0936-062-442</td>
                         <th rowspan="4" class="table-header">營業時間</th>
-                        <td rowspan="4" style="word-wrap: break-word;">
-                            <table width="100%" height="80" cellpadding="0" cellspacing="0">
-                                <tr>
-                                    <td style="">週一~五</td>
-                                    <td style="">:</td>
-                                    <td>@Model.StoreClass.BusinessTime1</td>
-                                </tr>
-                                <tr>
-                                    <td style="">星期六</td>
-                                    <td style=""> :</td>
-                                    <td>@Model.StoreClass.BusinessTime2</td>
-                                </tr>
-                                <tr>
-                                    <td style="">星期日</td>
-                                    <td style="">:</td>
-                                    <td>@Model.StoreClass.BusinessTime3</td>
-                                </tr>
-                                <tr>
-                                    <td style="">國定假日</td>
-                                    <td style="">:</td>
-                                    <td>@Model.StoreClass.BusinessTime4</td>
-                                </tr>
-                            </table>
+                        <td rowspan="4" style="text-wrap:wrap">
+                            週一～五 1100～2030，
+                            星期六 1100～2100
                         </td>
                     </tr>
                     <tr>
                         <th class="table-header">裝潢型態</th>
-                        <td>@Model.StoreClass.DecorationCondition</td>
+                        <td>Deployment</td>
                         <th class="table-header">傳真電話</th>
-                        <td>@Model.StoreClass.PhoneFax</td>
+                        <td></td>
                     </tr>
                     <tr>
                         <th class="table-header">地址</th>
-                        <td colspan="3">@Model.StoreClass.Address</td>
+                        <td colspan="3">XXXXX</td>
                     </tr>
                     <tr>
                         <th class="table-header">備註</th>
-                        <td colspan="3">@Model.StoreClass.Note</td>
+                        <td colspan="3"></td>
                     </tr>
 
                     <tr>
                         <th class="table-header">開單者</th>
-                        <td>
-                            @Model.ftt_formDTO.empname
+                        <td id="EMPNAME">
                         </td>
                         <th class="table-header">開單者連絡電話</th>
-                        <td>
-                            @Model.ftt_formDTO.emptel
+                        <td id="EMPTEL">
                         </td>
                         <th class="table-header">報修型態</th>
                         <td>
-                            <select class="form-control initSelect2" id="TT_CATEGORY" name="TT_CATEGORY">
-                                @foreach (var item in TT_CATEGORY_List)
-                                {
-                                    if (item.Selected == true)
-                                    {
-                                        <option value="@item.Value" selected>@item.Text</option>
-                                    }
-                                    else
-                                    {
-                                        <option value="@item.Value">@item.Text</option>
-                                    }
-                                }
+                            <select class="form-control initSelect2" id="TT_CATEGORY">
+                                <option value="一般">一般</option>
+                                @* <option>緊急 (新開單)</option> *@
+                                @* <option>緊急 (補單)</option> *@
                             </select>
                         </td>
                     </tr>
@@ -202,9 +120,7 @@
                     <tr>
                         <th class="table-header">報修品項</th>
                         <td colspan="2">
-                            @Model.ftt_formDTO.CIDesc
-                            @* <button class="btn  btn-info" id="rmBtn_SelectItems">選擇項目</button> *@
-
+                            <button class="btn  btn-info" id="rmBtn_SelectItems">選擇項目</button>
                         </td>
                         <th colspan="3"></th>
                     </tr>
@@ -214,10 +130,10 @@
                         <td>
                             <div class="d-flex gap-4 justify-content-center align-items-center">
                                 <label role="button">
-                                    <input type="radio" name="r1" Value="Y" @(Html.Raw(Model.ftt_formDTO.repair == "Y" ? "checked" : "")) disabled /> 是
+                                    <input type="radio" name="Repair" value="Y" /> 是
                                 </label>
                                 <label role="button">
-                                    <input type="radio" name="r1" Value="N" @(Html.Raw(Model.ftt_formDTO.repair == "N" ? "checked" : "")) disabled /> 否
+                                    <input type="radio" name="Repair" value="N" /> 否
                                 </label>
                             </div>
                         </td>
@@ -226,66 +142,49 @@
                         <td>
                             <div class="d-flex gap-4 justify-content-center align-items-center">
                                 <label>
-                                    <input type="radio" name="r2" @(Html.Raw(Model.ftt_formDTO.resupply == "Y" ? "checked" : "")) disabled /> 是
+                                    <input type="radio" name="Resupply" value="Y" /> 是
                                 </label>
                                 <label>
-                                    <input type="radio" name="r2" @(Html.Raw(Model.ftt_formDTO.resupply == "N" ? "checked" : "")) disabled /> 否
+                                    <input type="radio" name="Resupply" value="N" /> 否
                                 </label>
                             </div>
                         </td>
 
                         <th class="table-header">門市自行尋商</th>
-                        <td id="SelfFindBussiness">
-                            @Model.ftt_formDTO.selfconfig
-                            <input type="hidden" id="SELFCONFIG" name="SELFCONFIG" value="@Model.ftt_formDTO.selfconfig" />
+                        <td id="SELFCONFIG_NOTE">
+                            N
                         </td>
                     </tr>
 
                     <tr>
                         <th class="table-header">報修日期</th>
-                        <td>
-                            @createTime
+                        <td id="CREATE_TIME">
                         </td>
                         <th class="table-header" rowspan="3">報修品項圖樣</th>
                         <td rowspan="3">
-                            <span id="TT_IMAGE_PANNEL"></span>
-                            <div class="d-flex justify-content-center">
-                                <img class="m-0" id="TT_IMAGE" src="@(Url.Content("~/images/Item/no-product.gif"))" data-default-src="@(Url.Content("~/images/Item/no-product.gif"))" width="100" onclick="window.open(this.src,'showImg', 'status=no,toolbar=no,scrollbars=yes,resizable=yes,width=600,Height=500');" style="cursor:pointer;" align="middle" />
-                            </div>
                         </td>
-
                         <th class="table-header">報修廠商</th>
                         <td>
-                            @if (Model.ftt_formDTO.selfconfig == "N")
-                            {
-                                @StoreName
-                            }
-                            else
-                            {
-                                @Model.ftt_formDTO.merchant_name
-                            }
                         </td>
                     </tr>
 
                     <tr>
                         <th class="table-header">驗收日</th>
                         <td>
-                            @approvalDate
+                            <input class="form-control" type="date" />
                         </td>
                         <th class="table-header">報修廠商聯絡人</th>
                         <td>
-                            @Model.ftt_formDTO.cp_name
                         </td>
                     </tr>
 
                     <tr>
                         <th class="table-header">保固期日期</th>
                         <td>
-                            @warrantyTime
+                            <input class="form-control" type="date" />
                         </td>
                         <th class="table-header">報修廠商聯絡電話</th>
                         <td>
-                            @Model.ftt_formDTO.cp_tel
                         </td>
                     </tr>
 
@@ -298,14 +197,16 @@
                     <tr>
                         <th class="table-header" id="TT_CATEGORY_NOTE_LABEL">報修品項檢查事項</th>
                         <td colspan="5">
-                            @Model.ftt_formDTO.checkitem
+                            <span id="TT_CATEGORY_NOTE_PANNEL"></span>&nbsp;
                         </td>
                     </tr>
 
                     <tr>
                         <th class="table-header" id="TT_CATEGORY_DESC_LABEL">報修品項狀況描述</th>
                         <td colspan="5">
-                            @Model.ftt_formDTO.descr
+                            <label>
+                                <span id="TT_CATEGORY_DESC_PANNEL"></span>&nbsp;
+                            </label>
                         </td>
                     </tr>
 
@@ -316,7 +217,7 @@
                             <span id="REMARK_LABEL2" style="color: Red;">例如:不冷、漏水、無法啟動等等…</span>
                         </th>
                         <td colspan="5" class="p-1">
-                            <textarea class="form-control" rows="3" id="REMARK" name="REMARK">@Model.ftt_formDTO.remark</textarea>
+                            <textarea class="form-control" rows="3" id="REMARK" name="REMARK"></textarea>
                         </td>
                     </tr>
 
@@ -325,7 +226,7 @@
                     </tr>
                     <tr>
                         <td bgcolor="#FFDDEE">前一筆備註說明：</td>
-                        <td colspan="5"><label id="PreHandleDesc">@(preHandleDesc)</label></td>
+                        <td colspan="5"><label id="PreHandleDesc"></label></td>
                     </tr>
                     <tr>
                         <td class="table-header" id="DESCRIPTION_DESC">備註說明：</td>
@@ -334,283 +235,125 @@
                         </td>
                     </tr>
 
-                    @if (TicketPanelVisible == true)
-                    {
-                        <tr id="SELECTSTATUS_PANEL">
-                            <td bgcolor="#FFDDEE" id="SELECTSTATUS_DESC">表單狀態：</td>
-                            <td colspan="5">
-                                <select id="SELECTSTATUS" name="SELECTSTATUS" class="form-control initSelect2">
-                                    <option value="">請選擇...</option>
-                                    <option value="COMPLETE">完修</option>
-                                    <option value="PENDING">待料</option>
-                                    <option value="OFFER">報價</option>
-                                    <option value="ASSETER">拒絕</option>
-                                    <option value="NOSHOW">不需到場處理</option>
-                                </select>
-                            </td>
-                        </tr>
-                        <tr id="COMPLETE_PANEL">
-                            <td bgcolor="#FFDDEE" id="COMPLETETIME_DESC">完修日期：</td>
-                            <td colspan="5">
-
-                                <div class="input-group date" id="COMPLETETIME_Shell" data-target-input="nearest">
-                                    <input id="COMPLETETIME" class="form-control datetimepicker-input" data_target="#COMPLETETIME_Shell " />
-                                    <div class="input-group-text" data-target="#COMPLETETIME_Shell" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
-                                </div>
-
-                                @*
+                    <tr id="SELECTSTATUS_PANEL">
+                        <td bgcolor="#FFDDEE" id="SELECTSTATUS_DESC">表單狀態：</td>
+                        <td colspan="5">
+                            <select id="SELECTSTATUS" name="SELECTSTATUS" class="form-control initSelect2">
+                                <option value="">請選擇...</option>
+                                <option value="COMPLETE">完修</option>
+                                <option value="PENDING">待料</option>
+                                <option value="OFFER">報價</option>
+                                <option value="ASSETER">拒絕</option>
+                                <option value="NOSHOW">不需到場處理</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr id="COMPLETE_PANEL">
+                        <td bgcolor="#FFDDEE" id="COMPLETETIME_DESC">完修日期：</td>
+                        <td colspan="5">
                             <input type="text" id="COMPLETETIME" name="COMPLETETIME" style="text-align:center;" />
                             <img id="COMPLETE_DATE" name="COMPLETE_DATE" src="/images/icon/select.gif" style="cursor:pointer;" onClick="DoCal(document.all.COMPLETETIME, '?dateFormat=%Y/%m/%d&amp;showTime=false;');if (Date.parseString(document.all.COMPLETETIME.value,'yyyy/MM/dd').isAfter(new Date()) == true) { alert('完修日期不能大於今天！');document.all.COMPLETETIME.value=''; }" />
-                            *@
-                            </td>
-                        </tr>
-                        <tr id="PENDING_PANEL">
-                            <td bgcolor="#FFDDEE" id="PRECOMPLETETIME_DESC">預計完成日期：</td>
-                            <td colspan="5">
-
-                                <div class="input-group date" id="PRECOMPLETETIME_Shell" data-target-input="nearest">
-                                    <input id="PRECOMPLETETIME" class="form-control datetimepicker-input" data_target="#PRECOMPLETETIME_Shell " />
-                                    <div class="input-group-text" data-target="#PRECOMPLETETIME_Shell" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
-                                </div>
-                                @*
+                        </td>
+                    </tr>
+                    <tr id="PENDING_PANEL">
+                        <td bgcolor="#FFDDEE" id="PRECOMPLETETIME_DESC">預計完成日期：</td>
+                        <td colspan="5">
                             <input type="text" id="PRECOMPLETETIME" name="PRECOMPLETETIME" style="text-align:center;" />
                             <img id="PRECOMPLETE_DATE" name="PRECOMPLETE_DATE" src="/images/icon/select.gif" style="cursor:pointer;" onClick="DoCal(document.all.PRECOMPLETETIME, '?dateFormat=%Y/%m/%d&amp;showTime=false');" />
-                            *@
-                            </td>
-                        </tr>
+                        </td>
+                    </tr>
 
-                        <tr id="OFFER_PANEL" style="display:none;">
-                        </tr>
+                    <tr id="OFFER_PANEL" style="display:none;">
+                    </tr>
 
-                        <tr id="ASSETER_PANEL" style="display:none;">
-                        </tr>
+                    <tr id="ASSETER_PANEL" style="display:none;">
+                    </tr>
 
-                        <tr id="AMOUNT_PANEL" style="display:none;">
-                            <td bgcolor="#FFDDEE" style="display:@mShowAmountStr;">金額彙整欄：</td>
-                            <td colspan="5" style="display:@mShowAmountStr;">
-                                <input type="hidden" id="CATEGORY_ID" value="@CATEGORY_ID" />
-                                <input type="hidden" id="CATEGORY_NAME" value="@CATEGORY_NAME" />
-                                <input type="hidden" id="CATEGORY_NAME_TMP" value="" />
-                                <input type="hidden" id="storeType" />
+                    <tr id="AMOUNT_PANEL" style="display:none;">
+                        <td bgcolor="#FFDDEE" style="display:none;">金額彙整欄：</td>
+                        <td colspan="5" style="display:none;">
+                            <input type="hidden" id="FORM_ACTION" value="INSERT" />
+                            <input type="hidden" id="AMOUNT_CONFIG" />
 
-                                @if (mShowAmount == true)
-                                {
-                                    <input type="hidden" id="FORM_ACTION" value="INSERT" />
-                                    <input type="hidden" id="AMOUNT_CONFIG" value="@AMOUNT_CONFIG" />
-                                    <input type="hidden" id="AJAXScriptManager" />
+                            <input type="hidden" id="AJAXScriptManager" />
 
-                                    <table border="1" style="width:100%">
-                                        <tr>
-                                            <th>費用種類</th>
-                                            <th>維修細項</th>
-                                            <th>檢測故障原因</th>
-                                            <th>維修處理動作</th>
-                                            <th>數量</th>
-                                            <th>單位</th>
-                                            <th>單價</th>
-                                            <th>備註</th>
-                                        </tr>
-                                        <tr>
-                                            <td>
-                                                <select class="form-control initSelect2" id="EXPENSE_TYPE" name="EXPENSE_TYPE">
-                                                    @* 要在controller手動撈資料 *@
-                                                    @foreach (var item in EXPENSE_TYPE_List)
-                                                    {
-                                                        if (item.Selected == true)
-                                                        {
-                                                            <option value="@item.Value" selected>@item.Text</option>
-                                                        }
-                                                        else
-                                                        {
-                                                            <option value="@item.Value">@item.Text</option>
-                                                        }
-                                                    }
-                                                </select>
-                                            </td>
-                                            <td>
-                                                @if (showEXPENSE_DESC_TEXT == true)
-                                                {
-                                                    <input id="EXPENSE_DESC_TEXT" class="form-control input_class" style="width: 150px" />
-                                                }
-
-                                                @if (showEXPENSE_DESC_SEL == true)
-                                                {
-                                                    <select class="form-control initSelect2 select_class" id="EXPENSE_DESC_SEL" name="EXPENSE_DESC_SEL">
-                                                        @foreach (var item in EXPENSE_TYPE_List)
-                                                        {
-                                                            if (item.Selected == true)
-                                                            {
-                                                                <option value="@item.Value" selected>@item.Text</option>
-                                                            }
-                                                            else
-                                                            {
-                                                                <option value="@item.Value">@item.Text</option>
-                                                            }
-                                                        }
+                            <table id="tbl1" runat="server">
+                                <tr>
+                                    <td>
+                                        <table border="1">
+                                            <tr>
+                                                <th>費用種類</th>
+                                                <th>維修細項</th>
+                                                <th>檢測故障原因</th>
+                                                <th>維修處理動作</th>
+                                                <th>數量</th>
+                                                <th>單位</th>
+                                                <th>單價</th>
+                                                <th>備註</th>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    <select class="form-control initSelect2" id="EXPENSE_TYPE" name="EXPENSE_TYPE">
                                                     </select>
-                                                }
+                                                </td>
+                                                <td>
+                                                    <input id="EXPENSE_DESC_TEXT" class="form-control" />
 
-                                                @*                <select class="form-control initSelect2" id="EXPENSE_DESC_SEL" style="width: 150px" class="select_class">
-                                        </select> *@
-                                            </td>
-                                            <td>
-                                                <input id="FAULT_REASON" class="form-control " />
-                                                @* <asp:TextBox ID="FAULT_REASON" runat="server"></asp:TextBox> *@
-                                            </td>
-                                            <td>
-                                                <input id="REPAIR_ACTION" class="form-control " />
-                                                @* <asp:TextBox ID="REPAIR_ACTION" runat="server"></asp:TextBox> *@
-                                            </td>
-                                            <td>
-                                                <input id="QTY" min="1" type="number" class="form-control " style="width: 80px" />
-                                                @* <asp:TextBox ID="QTY" runat="server" Width="80px" style="text-align:center;" onChange="if (isNumeric(this.value) == false) { alert('請輸入數字！');this.value=''; };"></asp:TextBox> *@
-                                            </td>
-                                            <td>
-                                                <input id="UNIT" class="form-control " style="width: 80px" />
-                                                @* <asp:TextBox ID="UNIT" runat="server" Width="80px" style="text-align:center;"></asp:TextBox> *@
-                                            </td>
-                                            <td>
-                                                <input id="PRICE" min="1" type="number" class="form-control " style="width: 80px" />
-                                                @* <asp:TextBox ID="PRICE" runat="server" Width="80px" style="text-align:center;" onChange="if (isNumeric(this.value) == false) { alert('請輸入數字！');this.value=''; };"></asp:TextBox> *@
-                                            </td>
-                                            <td>
-                                                <span class="leftInfo">
-                                                    <img src="/Images/Icon/view.gif" align="absMiddle" />
-                                                    <span class="leftTooltip">
-                                                        <label id="COMMENT"></label>
-                                                        @* <asp:Label ID="COMMENT" runat="server"></asp:Label> *@
-                                                    </span>
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <button type="button" id="InsertButton" onclick="addItemRow();" class="btn btn-primary">新增一筆</button>
-                                                @* <input type="button" id="InsertButton" value="新增一筆" onclick="addItemRow();" onMouseOver="this.className = 'customButtonHover';" onMouseOut="this.className = 'customButton';" Class="customButton" style="vertical-align:middle;border:none 0px black;" /> *@
-                                            </td>
-                                        </tr>
-                                    </table>
+                                                    <select class="form-control initSelect2" id="EXPENSE_DESC_SEL" name="EXPENSE_DESC_SEL">
+                                                    </select>
 
-                                    <table width="100%" id="AMOUNT_LIST" style="background-color:#DEDEDE;" border=1>
-                                        <tr>
-                                            <th> </th>
-                                            <th>費用種類</th>
-                                            <th>維修細項</th>
-                                            <th>檢測故障原因</th>
-                                            <th>維修處理動作</th>
-                                            <th>數量</th>
-                                            <th>單位</th>
-                                            <th>單價</th>
-                                            <th>小計</th>
-                                        </tr>
-
-                                        @foreach (var dto in ftt_form_amountDTOs)
-                                        {
-                                            <tr id="AMOUNT_TR_" name="TableTR">
-                                                <td align="center" style="width:12px;">
-                                                    @if (Hide_dele == false)
-                                                    {
-                                                        <img class="dele" src="/images/delete.bmp" alt="Delete Row" style="cursor:pointer;" onclick="DelAMOUNT(this)" />
-                                                    }
-                                                </td>
-                                                @* <%--刪除按鈕--%> *@
-                                                <td>
-                                                    @dto.expense_type
-                                                    @* <%#Eval("EXPENSE_TYPE")%> *@
+                                                    <select class="form-control initSelect2" id="EXPENSE_DESC_SEL" style="width: 150px" class="select_class">
+                                                    </select>
                                                 </td>
                                                 <td>
-                                                    @dto.expense_desc
-                                                    @* <%#Eval("EXPENSE_DESC")%> *@
+                                                    <asp:TextBox ID="FAULT_REASON" runat="server"></asp:TextBox>
                                                 </td>
                                                 <td>
-                                                    @dto.fault_reason
-                                                    @* <%#Eval("FAULT_REASON")%> *@
+                                                    <asp:TextBox ID="REPAIR_ACTION" runat="server"></asp:TextBox>
                                                 </td>
                                                 <td>
-                                                    @dto.repair_action
-                                                    @* <%#Eval("REPAIR_ACTION")%> *@
+                                                    <asp:TextBox ID="QTY" runat="server" Width="80px" style="text-align:center;" onChange="if (isNumeric(this.value) == false) { alert('請輸入數字！');this.value=''; };"></asp:TextBox>
                                                 </td>
                                                 <td>
-                                                    @dto.qty
-                                                    @* <%#Eval("QTY")%> *@
-                                                    <input type="hidden" name="QTY" id="@Guid.NewGuid().ToString()" />
+                                                    <asp:TextBox ID="UNIT" runat="server" Width="80px" style="text-align:center;"></asp:TextBox>
                                                 </td>
                                                 <td>
-                                                    @dto.unit
-                                                    @* <%#Eval("UNIT")%> *@
+                                                    <asp:TextBox ID="PRICE" runat="server" Width="80px" style="text-align:center;" onChange="if (isNumeric(this.value) == false) { alert('請輸入數字！');this.value=''; };"></asp:TextBox>
                                                 </td>
                                                 <td>
-                                                    @dto.price
-                                                    @* <%#Eval("PRICE")%> *@
-                                                    <input type="hidden" name="PRICE" id="@Guid.NewGuid().ToString()" />
+                                                    <span class="leftInfo"><img src="/Images/Icon/view.gif" align="absMiddle" /><span class="leftTooltip"><asp:Label ID="COMMENT" runat="server"></asp:Label></span></span>
                                                 </td>
                                                 <td>
-                                                    @dto.subtotal
-                                                    @* <%#Eval("SUBTOTAL")%> *@
+                                                    <input type="button" id="InsertButton" value="新增一筆" onclick="addItemRow();" onMouseOver="this.className = 'customButtonHover';" onMouseOut="this.className = 'customButton';" Class="customButton" style="vertical-align:middle;border:none 0px black;" />
                                                 </td>
                                             </tr>
-                                        }
-                                    </table>
-                                    <div style="display:none;">
-                                        <button type="button" class="btn btn-primary" id="SubmitFormAddAmount">送出</button>
-                                        @* <asp:Button ID="SubmitForm" OnClick="SubmitForm_Click" runat="server" Text="送出" /> *@
-                                        @Html.Hidden("AMOUNT_COST", AMOUNT_COST)
-                                        @* <asp:HiddenField ID="AMOUNT_COST" runat="server" /> *@
-                                    </div>
-                                    <table cellpadding="0" cellspacing="0" border=0 width="100%">
-                                        <tr height="26">
-                                            <td align="center">
-                                                <div style="text-align: center;display: inline-flex;">
-                                                    <span style="margin-top: 6px;">總計：</span>
-                                                    <span id="total" style="">
-                                                        <label class="form-control" id="Totals">@Totals</label>
-                                                    </span>
-                                                    <span style="margin-top: 6px;margin-left: 6px;">元</span>
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    </table>
-                                }
-                                @* <iframe id="TOTAL_AMOUNT_FRAME" src="AmountForm.aspx?FORM_NO=<%= mTTNo %>&CHECK_DATA=<%=TTStatus %>&TTCategory=<%=TTCategory %>" width="100%" height="300px" frameborder="0"></iframe> *@
-                            </td>
-                        </tr>
-                    }
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
 
                     <tr>
                         <td colspan="6" width="100%" align="center">
 
-                            @if (_TicketInfo.TTStatus == "TICKET")
-                            {
-                                SubmitButton = "";
-                                <button id="btnSubmitForm" class="btn btn-primary">送  出</button>
-                            }
-                            else
-                            {
-                                <button id="btnSubmitForm" class="btn btn-primary" style="display:none;">送  出</button>
-                            }
+                            <button id="SubmitForm" onclick="event.returnValue = CheckFormInTicket();" style="">送  出</button>
 
-                            <span id=submitbutton>@(Html.Raw(SubmitButton))</span>
-                            <button type="button" onclick="parent.window.close();" class="btn btn-primary">關閉視窗</button>
+                            <span id=submitbutton>
+                                @* @(Html.Raw(SubmitButton)) *@
+                            </span>
+                            <button type="button" onclick="parent.window.close();">關閉視窗</button>
                         </td>
                     </tr>
                 </tbody>
             </table>
         </div>
-    </form>
-</div>
-
+    </div>
+</form>
 <partial name="Form/_RMItemListSelfVendor" view-data='new ViewDataDictionary(ViewData)' />
 <partial name="Form/_RMItemTree" view-data='new ViewDataDictionary(ViewData)' />
 
 <script>
-    if (!String.format) {
-        String.format = function (format, ...args) {
-            return format.replace(/{(\d+)}/g, function (match, number) {
-                return typeof args[number] != 'undefined'
-                    ? args[number]
-                    : match
-                    ;
-            });
-        };
-    }
 
     //initModel.Type : 1.新開單  , 2.自行尋商
     function initFormTable(initModel) {
@@ -634,162 +377,9 @@
             $("#rmTable_Header1").html("");
             $("#rmTable_Header1").append("門市資訊")
 
-            let statusSpan = $("<span class='text-success' style='float:right;background-color: cornsilk;'></span").html("*目前表單狀態: @STATUS_NAME")
+            let statusSpan = $("<span class='text-success' style='float:right;background-color: cornsilk;'></span").html("*目前表單狀態: 審單中")
             $("#rmTable_Header1").append(statusSpan);
         }
-    }
-
-    function DelAMOUNT(obj) {
-        try {
-            var thisTR = $(obj).parents('[name="TableTR"]');
-
-    @*
-                var amountArray = $('#<%=AMOUNT_ARRAY.ClientID %>').val();
-                //取得被刪除那列的資訊
-                var delRowID = String.format('#AMOUNT_TR_{0}', index);
-                var delRow_ORDERID = $(delRowID).find("input:eq(1)").val();//ORDERID
-
-                if (delRow_ORDERID != "") {
-                if (amountArray == "")
-                amountArray = delRow_ORDERID;
-                else
-                amountArray = amountArray + "," + delRow_ORDERID;
-
-                $('#<%=AMOUNT_ARRAY.ClientID %>').val(amountArray);
-                }
-                *@
-                                                            var delPrice = $(thisTR).find('[name="PRICE"]').val();
-            var delQty = $(thisTR).find('[name="QTY"]').val();
-
-            var tmpTotal = parseInt(delQty) * parseInt(delPrice);
-
-            calSubTotal('Del', tmpTotal);
-
-            $('#AMOUNT_MAX_IDX').val(parseInt($('#AMOUNT_MAX_IDX').val()) - 1);
-
-            $(thisTR).remove();
-        }
-        catch (ex) {
-            alert(ex.message);
-        }
-    }
-
-    function calSubTotal(type, obj) {
-        var cost1 = parseInt(obj);
-        var cost2 = parseInt($('#AMOUNT_COST').val());
-
-        var total_cost;
-
-        if (type == 'Add') {
-            total_cost = parseInt(cost1) + parseInt(cost2);
-        }
-        else if (type == 'Del') {
-            total_cost = parseInt(cost2) - parseInt(cost1);
-        }
-
-        $('#AMOUNT_COST').val(total_cost);
-        $('#Totals').val(total_cost).text(total_cost);
-    }
-
-    function addItemRow() {
-        if (checkAddItem() == false)
-            return false;
-        else {
-            try {
-                var index = parseInt($('#AMOUNT_MAX_IDX').val()) + 1;
-                var addRow = String.format('<tr id="AMOUNT_TR_{0}" name="TableTR">', index);
-
-                addRow += String.format('<td><img src="/images/delete.bmp" alt="\Delete Row\" style="cursor:pointer;" onclick="DelAMOUNT(this)" /></td>', index); //刪除按鈕
-                addRow += String.format('<td>{0}', $('#EXPENSE_TYPE :selected').text()); //費用種類
-                addRow += String.format('<input type="hidden" id="EXPENSE_TYPE_{0}" name="EXPENSE_TYPE" value="{1}" /></td>', index, $('#EXPENSE_TYPE').val());
-
-                if ($('#AMOUNT_CONFIG').val() == "Y") {
-                    addRow += String.format('<td>{0}', $('#EXPENSE_DESC_SEL :selected').text()); //維修細項
-                    addRow += String.format('<input type="hidden" id="EXPENSE_DESC_{0}" name="EXPENSE_DESC" value="{1}" /></td>', index, $('#EXPENSE_DESC_SEL :selected').text());
-                }
-                else {
-                    addRow += String.format('<td>{0}', $('#EXPENSE_DESC_TEXT').val()); //維修細項
-                    addRow += String.format('<input type="hidden" id="EXPENSE_DESC_{0}" name="EXPENSE_DESC" value="{1}" /></td>', index, $('#EXPENSE_DESC_TEXT').val());
-                }
-
-                addRow += String.format('<td>{0}', $('#FAULT_REASON').val()); //檢測故障原因
-                addRow += String.format('<input type="hidden" id="FAULT_REASON_{0}" name="FAULT_REASON" value="{1}" /></td>', index, $('#FAULT_REASON').val());
-                addRow += String.format('<td>{0}', $('#REPAIR_ACTION').val()); //維修處理動作
-                addRow += String.format('<input type="hidden" id="REPAIR_ACTION_{0}" name="REPAIR_ACTION" value="{1}" /></td>', index, $('#REPAIR_ACTION').val());
-                addRow += String.format('<td>{0}', $('#QTY').val()); //數量
-                addRow += String.format('<input type="hidden" id="QTY_{0}" name="QTY" value="{1}" /></td>', index, $('#QTY').val());
-                addRow += String.format('<td>{0}', $('#UNIT').val()); //單位
-                addRow += String.format('<input type="hidden" id="UNIT_{0}" name="UNIT" value="{1}" /></td>', index, $('#UNIT').val());
-                addRow += String.format('<td>{0}', $('#PRICE').val()); //單價
-                addRow += String.format('<input type="hidden" id="PRICE_{0}" name="PRICE" value="{1}" /></td>', index, $('#PRICE').val());
-
-                var tmpTotal = parseInt($('#QTY').val()) * parseInt($('#PRICE').val());
-
-                calSubTotal('Add', tmpTotal);
-
-                tmpTotal = "$" + tmpTotal + ".-";
-
-                addRow += String.format('<td>{0}', tmpTotal); //小計
-                addRow += String.format('<input type="hidden" id="SUBTOTAL_{0}" name="SUBTOTAL" value="{1}" /></td>', index, tmpTotal);
-
-                $('#AMOUNT_MAX_IDX').val(index);
-
-                $('#AMOUNT_LIST').append(addRow);
-            }
-            catch (ex) {
-                alert(ex.message);
-            }
-        }
-    }
-
-    function checkAddItem() {
-        if ($('#EXPENSE_TYPE').val() == "") {
-            alert("請選擇【費用種類】！");
-            return false;
-        }
-        else if (($('#EXPENSE_DESC_SEL').val() == "" || $('#EXPENSE_DESC_SEL').val() == "請選擇...") && $('#AMOUNT_CONFIG').val() == "Y") {
-            alert("請選擇【維修細項】！");
-            return false;
-        }
-        else if ($('#EXPENSE_DESC_TEXT').val() == "" && $('#AMOUNT_CONFIG').val() == "N") {
-            alert("請選擇【維修細項】！");
-            return false;
-        }
-        else if ($('#QTY').val() == "") {
-            alert("請選擇【數量】！");
-            return false;
-        }
-        else if ($('#UNIT').val() == "") {
-            alert("請選擇【單位】！");
-            return false;
-        }
-        else if ($('#PRICE').val() == "") {
-            alert("請選擇【單價】！");
-            return false;
-        }
-        else
-            return true;
-    }
-
-
-    function SetControlEmpty() {
-        $('#EXPENSE_DESC_TEXT').val("");
-        $('#EXPENSE_DESC_SEL').val("");
-        $('#FAULT_REASON').val("");
-        $('#REPAIR_ACTION').val("");
-        $('#QTY').val("");
-        $('#UNIT').val("");
-        $('#PRICE').val("");
-        $('#COMMENT').text("");
-    }
-
-    function setConfigSettingList(ConfigSetting) {
-        $('#FAULT_REASON').val("");
-        $('#REPAIR_ACTION').val("");
-        $('#QTY').val(ConfigSetting.QTY);
-        $('#UNIT').val(ConfigSetting.UNIT);
-        $('#PRICE').val(ConfigSetting.PRICE);
-        $('#COMMENT').val(ConfigSetting.REMARK).text(ConfigSetting.REMARK);
     }
 
     $(document).on("CategorySelected", function (event, data) {
@@ -802,268 +392,135 @@
             placeholder: "請選擇",
             allowClear: true
         });
-
-        $('#COMPLETETIME_Shell').datetimepicker({
-            format: 'YYYY/MM/DD',
-        });
-
-        $('#PRECOMPLETETIME_Shell').datetimepicker({
-            format: 'YYYY/MM/DD',
-        });
-
-        $("#TT_CATEGORY").on("change", function (e) {
-            if ($('#TT_CATEGORY').val() == "緊急(補單)")
-                alert("【除緊急故障發生，且已電話聯繫，廠商已到場處理者；否則請以「一般」報修處理】");
-        });
-
-        $("#SELECTSTATUS").on("change", function (e) {
-            $('#COMPLETE_PANEL').hide();
-            $('#PENDING_PANEL').hide();
-            $('#OFFER_PANEL').hide();
-            $('#ASSETER_PANEL').hide();
-            $('#AMOUNT_PANEL').hide();
-
-            if ($('#SELECTSTATUS').val() != "") {
-                $('#STATUSWORDING').val($('#SELECTSTATUS').select2('data'));
-                $('#STATUS').val($('#SELECTSTATUS').val());
-                $('#TICKET_INFO').val($('#SELECTSTATUS').val());
-
-                $('#DESCRIPTION').removeAttr('required', '')
-                $('#SELECTSTATUS').removeAttr('required', '')
-                $('#COMPLETETIME').removeAttr('required', '')
-                $('#PRECOMPLETETIME').removeAttr('required', '')
-                $('#PRICE').removeAttr('required', '')
-                $('#QTY').removeAttr('required', '')
-                $('#PRECOMPLETETIME').removeAttr('required', '')
-
-                var RequireField = '';
-                switch ($('#SELECTSTATUS').val()) {
-                    case "COMPLETE":
-                        $('#DESCRIPTION').attr('required', '')
-                        $('#SELECTSTATUS').attr('required', '')
-                        $('#COMPLETETIME').attr('required', '')
-
-                        $('#COMPLETE_PANEL').show();
-                        $('#AMOUNT_PANEL').show();
-
-                        iFrameIsSubmit = false;
-                        break;
-                    case "PENDING":
-                        $('#DESCRIPTION').attr('required', '')
-                        $('#SELECTSTATUS').attr('required', '')
-                        $('#PRECOMPLETETIME').attr('required', '')
-                        $('#PENDING_PANEL').show();
-                        iFrameIsSubmit = true;
-                        break;
-                    case "OFFER":
-                        $('#DESCRIPTION').attr('required', '')
-                        $('#SELECTSTATUS').attr('required', '')
-                        $('#PRICE').attr('required', '')
-                        $('#QTY').attr('required', '')
-                        //document.all.OFFER_PANEL.style.display = "";
-                        $('#AMOUNT_PANEL').show();
-                        //iFrameIsSubmit = true;
-                        iFrameIsSubmit = false;
-                        break;
-
-                    case "ASSETER":
-                        $('#ASSETER_PANEL').show();
-                        //document.all.AMOUNT_PANEL.style.display = "";
-                        iFrameIsSubmit = false;
-                        break;
-
-                    case "NOSHOW":
-                        $('#DESCRIPTION').attr('required', '')
-                        $('#SELECTSTATUS').attr('required', '')
-                        $('#PRECOMPLETETIME').attr('required', '')
-                        $('#PENDING_PANEL').show();
-                        iFrameIsSubmit = true;
-                        break;
-
-                    default:
-                        break;
-                }
-            }
-            // setRequireField(RequireField);
-            document.all.COMPLETETIME.readOnly = true;
-            //document.all.VENDOR_ARRIVE_DATE.readOnly = true;
-        })
-
-        if ($('#IVRCode').val().length >= 7) {
-            submitbutton.innerHTML = submitbutton.innerHTML.replace("<INPUT class=customButton style=\"BORDER-RIGHT: black 0px; BORDER-TOP: black 0px; VERTICAL-ALIGN: middle; BORDER-LEFT: black 0px; BORDER-BOTTOM: black 0px\" onclick=\"document.all.STATUSWORDING.value=this.value;RequireField='';document.all.FORM_TYPE.value='FTT_FORM';document.all.STATUS.value='CLOSE';\" onmouseout=\"this.className = 'customButton';\" type=button value=自行尋商>", "");
-        }
-
-        if ('@(Model.ftt_formDTO.category_id)' == '1275') {
-            document.all.TT_CATEGORY_LABEL.innerHTML = "報修前確認事項及損壞狀況描述：";
-            document.all.TT_CATEGORY_NOTE_LABEL.innerHTML = "報修前檢查事項：";
-            document.all.TT_CATEGORY_DESC_LABEL.innerHTML = "報修機台編號：";
-            document.all.REMARK_LABEL1.innerHTML = "報修問題描述：";
-            $('#REMARK_LABEL2').show();
-        }
-        else {
-            document.all.TT_CATEGORY_LABEL.innerHTML = "報修品項檢查事項及狀況描述：";
-            document.all.TT_CATEGORY_NOTE_LABEL.innerHTML = "報修品項檢查事項：";
-            document.all.TT_CATEGORY_DESC_LABEL.innerHTML = "報修品項狀況描述：";
-            document.all.REMARK_LABEL1.innerHTML = "報修描述與備註：";
-            $('#REMARK_LABEL2').hide();
-        }
-
-        $('#EXPENSE_DESC_SEL').select2({
-            placeholder: {
-                id: '',
-                text: '請選擇',
-                selected: 'selected'
-            },
-            ajax: {
-                url: '@Url.Action("SelectDesc")',
-                dataType: 'json',
-                type: 'POST',
-                delay: 200,
-                data: function (params) {
-                    var selectedTypeName = $('#EXPENSE_TYPE').val();
-                    var categoryID = $('#CATEGORY_ID').val();
-
-                    var query = {
-                        categoryID: categoryID,
-                        ExpenseType: selectedTypeName,
-                    }
-                    return query;
-                },
-                processResults: function (data) {
-                    return {
-                        results: $.map(data, (item) => {
-                            return {
-                                text: item.Text,
-                                id: item.Value
-                            }
-                        })
-                    };
-                },
-            },
-        });
-
-        $("#EXPENSE_DESC_SEL").on("change", function (e) {
-            var selectedID = $('#EXPENSE_DESC_SEL :selected').val();
-            $.ajax({
-                type: 'POST',
-                url: '@Url.Action("ShowDesc")',
-                data: function (params) {
-                    var selectId = $('#EXPENSE_DESC_SEL').val();
-                    var query = {
-                        Id: selectId,
-                    }
-                    return query;
-                },
-                dataType: 'json',
-                success: function (data) {
-                    $.each(data, function () {
-                        setConfigSettingList(this);
-                    });
-                },
-                error: function (msg) {
-
-                }
-            });
-        });
-
-        $('#SubmitFormAddAmount').on("click", function (e) {
-            var vm = {};
-            var vms = [];
-            vm.form_no = '@FORM_NO';
-            vm.FORM_ACTION = $('#FORM_ACTION').val();
-
-            for (var i = 0; i < $('[name="TableTR"]').length; i++) {
-                var item = {};
-                item.form_no = '@FORM_NO';
-                item.expense_type = $('[name="TableTR"]').eq(i).find('[name="EXPENSE_TYPE"]').val();
-                item.expense_desc = $('[name="TableTR"]').eq(i).find('[name="EXPENSE_DESC"]').val();
-                item.fault_reason = $('[name="TableTR"]').eq(i).find('[name="FAULT_REASON"]').val();
-                item.repair_action = $('[name="TableTR"]').eq(i).find('[name="REPAIR_ACTION"]').val();
-                item.qty = $('[name="TableTR"]').eq(i).find('[name="QTY"]').val();
-                item.unit = $('[name="TableTR"]').eq(i).find('[name="UNIT"]').val();
-                item.price = $('[name="TableTR"]').eq(i).find('[name="PRICE"]').val();
-                item.subtotal = $('[name="TableTR"]').eq(i).find('[name="SUBTOTAL"]').val();
-                item.orderid = i + 1;
-                vms.push(item);
-            }
-
-            vm.vms = vms;
-
-            $.ajax({
-                url: '@Url.Action("Add_FTT_FORM_AMOUNT")',
-                dataType: 'json',
-                type: 'POST',
-                data: { vm: vm },
-                success: function (data) {
-                    if (data.Success == true) {
-                        alert(data.Data);
-                    } else {
-                        alert(data.Data);
-                    }
-                },
-                error: function (msg) {
-                    alert("新增異常！");
-                }
-            });
-        })
-
-        $("#submitForm").submit(function (e) {
-            e.preventDefault();
-            showLoader();
-
-            if ($(this).is(':invalid')) {
-                hideLoader();
-            }
-            else {
-                var vm = {};
-
-                vm.updateCOMPLETETIME = $("#COMPLETE_PANEL").is(":hidden");
-                vm.updatePRECOMPLETETIME = $("#PENDING_PANEL").is(":hidden");
-                vm.form_no = $('#FORM_NO').val();
-                vm.ticket_info = $('#TICKET_INFO').val();
-                vm.completetime = $('#COMPLETETIME').val();
-                vm.precompletetime = $('#PRECOMPLETETIME').val();
-                vm.selfconfig = $('#SELFCONFIG').val();
-                vm.remark = $('#REMARK').val();
-
-                $.ajax({
-                    url: '@Url.Action("Detail")',
-                    dataType: 'json',
-                    type: 'POST',
-                    data: { vm: vm },
-                    success: function (data) {
-                        hideLoader();
-
-                        if (data.Success == true) {
-                            alert(data.Data);
-                        } else {
-                            alert(data.Data);
-                        }
-                    },
-                    error: function (msg) {
-                        hideLoader();
-
-                        alert("新增異常！");
-                    }
-                });
-            }
-        });
-
-        $('#submitbutton').find('input').addClass('btn btn-primary');
-        $('#submitbutton').find('input').removeAttr('style');
-
-    @if (hasTT_IMAGE == true)
-    {
-        <text>
-                $('#TT_IMAGE').attr('src', '../../@(newImageSRC.ToHtmlString())');
-        </text>
-    }
-
-    @(Html.Raw(mRunScriptStoreInfo))
-                                                                                                                                            if (document.all.IVRCode.value.length > 4)
-            document.all.storeType.value = "FRANCHISE";
-        else
-            document.all.storeType.value = "RETAIL";
     });
 
+    function GetDetail() {
+        hideLoader();
+        var formNo = '@form_no';
+        var data = { formNo: formNo };
+        $.ajax({
+            type: 'POST',
+            url: "@(config.GetBackendUrl() + Url.Action("GetDetail"))",
+            data: data,
+            dataType: 'json',
+            success: function (data) {
+                if (data.Success == true) {
+                    $('#USER_TYPE').val(data.FORM_ACCESS_CONTROL.USER_TYPE);
+                    $('#STATUS_DESC').val(data.APPROVE_FORM.STATUS_NAME);
+                    $('#FORM').val(data.APPROVE_FORM.FORM_TYPE);
+                    $('#FORM_TYPE').val(data.APPROVE_FORM.FORM_TYPE);
+                    $('#STATUS').val(data.APPROVE_FORM.STATUS);
+                    $('#ACTION_NAME').val(data.ACTION_NAME);
+                    $('#STORE_TYPE').val(data.STORE_PROFILE.STORE_TYPE);
+                    $('#IVRCODE').val(data.STORE_PROFILE.IVR_CODE);
+
+                    var RequireField = data.RequireField;
+                    var accesscontrol = RequireField.split(/,/);
+
+                    for (i = 0; i < accesscontrol.length; i++) {
+                        $('#' + accesscontrol[i]).attr('required', '');
+                    }
+
+                    var UpdateField = data.UpdateField;
+                    // 表單權限處理
+                    form_access_control(document.form1, UpdateField);
+
+                    // 最後一次備註說明
+                    $('#PreHandleDesc').val(data.PreHandleDesc)
+
+                    if (data.FranchiseMsg != "") {
+                        alert(data.FranchiseMsg);
+                    }
+
+                    if (data.tt_category == "緊急(新開單)") {
+
+                        var option = new Option('緊急(新開單)', '緊急(新開單)', true, true);
+                        $('#TT_CATEGORY').append(option).trigger('change');
+                    }
+
+                    $("#TT_CATEGORY").val(data.tt_category);
+                    $("#TT_CATEGORY").trigger('change');
+
+                    if (data.ftt_formDTO.repair == 'Y') {
+                        $('[name="Repair"][value="Y"]').prop('checked', true);
+                    } else {
+                        $('[name="Repair"][value="N"]').prop('checked', true);
+                    }
+
+                    if (data.ftt_formDTO.Resupply == 'Y') {
+                        $('[name="Resupply"][value="Y"]').prop('checked', true);
+                    } else {
+                        $('[name="Resupply"][value="N"]').prop('checked', true);
+                    }
+
+                    $('#CREATE_TIME').val(data.CREATE_TIME);
+
+                    $('#EMPNAME').val(data.ftt_formDTO.empname);
+                    $('#EMPTEL').val(data.ftt_formDTO.emptel);
+                    $('#CATEGORY_ID').val(data.ftt_formDTO.category_id);
+                    $('#CATEGORY_NAME').val(data.ftt_formDTO.category_name);
+                    $('#VENDER_ID').val(data.ftt_formDTO.vender_id);
+                    $('#SELFCONFIG').val(data.ftt_formDTO.selfconfig);
+                    $('#SELFCONFIG_NOTE').text(data.ftt_formDTO.selfconfig);
+                    $('#TT_CATEGORY_NOTE_PANNEL').text(data.ftt_formDTO.checkitem);
+                    $('#TT_CATEGORY_DESC_PANNEL').text(data.ftt_formDTO.descr);
+                    $('#REMARK').val(data.ftt_formDTO.remark);
+
+                    if (data.ftt_formDTO.category_id == '1275') {
+                        document.all.TT_CATEGORY_LABEL.innerHTML = "報修前確認事項及損壞狀況描述：";
+                        document.all.TT_CATEGORY_NOTE_LABEL.innerHTML = "報修前檢查事項：";
+                        document.all.TT_CATEGORY_DESC_LABEL.innerHTML = "報修機台編號：";
+                        document.all.REMARK_LABEL1.innerHTML = "報修問題描述：";
+                        $('#REMARK_LABEL2').show();
+                    }
+                    else {
+                        document.all.TT_CATEGORY_LABEL.innerHTML = "報修品項檢查事項及狀況描述：";
+                        document.all.TT_CATEGORY_NOTE_LABEL.innerHTML = "報修品項檢查事項：";
+                        document.all.TT_CATEGORY_DESC_LABEL.innerHTML = "報修品項狀況描述：";
+                        document.all.REMARK_LABEL1.innerHTML = "報修描述與備註：";
+                        $('#REMARK_LABEL2').hide();
+                    }
+
+                    if (data.ftt_formDTO.selfconfig == "N") {
+                        $('#VENDER_ID').val(data.ftt_formDTO.order_id);
+                        $('#VENDER_NAME').text(data.ftt_formDTO.merchant_name);
+                        $('#CP_NAME').text(data.ftt_formDTO.cp_name);
+                        $('#CP_TEL').text(data.ftt_formDTO.cp_tel);
+                    }
+                    else {
+                        $('#VENDER_NAME').text(data.storename);
+                    }
+
+                    showLoader();
+                } else {
+                    alert(data.Data);
+                }
+            },
+            error: function (msg) {
+
+            }
+        });
+    }
+
+    function form_access_control(formobj, allowed_field) {
+        var vobj = eval(formobj).all;
+
+        if (vobj != null) {
+            for (var i = 0; i < vobj.length; i++) {
+                if (vobj.item(i).name != null) {
+                    if (vobj.item(i).name.length > 1) {
+                        if (vobj.item(i).type != 'hidden') {
+                            if (check_field_access(vobj.item(i).name, allowed_field) != true) {
+                                //alert('Disable '+vobj.item(i).name);
+                                disable_field(vobj.item(i));
+                            } else {
+                                //alert('Enable '+vobj.item(i).name);
+                                enable_field(vobj.item(i));
+                            }   // Check ACL
+                        }      // != hidden
+                    }         // Name length > 2
+                }           // Name != null
+            }              // for
+        }                // obj != null
+    }
 </script>

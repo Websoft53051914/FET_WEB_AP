@@ -146,8 +146,8 @@ namespace FTT_API.Controllers.Pending
             }
 
             FormTableVM vm = new FormTableVM();
-            vm.ftt_formDTO = GetTTInfo(formNo);
-            vm.StoreClass = GetStoreInfo(formNo);
+            //vm.ftt_formDTO = GetTTInfo(formNo);
+            //vm.store_profileDTO = GetStoreInfo(formNo);
 
             if (vm.ftt_formDTO == null)
             {
@@ -165,7 +165,7 @@ namespace FTT_API.Controllers.Pending
                 });
             }
 
-            if (vm.StoreClass == null)
+            if (vm.store_profileDTO == null)
             {
                 return RedirectToAction("Redirection", "AlertMsg", new AlertMsgRedirection()
                 {
@@ -420,137 +420,7 @@ namespace FTT_API.Controllers.Pending
             return "";
         }
 
-        protected StoreClass GetStoreInfo(string form_No)
-        {
-            string mRunScriptStoreInfo = "";
-            StoreClass mStoreData = new StoreClass();
-            if (form_No != "")
-            {
-                BaseDBHandler baseHandler = new BaseDBHandler();
-                ViewData["CREATE_TIME"] = baseHandler.GetDBHelper().FindScalar<string>("select to_char(CREATETIME,'yyyy/mm/dd hh24:mi:ss') from FTT_FORM where FORM_NO=" + form_No, null);
-                string mIVRCode = baseHandler.GetDBHelper().FindScalar<string>("select IVRCODE from FTT_FORM where FORM_NO=" + form_No);
-                string mSTOREName = baseHandler.GetDBHelper().FindScalar<string>("select SHOP_NAME from STORE_PROFILE where IVR_CODE=" + mIVRCode);
-                ViewData["SHOP_NAME"] = mSTOREName;
 
-                mStoreData = new StoreClass(mIVRCode);
-                if (mStoreData.hasData() == true)
-                {
-                    if (mStoreData.ApprovalDate != "")
-                    {
-                        ViewData["APPROVALDATE"] = Convert.ToDateTime(mStoreData.ApprovalDate).ToString("yyyy/MM/dd");
-                        ViewData["WARRANTYTIME"] = Convert.ToDateTime(mStoreData.ApprovalDate).AddYears(1).ToString("yyyy/MM/dd");
-                        if (System.DateTime.Now > Convert.ToDateTime(mStoreData.ApprovalDate).AddYears(1))
-                        {
-                            if (mStoreData.Channel == "FRANCHISE")
-                                ViewData["WARRANTYTIMEForeColor"] = System.Drawing.Color.Red;
-                        }
-
-                        mRunScriptStoreInfo += "ifwarrant = \"N\";\r\n";
-                    }
-                }
-                //mRunScriptStoreInfo += "isNewTT = false;\r\n";
-            }
-            else if (LoginSession.Current.ivrcode != null)
-            {
-                ViewData["CREATE_TIME"] = System.DateTime.Now.ToString("yyyy/MM/dd");
-                mStoreData = new StoreClass(LoginSession.Current.ivrcode);
-                if (mStoreData.hasData() == true)
-                {
-                    if (mStoreData.ApprovalDate != "")
-                    {
-                        ViewData["APPROVALDATE"] = Convert.ToDateTime(mStoreData.ApprovalDate).ToString("yyyy/MM/dd");
-                        ViewData["WARRANTYTIME"] = Convert.ToDateTime(mStoreData.ApprovalDate).AddYears(1).ToString("yyyy/MM/dd");
-                        if (System.DateTime.Now > Convert.ToDateTime(mStoreData.ApprovalDate).AddYears(1))
-                        {
-                            if (mStoreData.Channel == "FRANCHISE")
-                            {
-                                ViewData["WARRANTYTIMEForeColor"] = System.Drawing.Color.Red;
-                                mRunScriptStoreInfo += "alert(\"除招牌與影音設備外,您報修的品項已超過保固！！\");\r\n";
-                            }
-
-                            mRunScriptStoreInfo += "ifwarrant = \"N\";\r\n";
-                        }
-                    }
-                }
-                //mRunScriptStoreInfo += "isNewTT = true;\r\n";
-            }
-
-            ViewData["mRunScriptStoreInfo"] = mRunScriptStoreInfo;
-            return mStoreData;
-        }
-
-        protected ftt_formDTO GetTTInfo(string formNo)
-        {
-            if (formNo != "")
-            {
-                string mRunScript = "";
-                BaseDBHandler baseHandler = new BaseDBHandler();
-
-                ftt_formSQL _ftt_formSQL = new ftt_formSQL();
-                var dto = _ftt_formSQL.GetInfoByFormNo(formNo);
-
-                //System.Data.DataTable dataTable = baseHandler.GetDBHelper().FindDataTable("SELECT FTT_FORM.*,(SELECT CINAME FROM CI_RELATIONS WHERE CI_RELATIONS.CISID=FTT_FORM.CATEGORY_ID AND ROWNUM=1) as CIDesc FROM FTT_FORM WHERE FORM_NO=" + formNo, null);
-                if (dto != null)
-                {
-                    ViewData["CREATE_TIME"] = dto.createtime;
-
-                    //TT_CATEGORY.SelectedValue = dataTable.Rows[0]["TT_CATEGORY"].ToString();
-                    //if (dataTable.Rows[0]["TT_CATEGORY"].ToString() == "緊急(新開單)")
-                    //{
-                    //    List<SelectListItem> list = new List<SelectListItem>();
-                    //    list.Add(new SelectListItem() { Text = "緊急(新開單)", Value = "緊急(新開單)", Selected = true });
-                    //    TT_CATEGORY.Items.Add(item);
-                    //}
-
-                    //REPAIR.SelectedValue = dataTable.Rows[0]["REPAIR"].ToString();
-                    //RESUPPLY.SelectedValue = dataTable.Rows[0]["RESUPPLY"].ToString();
-
-                    //mRunScript += "document.all.EMPNAME.value = \"" + dataTable.Rows[0]["EMPNAME"].ToString() + "\"; \r\n";
-                    //mRunScript += "document.all.EMPTEL.value = \"" + dataTable.Rows[0]["EMPTEL"].ToString() + "\"; \r\n";
-                    //mRunScript += "document.all.CATEGORY_ID.value = \"" + dataTable.Rows[0]["CATEGORY_ID"].ToString() + "\"; \r\n";
-                    //mRunScript += "document.all.CATEGORY_NAME.value = \"" + dataTable.Rows[0]["CATEGORY_NAME"].ToString() + "\"; \r\n";
-                    //mRunScript += "document.all.VENDER_ID.value = \"" + dataTable.Rows[0]["VENDER_ID"].ToString() + "\"; \r\n";
-                    //mRunScript += "document.all.SELFCONFIG.value = \"" + dataTable.Rows[0]["SELFCONFIG"].ToString() + "\"; \r\n";
-                    //mRunScript += "document.all.SELFCONFIG_NOTE.innerText = \"" + dataTable.Rows[0]["SELFCONFIG"].ToString() + "\"; \r\n";
-                    //mRunScript += "showCIInfo(\"" + dto.category_id + "\",\"" + dto.CIDesc + "\",\"" + dto.category_name + "\");\r\n";
-
-
-                    if (!string.IsNullOrEmpty(dto.CIDesc))
-                    {
-                        string filePath = $"images/Item/{dto.CIDesc.Trim()}.jpg";
-                        string path = Path.Combine(_hostingEnvironment.WebRootPath, filePath);
-                        if (System.IO.File.Exists(path))
-                        {
-                            ViewData["hasTT_IMAGE"] = true;
-                            ViewData["newImageSRC"] = filePath;
-                        }
-                    }
-
-                    //mRunScript += "document.all.TT_CATEGORY_NOTE_PANNEL.innerHTML = \"" + dataTable.Rows[0]["CHECKITEM"].ToString().Replace("\n", "").Replace("\r", "") + "\"; \r\n";
-                    //mRunScript += "document.all.TT_CATEGORY_DESC_PANNEL.innerHTML = \"" + dataTable.Rows[0]["DESCR"].ToString().Replace("\n", "").Replace("\r", "") + "\"; \r\n";
-                    //mRunScript += "document.all.REMARK.value = \"" + dataTable.Rows[0]["REMARK"].ToString() + "\"; \r\n";
-                    //mRunScript += "setCATEGORY_LABEL(\"" + dto.category_id + "\"); \r\n";
-
-                    if (dto.selfconfig == "N")
-                    {
-                        //var dataTable = baseHandler.GetDBHelper().FindDataTable("SELECT * FROM STORE_VENDER_PROFILE WHERE ORDER_ID IN (SELECT VENDER_ID FROM FTT_FORM WHERE FORM_NO=" + formNo + ")", null);
-                        //mRunScript += "showVenderInfo(\"" + dataTable.Rows[0]["ORDER_ID"].ToString() + "\",\"" + dataTable.Rows[0]["MERCHANT_NAME"].ToString() + "\",\"" + dataTable.Rows[0]["CP_NAME"].ToString() + "\",\"" + dataTable.Rows[0]["CP_TEL"].ToString() + "\");\r\n";
-                    }
-                    else
-                    {
-                        string StoreName = baseHandler.GetDBHelper().FindScalar<string>("select SHOP_NAME from STORE_PROFILE where IVR_CODE='" + dto.ivrcode + "'", null);
-                        ViewData["StoreName"] = StoreName;
-                    }
-
-                    return dto;
-                }
-
-                //dataTable.Dispose();
-                ViewData["mRunScript"] = mRunScript;
-            }
-
-            return null;
-        }
 
         public class SelectDescVM
         {

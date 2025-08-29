@@ -3,6 +3,19 @@
     {
         IdGrid = Guid.NewGuid(),
     };
+
+    var mapText = new
+    {
+        Text_CreateDate = "建立日期",
+        Text_CreateUser = "建立人員",
+        Title_BlockSearch = "檢索",
+        Title_BlockGrid = "資料一覽",
+        Btn_Search = "查詢",
+        Btn_Clear = "清除",
+        Btn_Create = "新增",
+        Btn_Confirm = "確認",
+        Btn_Cancel = "取消",
+    };
 }
 
 <div class="container-fluid">
@@ -75,6 +88,13 @@
                 pageLastText: "最後一頁",
                 pageLoading: true,
                 autoload: true,
+                rowDoubleClick: function (args, item) {
+                    var form_no = args.item.form_no;
+
+                    var newTab = window.open('@(Url.Action("Detail", new { formNo = "tempid" }))'.replace("tempid", form_no), '_blank');
+                    newTab.location;
+
+                },
                 changePageSize: function (pageSize) {
                     var $this = this;
                     $this.pageSize = pageSize;
@@ -85,89 +105,95 @@
                 onDataLoaded: function () {
                     feather.replace();
                 },
-                data: [
-                    {
-                        Id :10,
-                        OrderNumber: "123456",
-                        RepairType: "一般",
-                        RepairCategory: "監視系統",
-                        RepairItem: "數位錄影機",
-                        OrderDate: "2023-10-01 16:12:56",
-                        StoreName: "台北南昌",
-                        OrderStatusName: "等待系統派工",
-                        CurrentInchargeName: "王小明"
-                    }
-                ],
-                // controller: {
-                //     loadData: function (filter) {
-                //         var d = $.Deferred();
-                //         $.ajax({
-                //             type: "POST",
-                //             url: "@Url.Action("GetPageList")",
-                //             data: filter,
-                //             dataType: "json",
-                //             success: function (res) {
-                //                 if (res.Success === false) {
-                //                     swal({
-                //                         text: res.Message,
-                //                         icon: "error",
-                //                         button: "確認"
-                //                     });
-                //                     d.reject();
-                //                     return;
-                //                 }
-                //                 var da = {
-                //                     data: res.Data,
-                //                     itemsCount: res.Total
-                //                 }
-                //                 d.resolve(da);
-                //             }
-                //         })
+                controller: {
+                    loadData: function (filter) {
+                        var d = $.Deferred();
+                        $.ajax({
+                            type: "POST",
+                            url: "@(config.GetBackendUrl() + Url.Action("GetPageList"))",
+                            data: filter,
+                            dataType: "json",
+                            success: function (res) {
+                                if (res.Success === false) {
+                                    swal({
+                                        text: res.Message,
+                                        icon: "error",
+                                        button: "確認"
+                                    });
+                                    d.reject();
+                                    return;
+                                }
+                                var da = {
+                                    data: res.Data,
+                                    itemsCount: res.Total
+                                }
+                                d.resolve(da);
+                            }
+                        })
 
-                //         return d.promise();
-                //     }
-                // },
+                        return d.promise();
+                    }
+                },
                 fields: [
                     { name: "Id", visible: false },
+                    { name: "form_no", title: "工單號碼", type: "text", width: 100, align: "center" },
+                    { name: "tt_category", title: "報修型態", type: "text", width: 100, align: "center" },
+                    { name: "l2_desc", title: "報修類別", type: "text", width: 150, align: "center" },
+                    { name: "ciname", title: "報修品項", type: "text", width: 150, align: "center" },
+                    { name: "createtime", title: "報修日期", type: "text", width: 120, align: "center" },
+                    { name: "shop_name", title: "店名", type: "text", width: 120, align: "center" },
+                    { name: "statusname", title: "工單狀態", type: "text", width: 100, align: "center" },
+                    { name: "CurrentInchargeName", title: "目前處理者", type: "text", width: 120, align: "center" },
                     {
                         type: 'control', align: "center",
-                        width: 60,
+                        width: 80,
                         editButton: false,
                         deleteButton: false,
                         headerTemplate: (value, item) => {
-                            return $("<div>操作<div>").attr({ class: '' });
+                            return $("<div><div>").attr({ class: '' });
                         },
                         itemTemplate: (value, item) => {
 
-                            $editButton = $('<a>')
+                            $trackingFormButton = $('<button>')
                                 .attr({
-                                    'class': 'jsgrid-button jsgrid-edit-button d-inline-block',
-                                    'href': "@Url.Action("Index", "FormEdit")",
+                                    'class': 'btn btn-primary mt-3',
+                                    'style': 'margin-left:10px; '
                                 })
+                                .html('催單')
+                                .on('click', () => {
+                                    var data = {
+                                        form_no: item['form_no']
+                                    };
 
-                            $deleteButton = $('<button>')
-                                .attr({
-                                    'class': 'exclick jsgrid-button jsgrid-delete-button',
-                                })
+                                    $.ajax({
+                                        url: "@(config.GetBackendUrl() + Url.Action("InsterTrackingForm"))",
+                                        dataType: 'json',
+                                        type: 'POST',
+                                        data: data
+                                    })
+                                        .done((response) => {
+                                            var msg = response.Success ? response.Data : response.Message;
+                                            var alertType = response.Success ? "success" : "error";
 
-                            var result = $('<div>').append($editButton);
-                            // result.append($deleteButton);
+                                            swal({
+                                                text: msg,
+                                                button: '@(mapText.Btn_Confirm.ToHtmlString())',
+                                                icon: alertType
+                                            }).then((result) => {
+                                                context.$Grid.jsGrid('search');
+                                            });
+                                        });
+                                });
 
+                            var result = $('<div>');
+                            if (item["IsTICKET"] == true) {
+                                result.append($trackingFormButton);
+                            }
                             return result;
                         }
                     },
-                    { name: "OrderNumber", title: "工單號碼", type: "text", width: 100, align: "center" },
-                    { name: "RepairType", title: "報修型態", type: "text", width: 100, align: "center" },
-                    { name: "RepairCategory", title: "報修類別", type: "text", width: 100, align: "center" },
-                    { name: "RepairItem", title: "報修品項", type: "text", width: 150, align: "center" },
-                    { name: "OrderDate", title: "報修日期", type: "text", width: 120, align: "center" },
-                    { name: "StoreName", title: "店名", type: "text", width: 120, align: "center" },
-                    { name: "OrderStatusName", title: "工單狀態", type: "text", width: 100, align: "center" },
-                    { name: "CurrentInchargeName", title: "目前處理者", type: "text", width: 120, align: "center" },
-
                 ],
-
-        });
+            });
 
             //分頁頁數紀錄相關
             context.$Grid.jsGrid('_setPage', cookiePageIndex);//jsgrid bug 不會自動將頁碼設定成pageindex

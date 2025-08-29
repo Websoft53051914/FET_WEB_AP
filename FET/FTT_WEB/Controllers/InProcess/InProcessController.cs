@@ -8,5 +8,10 @@ namespace FTT_WEB.Controllers.InProcess
         {
             return View();
         }
+
+        public IActionResult Detail()
+        {
+            return View();
+        }
     }
 }

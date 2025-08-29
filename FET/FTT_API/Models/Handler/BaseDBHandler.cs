@@ -59,6 +59,12 @@ namespace FTT_API.Models.Handler
             int result = this.dbHelper.FindScalar<int>(countSql, null);
             return result == 1;
         }
+        public bool CheckDataExist(string TableName, string Condition, Dictionary<string, object> dicCondition)
+        {
+            string countSql = $"SELECT EXISTS (SELECT 1 FROM {TableName} where {Condition} ); ";
+            int result = this.dbHelper.FindScalar<int>(countSql, dicCondition);
+            return result == 1;
+        }
 
         /// <summary>
         /// 取得資料表中某各欄位的資料型態

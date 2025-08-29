@@ -16,6 +16,8 @@ namespace FTT_API.Common.OriginClass.EntiityClass
         public string shop_name { get; set; }
         public string statusname { get; set; }
         public string updatetime { get; set; }
+        public string statusid { get; set; }
+
 
     }
 
@@ -27,6 +29,12 @@ namespace FTT_API.Common.OriginClass.EntiityClass
         public string USERROLE { get; set; }
         public string EMPNO { get; set; }
         public string IVRCODE { get; set; }
+
+
+        public bool IsTicket { get; set; }
+
+        public string CurrentInchargeName { get; set; }
+
     }
 
 

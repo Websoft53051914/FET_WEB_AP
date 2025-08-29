@@ -537,6 +537,7 @@ namespace FTT_WEB.Controllers.Pending
                     }
                     else
                     {
+
                         string StoreName = baseHandler.GetDBHelper().FindScalar<string>("select SHOP_NAME from STORE_PROFILE where IVR_CODE='" + dto.ivrcode + "'", null);
                         ViewData["StoreName"] = StoreName;
                     }
