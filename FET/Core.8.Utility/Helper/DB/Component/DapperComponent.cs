@@ -378,25 +378,14 @@ namespace Core.Utility.Helper.DB.Component
         /// <exception cref="NotImplementedException"></exception>
         public DataTable GetDataTableBySQLScript(string _SQLScript, CommandType _CommandType, Dictionary<string, object> paras = null)
         {
-            using IDbConnection _NpgsqlConnection = new EDBConnection(_connectionString);
-            _NpgsqlConnection.Open();
-            using IDbCommand _NpgsqlCommand = _NpgsqlConnection.CreateCommand();
-            _NpgsqlCommand.CommandText = _SQLScript;
-            _NpgsqlCommand.CommandType = _CommandType;
-            if (paras != null && paras.Count > 0)
-            {
-                foreach (KeyValuePair<string, object> p in paras)
-                {
-                    IDbDataParameter para = _NpgsqlCommand.CreateParameter();
-                    para.ParameterName = p.Key;
-                    para.Value = p.Value ?? (object)DBNull.Value;
-                    _NpgsqlCommand.Parameters.Add(para);
-                }
-            }
-            using IDataReader reader = _NpgsqlCommand.ExecuteReader(CommandBehavior.CloseConnection | CommandBehavior.SingleResult);
-            DataTable dt = new DataTable();
-            dt.Load(reader);
-            return dt;
+            using IDbConnection _NpgNpgsqlConnection = new EDBConnection(_connectionString);
+            _NpgNpgsqlConnection.Open();
+            IDataReader reader = _NpgNpgsqlConnection.ExecuteReader(_SQLScript, paras);
+
+            DataTable result = new();
+            result.Load(reader);
+
+            return result;
         }
         #endregion
     }
