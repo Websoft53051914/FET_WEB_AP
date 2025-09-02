@@ -48,8 +48,8 @@ $('.btn-back').on('click', (e) => {
     history.go(-1);
 })
 
-$('body').on('blur','input.websoft-jsgrid-positive', function () {
-    if (Number($(this).val()) < 0){
+$('body').on('blur', 'input.websoft-jsgrid-positive', function () {
+    if (Number($(this).val()) < 0) {
         $(this).val('')
     }
 })
@@ -66,12 +66,12 @@ $('body').on('blur', 'input.websoft-positive-float', function () {
     }
 })
 
-$('body').on('click','.preview-img', function () {
+$('body').on('click', '.preview-img', function () {
     const img = $(this).clone(true);
     $('#imageOverlay').html(img).addClass('active');
 })
 
-$('body').on('click','#imageOverlay', function () {
+$('body').on('click', '#imageOverlay', function () {
     $(this).removeClass('active')
 })
 
@@ -207,27 +207,24 @@ function previewImg(input, previewImgEl, acceptedFiles = [], notAcceptCallBack =
  * 容器：<div id="xxxContainer" class="form-check m-checkbox-inline" data-value=""></div>
  */
 function buildCheckbox(item) {
-    let $div = $('<div>')
-        .attr({
-            'class': 'checkbox checkbox-primary',
-        });
+    let $div = $('<div>', {
+        'class': 'checkbox checkbox-primary',
+    });
     let inputId = uuidv4();
     let inputClassNames = item.inputClassNames || '';
-    let $input = $('<input>')
-        .attr({
-            'type': 'checkbox',
-            'class': 'form-check-input ' + inputClassNames,
-            'value': item.id,
-            'id': inputId,
-            'name': item.name,
-            'data-group': item.dataGroup,
-        })
+    let $input = $('<input>', {
+        'type': 'checkbox',
+        'class': 'form-check-input ' + inputClassNames,
+        'value': item.id,
+        'id': inputId,
+        'name': item.name,
+        'data-group': item.dataGroup,
+    })
         .prop('checked', item.selected || false);
-    let $label = $('<label>')
-        .attr({
-            'for': inputId,
-            'class': 'form-check-label mt-0 mb-0',
-        })
+    let $label = $('<label>', {
+        'for': inputId,
+        'class': 'form-check-label mt-0 mb-0',
+    })
         .text(item.text);
 
     $div.append($input).append($label);
@@ -235,7 +232,115 @@ function buildCheckbox(item) {
     return $div;
 };
 
+function buildCheckboxSingle(item) {
+    let $div = $('<div>', {
+        'class': 'form-check checkbox checkbox-primary',
+    });
+    let inputId = uuidv4();
+    let inputClassNames = item.inputClassNames || '';
+    let $input = $('<input>', {
+        'type': 'checkbox',
+        'class': 'form-check-input ' + inputClassNames,
+        'value': item.id,
+        'id': inputId,
+        'name': item.name,
+        'data-group': item.dataGroup,
+    })
+        .prop('checked', item.selected || false);
+    let $label = $('<label>', {
+        'for': inputId,
+        'class': 'form-check-label',
+    })
+        .text(item.text);
+
+    $div.append($input).append($label);
+
+    return $div;
+};
+
+/**
+ * 建立 Tempus Dominus 的 bootstrap-datetimepicker
+ * @param {any} item
+ * @returns
+ */
+function buildTDDateTimePicker(item) {
+    item.options = item.options || {
+        format: 'YYYY/MM/DD'
+    };
+
+    let value = null;
+    if (item.value) {
+        if (typeof (item.value) === 'string') {
+            value = new Date(item.value);
+        }
+        else {
+            value = item.value;
+        }
+    }
+
+    let containerId = 'z' + uuidv4();
+    let $dpContainer = $('<div>', {
+        id: containerId,
+        class: 'input-group date',
+        'data-target-input': 'nearest'
+    });
+    let $dpInput = $('<input>', {
+        class: 'form-control datetimepicker-input',
+        type: 'text',
+        'data-target': `#${containerId}`,
+    });
+    let $dpIconB = $('<div>', {
+        class: 'input-group-text',
+        'data-target': `#${containerId}`,
+        'data-toggle': 'datetimepicker'
+    });
+    let $dpIcon = $('<i>', {
+        class: 'fa fa-calendar'
+    });
+
+    $dpIconB.append($dpIcon);
+    $dpContainer.append($dpInput);
+    $dpContainer.append($dpIconB);
+
+    $dpContainer.datetimepicker(item.options);
+    $dpContainer.datetimepicker('date', value);
+
+    return $dpContainer;
+}
+
+function postSubmitJson(url, postData, target) {
+    let $form = $('<form>', {
+        action: url,
+        method: 'post',
+        target: target || '_blank',
+    });
+    let $input = $('<input>', {
+        type: 'hidden',
+        name: 'data',
+        value: JSON.stringify(postData || {}),
+    });
+
+    $form.append($input);
+    $('body').append($form);
+    $form.trigger('submit');
+    $form.remove();
+}
+
 const SiteConst = {
     A4_HEIGHT: 841.89,
     A4_WIDTH: 595.28
-}
+};
+
+(function () {
+    var orig = EventTarget.prototype.addEventListener;
+    EventTarget.prototype.addEventListener = function (type, listener, options) {
+        if (type === 'touchstart' || type === 'touchmove' || type === 'wheel') {
+            if (typeof options === 'object') {
+                options.passive = options.passive !== undefined ? options.passive : true;
+            } else {
+                options = { passive: true };
+            }
+        }
+        return orig.call(this, type, listener, options);
+    };
+})();

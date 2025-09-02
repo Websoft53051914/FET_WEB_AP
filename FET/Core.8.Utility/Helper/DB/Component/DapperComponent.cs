@@ -329,20 +329,21 @@ namespace Core.Utility.Helper.DB.Component
             {
                 foreach (BatchSqlContainer sqlEntity in sqlList)
                 {
-                    cmd.CommandText = sqlEntity.SqlStatement;
-                    cmd.Parameters.Clear();
+                    conn.Execute(sqlEntity.SqlStatement, sqlEntity.Parameter, trx);
+                    //cmd.CommandText = sqlEntity.SqlStatement;
+                    //cmd.Parameters.Clear();
 
-                    if (sqlEntity.Parameter != null)
-                        foreach (KeyValuePair<string, object> p in sqlEntity.Parameter)
-                        {
-                            IDbDataParameter para = cmd.CreateParameter();
-                            para.ParameterName = p.Key;
-                            para.Value = p.Value ?? (object)DBNull.Value;
+                    //if (sqlEntity.Parameter != null)
+                    //    foreach (KeyValuePair<string, object> p in sqlEntity.Parameter)
+                    //    {
+                    //        IDbDataParameter para = cmd.CreateParameter();
+                    //        para.ParameterName = p.Key;
+                    //        para.Value = p.Value ?? (object)DBNull.Value;
 
-                            cmd.Parameters.Add(para);
-                        }
+                    //        cmd.Parameters.Add(para);
+                    //    }
 
-                    cmd.ExecuteNonQuery();
+                    //cmd.ExecuteNonQuery();
 
                 }
 

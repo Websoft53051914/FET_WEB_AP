@@ -1,7 +1,27 @@
 ﻿@{
-    var mapAttr = new
+    var mapData = new
     {
-        IdGrid = Guid.NewGuid(),
+        Grid = new
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            IdPageSelect = Guid.NewGuid().ToString("N"),
+            IdPagers = Guid.NewGuid().ToString("N"),
+            UrlGetPageList = $"{config.GetBackendUrl()}/OnsitePrint/GetPageListPrwp",
+            CbGroup = Guid.NewGuid().ToString("N"),
+        },
+        Grid2 = new
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            IdPageSelect = Guid.NewGuid().ToString("N"),
+            IdPagers = Guid.NewGuid().ToString("N"),
+            UrlGetPageList = $"{config.GetBackendUrl()}/OnsitePrint/GetPageListConfirm",
+            CbGroup = Guid.NewGuid().ToString("N"),
+        },
+        UrlPrintWP = $"{config.GetBackendUrl()}/OnsitePrint/PrintWP",
+        UrlUpdateStatusToTicket = $"{config.GetBackendUrl()}/OnsitePrint/UpdateStatusToTicket",
+        UrlUpdateStatusToPrwp = $"{config.GetBackendUrl()}/OnsitePrint/UpdateStatusToPrwp",
+        UrlUpdateStatusToConfirm = $"{config.GetBackendUrl()}/OnsitePrint/UpdateStatusToConfirm",
+        UrlDetail = Url.Action("Detail", "Pending", new { formNo = "tempId" }),
     };
 }
 
@@ -23,19 +43,38 @@
 <div class="container-fluid">
     <div class="card">
         <div class="card-body">
-            <div class="row none_hover">
-                <div class="col-xl-3 col-lg-4 col-sm-6 col-12 mb-2">
-                    <button class="btn btn-primary" id="btnPrint">列印到場單</button>
-                </div>
+            <h5>填寫廠商到門市日期</h5>
+            <div class="d-flex mb-2 gap-1">
+                <button type="button" class="btn btn-primary" id="btnPrint">列印到場單</button>
+                <button type="button" class="btn btn-primary" id="btnSave">儲存/送出</button>
             </div>
-            <div id="@(mapAttr.IdGrid)"></div>
+            <div id="@(mapData.Grid.Id)"></div>
             <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
                 <div id="pageResizer" class="jsgrid-pager-page">
                     <span>每頁筆數:</span>
-                    <select id="pageSelect">
+                    <select id="@(mapData.Grid.IdPageSelect)">
                     </select>
                 </div>
-                <div id="pagers">
+                <div id="@(mapData.Grid.IdPagers)">
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <h5>確認廠商到門市日期</h5>
+            <div class="d-flex mb-2 gap-1">
+                <button type="button" class="btn btn-primary" id="btnNextStatus">廠商已到場-Y</button>
+                <button type="button" class="btn btn-primary" id="btnBackStatus">廠商未到場-N</button>
+            </div>
+            <div id="@(mapData.Grid2.Id)"></div>
+            <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
+                <div id="pageResizer" class="jsgrid-pager-page">
+                    <span>每頁筆數:</span>
+                    <select id="@(mapData.Grid2.IdPageSelect)">
+                    </select>
+                </div>
+                <div id="@(mapData.Grid2.IdPagers)">
                 </div>
             </div>
         </div>
@@ -45,136 +84,624 @@
 @section scripts
 {
     <script>
+        var context = {
 
-        const context = {
-            $Grid: $("#@(mapAttr.IdGrid)"),
         };
+        var cookieName = 'OnsitePrintGridInfo';
+        var cookieName2 = 'OnsitePrintGridInfo2';
 
         $(function () {
-            initGrid(1);
+            let pageIndex = 1;
+            let pageSize = pageDataSource[0].id;
+            if (Cookies.get(cookieName)) {
+                var cookieObj = JSON.parse(Cookies.get(cookieName));
+                if (cookieObj && cookieObj.FromEdit == true) {
+                    if (cookieObj.PageIndex) {
+                        pageIndex = parseInt(cookieObj.PageIndex);
+                    }
 
-            $("#pageSelect").on("change", function () {
-                const val = this.value;
-                onPageLenghtSelect(val, context.$Grid);
-            })
+                    if (cookieObj.PageSize) {
+                        pageSize = parseInt(cookieObj.PageSize);
+                    }
 
-            $("#pageSelect").select2({
-                minimumResultsForSearch: -1,
-                data: pageDataSource
-            });
-            $("#pageSelect").data("select2").$container.addClass("w-auto");
+                    Cookies.remove(cookieName);
+                }
+            }
+            initGrid(pageIndex, pageSize);
+
+            pageIndex = 1;
+            pageSize = pageDataSource[0].id;
+            if (Cookies.get(cookieName2)) {
+                var cookieObj = JSON.parse(Cookies.get(cookieName2));
+                if (cookieObj && cookieObj.FromEdit == true) {
+                    if (cookieObj.PageIndex) {
+                        pageIndex = parseInt(cookieObj.PageIndex);
+                    }
+
+                    if (cookieObj.PageSize) {
+                        pageSize = parseInt(cookieObj.PageSize);
+                    }
+
+                    Cookies.remove(cookieName2);
+                }
+            }
+
+            initGrid2(pageIndex, pageSize);
         });
-
-        function initGrid(cookiePageIndex) {
-            $("#@(mapAttr.IdGrid)").jsGrid({
+    </script>
+    <script>
+        function initGrid(cookiePageIndex, cookiePageSize) {
+            context['@(mapData.Grid.Id)'] = {};
+            var ctx = context['@(mapData.Grid.Id)'];
+            ctx.setSelected = new Set();
+            ctx.dictData = {};
+            ctx.$Grid = $('#@(mapData.Grid.Id)');
+            ctx.$Grid.jsGrid({
                 pageIndex: cookiePageIndex,
                 paging: true,
-                width: "100%",
-                pageSize: pageDataSource[0].id,
-                pageButtonCount: 5,
-                pagerFormat: "{first} {prev} {pages} {next} {last}    第 {pageIndex} 頁 共 {pageCount} 頁",
-                pagePrevText: "上一頁",
-                pageNextText: "下一頁",
-                pageFirstText: "第一頁",
-                pageLastText: "最後一頁",
+                pageSize: cookiePageSize,
                 pageLoading: true,
                 autoload: true,
-                changePageSize: function (pageSize) {
-                    var $this = this;
-                    $this.pageSize = pageSize;
+                pagerContainer: '#@(mapData.Grid.IdPagers)',
+                rowDoubleClick: function (e) {
+                    // [/pool/WP.aspx]gridView_RowDataBound()
+                    let formNo = e.item['@(nameof(OnsitePrintVO.FormNo))'];
+                    window.open('@(mapData.UrlDetail)'.replace("tempId", formNo), '_blank');
+                },
+                controller: {
+                    loadData: function (filter) {
+                        var d = $.Deferred();
+                        filter.vm = {};
 
-                    context.$Grid.jsGrid("openPage", 1);
-                },
-                pagerContainer: "#pagers",
-                onDataLoaded: function () {
-                    feather.replace();
-                },
-                rowClick: function (args) {
-                    //checkbox check
-                    if (args.event.target.type !== "checkbox") {
-                        var $checkbox = $(args.event.target).closest("tr").find("input[type='checkbox']");
-                        $checkbox.prop("checked", !$checkbox.prop("checked"));
+                        //分頁頁數紀錄相關 紀錄查詢時將查詢條件、頁數 start
+                        var cookieobj = {
+                            PageIndex: filter.pageIndex,
+                            PageSize: filter.pageSize,
+                            ...filter.vm
+                        };
+                        Cookies.set(cookieName, JSON.stringify(cookieobj), { expires: 1 });
+
+                        $.ajax({
+                            type: 'POST',
+                            url: '@(mapData.Grid.UrlGetPageList?.ToHtmlString())',
+                            data: filter,
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.Success === false) {
+                                    swal({
+                                        text: res.Message,
+                                        button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                                        icon: 'error'
+                                    });
+                                    d.reject();
+                                    return;
+                                }
+                                var da = {
+                                    data: res.Data,
+                                    itemsCount: res.Total
+                                }
+                                d.resolve(da);
+                            }
+                        });
+
+                        return d.promise();
                     }
                 },
-                data: [
-                    {
-                        Id :10,
-                        OrderNumber: "123456",
-                        RepairType: "一般",
-                        RepairCategory: "監視系統",
-                        RepairItem: "數位錄影機",
-                        OrderDate: "2023-10-01 16:12:56",
-                        StoreName: "台北南昌",
-                        OrderStatusName: "審單中",
-                        UpdateTimeText: "2023-10-01 16:12:56"
-                    }
-                ],
-                // controller: {
-                //     loadData: function (filter) {
-                //         var d = $.Deferred();
-                //         $.ajax({
-                //             type: "POST",
-                //             url: "@Url.Action("GetPageList")",
-                //             data: filter,
-                //             dataType: "json",
-                //             success: function (res) {
-                //                 if (res.Success === false) {
-                //                     swal({
-                //                         text: res.Message,
-                //                         icon: "error",
-                //                         button: "確認"
-                //                     });
-                //                     d.reject();
-                //                     return;
-                //                 }
-                //                 var da = {
-                //                     data: res.Data,
-                //                     itemsCount: res.Total
-                //                 }
-                //                 d.resolve(da);
-                //             }
-                //         })
-
-                //         return d.promise();
-                //     }
-                // },
                 fields: [
-                    { name: "Id", visible: false },
                     {
-                        type: 'control', align: "center",
-                        width: 50,
+                        type: 'control', align: 'center',
+                        width: 80,
                         editButton: false,
                         deleteButton: false,
                         headerTemplate: (value, item) => {
-                            return $("<div>操作<div>").attr({ class: '' });
+                            let $cb = buildCheckboxSingle({
+                                id: uuidv4(),
+                                text: ' ',
+                                inputClassNames: 'cb-all',
+                                dataGroup: '@(mapData.Grid.CbGroup)',
+                            });
+
+                            return $cb;
                         },
                         itemTemplate: (value, item) => {
-                            //checkbox
-                            return $("<div>")
-                                .append($("<input>").attr({
-                                    type: "checkbox",
-                                    class: "",
-                                    value: item.Id,
-                                    name: "chkSelect"
-                                }))
+                            let $cb = buildCheckboxSingle({
+                                id: item['@(nameof(OnsitePrintVO.FormNo))'],
+                                text: ' ',
+                                inputClassNames: 'cb-item',
+                                dataGroup: '@(mapData.Grid.CbGroup)',
+                                selected: ctx.setSelected.has(item['@(nameof(OnsitePrintVO.FormNo))']),
+                            });
+                            $($cb.find('input')).on('change', function (e) {
+                                let $control = $(e.currentTarget);
+                                let val = $control.val();
+
+                                if ($control.prop('checked')) {
+                                    ctx.setSelected.add(val);
+                                    ctx.dictData[val] = item;
+                                }
+                                else {
+                                    ctx.setSelected.delete(val);
+                                }
+                            });
+
+                            return $cb;
                         }
                     },
-                    { name: "OrderNumber", title: "工單號碼", type: "text", width: 100, align: "center" },
-                    { name: "RepairType", title: "報修型態", type: "text", width: 100, align: "center" },
-                    { name: "RepairCategory", title: "報修類別", type: "text", width: 100, align: "center" },
-                    { name: "RepairItem", title: "報修品項", type: "text", width: 150, align: "center" },
-                    { name: "OrderDate", title: "報修日期", type: "text", width: 120, align: "center" },
-                    { name: "StoreName", title: "店名", type: "text", width: 120, align: "center" },
-                    { name: "OrderStatusName", title: "工單狀態", type: "text", width: 100, align: "center" },
-                    { name: "UpdateTimeText", title: "更新日期", type: "text", width: 120, align: "center" },
+                    { name: '@(nameof(OnsitePrintVO.FormNo))', title: '工單號碼', type: 'text', width: 100, align: 'center' },
+                    { name: '@(nameof(OnsitePrintVO.TtCategory))', title: '報修型態', type: 'text', width: 100, align: 'center' },
+                    { name: '@(nameof(OnsitePrintVO.L2Desc))', title: '報修類別', type: 'text', width: 100, align: 'center' },
+                    { name: '@(nameof(OnsitePrintVO.CiName))', title: '報修品項', type: 'text', width: 150, align: 'center' },
+                    { name: '@(nameof(OnsitePrintVO.CreateTimeText))', title: '報修日期', type: 'text', width: 200, align: 'center' },
+                    { name: '@(nameof(OnsitePrintVO.Vender))', title: '廠商', type: 'text', width: 180, align: 'center' },
+                    { name: '@(nameof(OnsitePrintVO.StatusName))', title: '工單狀態', type: 'text', width: 100, align: 'center' },
+                    {
+                        name: '@(nameof(OnsitePrintVO.VendorArriveDateText))', title: '廠商到門市日期', type: 'text', width: 200, align: 'center',
+                        itemTemplate: (value, item) => {
+                            var nowDate = moment();
+                            var openDate = item['@(nameof(OnsitePrintVO.CreateTimeText))'] ? moment(item['@(nameof(OnsitePrintVO.CreateTimeText))'], 'YYYY/MM/DD HH:mm:ss') : null;
+                            var limitDate = item['@(nameof(OnsitePrintVO.LimitDateText))'] ? moment(item['@(nameof(OnsitePrintVO.LimitDateText))'], 'YYYY/MM/DD') : null;
+                            var assignDate = item['@(nameof(OnsitePrintVO.AssignDateText))'] ? moment(item['@(nameof(OnsitePrintVO.AssignDateText))'], 'YYYY/MM/DD') : null;
+                            var $dpContainer = buildTDDateTimePicker({
+                                options: {
+                                    format: 'YYYY/MM/DD',
+                                    ignoreReadonly: true,
+                                    widgetParent: 'body',
+                                    //maxDate: nowDate.startOf('date'),
+                                    //minDate: openDate ? openDate.startOf('date') : false,
+                                },
+                                value: value || moment().format('YYYY/MM/DD'),
+                            });
+                            $($dpContainer.find('input')).prop('readonly', true);
+                            $dpContainer.on('change.datetimepicker', function (e) {
+                                var $row = ctx.$Grid.jsGrid("rowByItem", item);
+                                let $this = $(e.currentTarget);
+                                let val = $this.datetimepicker('date');
+                                // [/pool/WP.aspx]SelCalDate()
+                                let oldVal = item['@(nameof(OnsitePrintVO.VendorArriveDate))'] ? moment(item['@(nameof(OnsitePrintVO.VendorArriveDate))'], 'YYYY/MM/DD') : null;
 
+                                if (val) {
+                                    val = val.startOf('date');
+                                    if (val.isSameOrBefore(nowDate)) {
+                                        if (!openDate) {
+
+                                        }
+                                        else if (val.isSameOrAfter(openDate)) {
+                                            if (assignDate && val.isBefore(assignDate)) {
+                                                swal({
+                                                    text: '廠商到場日期不可小於派工日期!!',
+                                                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                                                    icon: 'warning'
+                                                });
+                                                $this.datetimepicker('date', oldVal);
+                                                return;;
+                                            }
+                                        }
+                                        else {
+                                            swal({
+                                                text: '廠商到場日期不可小於開單日期!!',
+                                                button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                                                icon: 'warning'
+                                            });
+                                            $this.datetimepicker('date', oldVal);
+                                            return;
+                                        }
+                                    }
+                                    else {
+                                        swal({
+                                            text: '廠商到場日期不可大於今日!!',
+                                            button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                                            icon: 'warning'
+                                        });
+                                        $this.datetimepicker('date', oldVal);
+                                        return;
+                                    }
+                                }
+
+                                item['@(nameof(OnsitePrintVO.VendorArriveDate))'] = val ? val.format('YYYY/MM/DD') : null;
+                                $($row.find('.cb-item')).prop('checked', true).trigger('change');
+                            });
+                            $dpContainer.on("show.datetimepicker", function (e) {
+                                let $this = $(e.currentTarget);
+                                let $input = $this.find("input");
+                                let $widget = $(".bootstrap-datetimepicker-widget").last();
+
+                                // 設定寬度與位置
+                                $widget.css({
+                                    width: $input.outerWidth() + "px",
+                                    top: $input.offset().top + $input.outerHeight(),
+                                    left: $input.offset().left
+                                });
+                            });
+                            $dpContainer.trigger('change');
+
+                            return $dpContainer;
+                        }
+                    },
+                    { width: 'auto' }
                 ],
-
-        });
+            });
 
             //分頁頁數紀錄相關
-            context.$Grid.jsGrid('_setPage', cookiePageIndex);//jsgrid bug 不會自動將頁碼設定成pageindex
+            ctx.$Grid.jsGrid('_setPage', cookiePageIndex);//jsgrid bug 不會自動將頁碼設定成pageindex
+            $('#@(mapData.Grid.IdPageSelect)').select2({
+                minimumResultsForSearch: -1,
+                data: pageDataSource
+            });
+            $('#@(mapData.Grid.IdPageSelect)').data('select2').$container.addClass('w-auto');
+            $('#@(mapData.Grid.IdPageSelect)').on('change', (e) => {
+                onPageLenghtSelect(e.currentTarget.value, ctx.$Grid);
+            });
+            ctx.reload = function () {
+                ctx.setSelected.clear();
+                ctx.dictData = {};
+                ctx.$Grid.jsGrid('search');
+            };
         }
 
+        $('#btnPrint').on('click', async function (e) {
+            var retConfirm = await swal({
+                text: '請確認是否要列印維修單？',
+                buttons: ['@(config.GetMessage("BtnCancel").ToHtmlString())', '@(config.GetMessage("BtnConfirm").ToHtmlString())'],
+                icon: 'info'
+            });
+
+            if (!retConfirm) {
+                return;
+            }
+
+            var ctxGrid = context['@(mapData.Grid.Id)'];
+
+            if (!ctxGrid.setSelected.size) {
+                swal({
+                    text: '請選擇工單！',
+                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            const arrSelected = Array.from(ctxGrid.setSelected);
+            const ivrcodeList = arrSelected.map(function (value, index) {
+                return ctxGrid.dictData[value]['@(nameof(OnsitePrintVO.Ivrcode))']
+            });
+            const ivrcodeSet = new Set(ivrcodeList);
+            if (ivrcodeSet.size > 1) {
+                swal({
+                    text: '請選擇相同門市！',
+                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            printWp(arrSelected);
+        });
+
+        $('#btnSave').on('click', async function (e) {
+            var retConfirm = await swal({
+                text: '請確認是否要送出？',
+                buttons: ['@(config.GetMessage("BtnCancel").ToHtmlString())', '@(config.GetMessage("BtnConfirm").ToHtmlString())'],
+                icon: 'info'
+            });
+
+            if (!retConfirm) {
+                return;
+            }
+
+            var ctxGrid = context['@(mapData.Grid.Id)'];
+
+            if (!ctxGrid.setSelected.size) {
+                swal({
+                    text: '請選擇工單！',
+                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            const arrSelected = Array.from(ctxGrid.setSelected);
+            const selectedDataList = arrSelected.map(function (value, index) {
+                return ctxGrid.dictData[value];
+            });
+
+            let data = {
+                '@(nameof(OnsitePrintUpdateStatusReqVO.DataList))': selectedDataList,
+            };
+            showLoader();
+            $.ajax({
+                url: '@(mapData.UrlUpdateStatusToConfirm?.ToHtmlString())',
+                dataType: 'json',
+                type: 'POST',
+                data: data,
+                cache: false
+            })
+                .done((response) => {
+                    if (response.Success) {
+                        swal({
+                            text: '更新完成！',
+                            button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                            icon: 'success'
+                        });
+                    }
+                    else {
+                        swal({
+                            text: response['Message'],
+                            button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                            icon: 'error'
+                        });
+                    }
+                })
+                .fail((err) => {
+                    console.log(err);
+                })
+                .always(() => {
+                    hideLoader();
+                    context['@(mapData.Grid.Id)'].reload();
+                    context['@(mapData.Grid2.Id)'].reload();
+                });
+        });
+
+        function printWp(formNoList) {
+            postSubmitJson('@(mapData.UrlPrintWP?.ToHtmlString())', {
+                '@(nameof(OnsitePrintUpdateStatusReqVO.FormNoList))': formNoList,
+            });
+        }
+    </script>
+    <script>
+        function initGrid2(cookiePageIndex, cookiePageSize) {
+            context['@(mapData.Grid2.Id)'] = {};
+            var ctx = context['@(mapData.Grid2.Id)'];
+            ctx.setSelected = new Set();
+            ctx.dictData = {};
+            ctx.$Grid = $('#@(mapData.Grid2.Id)');
+            ctx.$Grid.jsGrid({
+                pageIndex: cookiePageIndex,
+                paging: true,
+                pageSize: cookiePageSize,
+                pageLoading: true,
+                autoload: true,
+                pagerContainer: '#@(mapData.Grid2.IdPagers)',
+                rowDoubleClick: function (e) {
+                    // [/pool/WP.aspx]gridView2_RowDataBound()
+                    let formNo = e.item['@(nameof(OnsitePrintVO.FormNo))'];
+                    window.open('@(mapData.UrlDetail)'.replace("tempId", formNo), '_blank');
+                },
+                controller: {
+                    loadData: function (filter) {
+                        var d = $.Deferred();
+                        filter.vm = {};
+
+                        //分頁頁數紀錄相關 紀錄查詢時將查詢條件、頁數 start
+                        var cookieobj = {
+                            PageIndex: filter.pageIndex,
+                            PageSize: filter.pageSize,
+                            ...filter.vm
+                        };
+                        Cookies.set(cookieName2, JSON.stringify(cookieobj), { expires: 1 });
+
+                        $.ajax({
+                            type: 'POST',
+                            url: '@(mapData.Grid2.UrlGetPageList?.ToHtmlString())',
+                            data: filter,
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.Success === false) {
+                                    swal({
+                                        text: res.Message,
+                                        button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                                        icon: 'error'
+                                    });
+                                    d.reject();
+                                    return;
+                                }
+                                var da = {
+                                    data: res.Data,
+                                    itemsCount: res.Total
+                                }
+                                d.resolve(da);
+                            }
+                        });
+
+                        return d.promise();
+                    },
+                },
+                fields: [
+                    { name: 'Id', visible: false },
+                    {
+                        type: 'control', align: 'center',
+                        width: 80,
+                        editButton: false,
+                        deleteButton: false,
+                        headerTemplate: (value, item) => {
+                            let $cb = buildCheckboxSingle({
+                                id: uuidv4(),
+                                text: ' ',
+                                inputClassNames: 'cb-all',
+                                dataGroup: '@(mapData.Grid.CbGroup)',
+                            });
+
+                            return $cb;
+                        },
+                        itemTemplate: (value, item) => {
+                            let $cb = buildCheckboxSingle({
+                                id: item['@(nameof(OnsitePrintVO.FormNo))'],
+                                text: ' ',
+                                inputClassNames: 'cb-item',
+                                dataGroup: '@(mapData.Grid.CbGroup)',
+                                selected: ctx.setSelected.has(item['@(nameof(OnsitePrintVO.FormNo))']),
+                            });
+                            $($cb.find('input')).on('change', function (e) {
+                                let $control = $(e.currentTarget);
+                                let val = $control.val();
+
+                                if ($control.prop('checked')) {
+                                    ctx.setSelected.add(val);
+                                    ctx.dictData[val] = item;
+                                }
+                                else {
+                                    ctx.setSelected.delete(val);
+                                }
+                            });
+
+                            return $cb;
+                        }
+                    },
+                    { name: '@(nameof(OnsitePrintVO.FormNo))', title: '工單號碼', type: 'text', width: 100, align: 'center' },
+                    { name: '@(nameof(OnsitePrintVO.TtCategory))', title: '報修型態', type: 'text', width: 100, align: 'center' },
+                    { name: '@(nameof(OnsitePrintVO.L2Desc))', title: '報修類別', type: 'text', width: 100, align: 'center' },
+                    { name: '@(nameof(OnsitePrintVO.CiName))', title: '報修品項', type: 'text', width: 150, align: 'center' },
+                    { name: '@(nameof(OnsitePrintVO.CreateTimeText))', title: '報修日期', type: 'text', width: 200, align: 'center' },
+                    { name: '@(nameof(OnsitePrintVO.Vender))', title: '廠商', type: 'text', width: 180, align: 'center' },
+                    { name: '@(nameof(OnsitePrintVO.StatusName))', title: '工單狀態', type: 'text', width: 100, align: 'center' },
+                    { name: '@(nameof(OnsitePrintVO.VendorArriveDateText))', title: '廠商到門市日期', type: 'text', width: 200, align: 'center' },
+                    { width: 'auto' }
+                ],
+            });
+
+            //分頁頁數紀錄相關
+            ctx.$Grid.jsGrid('_setPage', cookiePageIndex);//jsgrid bug 不會自動將頁碼設定成pageindex
+            $('#@(mapData.Grid2.IdPageSelect)').select2({
+                minimumResultsForSearch: -1,
+                data: pageDataSource
+            });
+            $('#@(mapData.Grid2.IdPageSelect)').data('select2').$container.addClass('w-auto');
+            $('#@(mapData.Grid2.IdPageSelect)').on('change', (e) => {
+                onPageLenghtSelect(e.currentTarget.value, ctx.$Grid);
+            });
+            ctx.reload = function () {
+                ctx.setSelected.clear();
+                ctx.dictData = {};
+                ctx.$Grid.jsGrid('search');
+            };
+        }
+
+        $('#btnNextStatus').on('click',async function (e) {
+            var retConfirm = await swal({
+                text: '請確認是否要送出？',
+                buttons: ['@(config.GetMessage("BtnCancel").ToHtmlString())', '@(config.GetMessage("BtnConfirm").ToHtmlString())'],
+                icon: 'info'
+            });
+
+            if (!retConfirm) {
+                return;
+            }
+
+            var ctxGrid = context['@(mapData.Grid2.Id)'];
+
+            if (!ctxGrid.setSelected.size) {
+                swal({
+                    text: '請選擇工單！',
+                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            const arrSelected = Array.from(ctxGrid.setSelected);
+            const ivrcodeList = arrSelected.map(function (value, index) {
+                return ctxGrid.dictData[value]['@(nameof(OnsitePrintVO.Ivrcode))']
+            });
+            const ivrcodeSet = new Set(ivrcodeList);
+            if (ivrcodeSet.size > 1) {
+                swal({
+                    text: '請選擇相同廠商！',
+                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            let data = {
+                '@(nameof(OnsitePrintUpdateStatusReqVO.FormNoList))': arrSelected,
+            };
+            showLoader();
+            $.ajax({
+                url: '@(mapData.UrlUpdateStatusToTicket?.ToHtmlString())',
+                dataType: 'json',
+                type: 'POST',
+                data: data,
+                cache: false
+            })
+                .done((response) => {
+                    if (response.Success) {
+                        printWp(arrSelected);
+                    }
+                    else {
+                        swal({
+                            text: response['Message'],
+                            button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                            icon: 'error'
+                        });
+                    }
+                })
+                .fail((err) => {
+                    console.log(err);
+                })
+                .always(() => {
+                    hideLoader();
+                    context['@(mapData.Grid.Id)'].reload();
+                    context['@(mapData.Grid2.Id)'].reload();
+                });
+        });
+
+        $('#btnBackStatus').on('click', async function (e) {
+            var retConfirm = await swal({
+                text: '請確認是否要送出？',
+                buttons: ['@(config.GetMessage("BtnCancel").ToHtmlString())', '@(config.GetMessage("BtnConfirm").ToHtmlString())'],
+                icon: 'info'
+            });
+
+            if (!retConfirm) {
+                return;
+            }
+
+            var ctxGrid = context['@(mapData.Grid2.Id)'];
+
+            if (!ctxGrid.setSelected.size) {
+                swal({
+                    text: '請選擇工單！',
+                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            const arrSelected = Array.from(ctxGrid.setSelected);
+            let data = {
+                '@(nameof(OnsitePrintUpdateStatusReqVO.FormNoList))': arrSelected,
+            };
+            showLoader();
+            $.ajax({
+                url: '@(mapData.UrlUpdateStatusToPrwp?.ToHtmlString())',
+                dataType: 'json',
+                type: 'POST',
+                data: data,
+                cache: false
+            })
+                .done((response) => {
+                    if (response.Success) {
+                        swal({
+                            text: '表單更新成功！',
+                            button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                            icon: 'success'
+                        });
+                    }
+                    else {
+                        swal({
+                            text: response['Message'],
+                            button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                            icon: 'error'
+                        });
+                    }
+                })
+                .fail((err) => {
+                    console.log(err);
+                })
+                .always(() => {
+                    hideLoader();
+                    context['@(mapData.Grid.Id)'].reload();
+                    context['@(mapData.Grid2.Id)'].reload();
+                });
+        });
     </script>
 }
