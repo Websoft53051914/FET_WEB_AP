@@ -1,4 +1,5 @@
-﻿using Core.Utility.Helper.DB.Entity;
+﻿using Core.Utility.Helper.DB;
+using Core.Utility.Helper.DB.Entity;
 using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models.ViewModel;
@@ -12,11 +13,27 @@ namespace FTT_API.Models.Handler
     public partial class CommonHandler : BaseDBHandler
     {
         private readonly ConfigurationHelper _configHelper;
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="confighelper"></param>
         public CommonHandler(ConfigurationHelper confighelper)
         {
             _configHelper = confighelper;
         }
 
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        public CommonHandler(ConfigurationHelper confighelper, IDBHelper dBHelper) : base(dBHelper)
+        {
+            _configHelper = confighelper;
+        }
+
+        /// <summary>
+        /// 取得管理員名稱
+        /// </summary>
+        /// <returns></returns>
         public List<string> GetListAdminEngName()
         {
             StringBuilder condition = new();
@@ -31,6 +48,11 @@ WHERE EMPNO IN(SELECT UNNEST(STRING_TO_ARRAY((SELECT CONFIG_VALUE FROM MAINTAIN_
             return GetDBHelper().FindList<string>(sql, paras);
         }
 
+        /// <summary>
+        /// 檢查 ivr_code 是否存在
+        /// </summary>
+        /// <param name="ivrCode"></param>
+        /// <returns></returns>
         public bool CheckExistIvrCode(string ivrCode)
         {
             StringBuilder condition = new();
@@ -42,6 +64,11 @@ WHERE EMPNO IN(SELECT UNNEST(STRING_TO_ARRAY((SELECT CONFIG_VALUE FROM MAINTAIN_
             return CheckDataExist("STORE_PROFILE", paras);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ivrCode"></param>
+        /// <returns></returns>
         public List<StoreDTO> GetListStoreVM(string ivrCode)
         {
             StringBuilder condition = new();
@@ -59,6 +86,11 @@ WHERE IVR_CODE = @IVR_CODE
             return GetDBHelper().FindList<StoreDTO>(sql, paras);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="ivrCode"></param>
+        /// <returns></returns>
         public StoreVM? GetStoreData(string ivrCode)
         {
             StoreVM? result = null;
@@ -84,6 +116,12 @@ WHERE IVR_CODE = @IVR_CODE
             return result;
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="parentSid"></param>
+        /// <param name="reqSrc"></param>
+        /// <returns></returns>
         public List<CIRelationsDTO> GetListCIRelations(int parentSid, string reqSrc)
         {
             StringBuilder condition = new();
@@ -112,6 +150,11 @@ ORDER BY CINAME
             return GetDBHelper().FindList<CIRelationsDTO>(sql, paras);
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="pageEntity"></param>
+        /// <returns></returns>
         public PageResult<CIRelationsDTO> GetPageListCiDataSelfVendor(PageEntity pageEntity)
         {
             StringBuilder condition = new();
@@ -137,6 +180,29 @@ WHERE
 ";
 
             return GetDBHelper().FindPageList<CIRelationsDTO>(sql, sqlCount, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
+        }
+
+        /// <summary>
+        /// [Not Commit]執行 set_status
+        /// </summary>
+        public void ExecSetStatus(string tFormType, int tFormNo, string ttNewStatus, string tEmpNo, string tType1 = "", string tType2 = "")
+        {
+            StringBuilder condition = new();
+            Dictionary<string, object> paras = new()
+            {
+                {"tformtype", tFormType },
+                {"tformno", tFormNo },
+                {"ttnewstatus", ttNewStatus },
+                {"tempno", tEmpNo },
+                {"ttype1", tType1 },
+                {"ttype2", tType2 },
+            };
+
+            string sql = $@"
+SELECT set_status(@tformtype, @tformno, @ttnewstatus, @tempno, @ttype1, @ttype2)
+";
+
+            GetDBHelper().Execute(sql, paras);
         }
     }
 }
