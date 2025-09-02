@@ -353,7 +353,7 @@
                             <td bgcolor="#FFDDEE" id="COMPLETETIME_DESC">完修日期：</td>
                             <td colspan="5">
 
-                                <div class="input-group date" id="COMPLETETIME_Shell" data-target-input="nearest">
+                                <div class="input-group date" id="COMPLETETIME_Shell" data-target-input="nearest" style=" max-width: 200px;">
                                     <input id="COMPLETETIME" class="form-control datetimepicker-input" data_target="#COMPLETETIME_Shell " />
                                     <div class="input-group-text" data-target="#COMPLETETIME_Shell" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
                                 </div>
@@ -368,7 +368,7 @@
                             <td bgcolor="#FFDDEE" id="PRECOMPLETETIME_DESC">預計完成日期：</td>
                             <td colspan="5">
 
-                                <div class="input-group date" id="PRECOMPLETETIME_Shell" data-target-input="nearest">
+                                <div class="input-group date" id="PRECOMPLETETIME_Shell" data-target-input="nearest" style=" max-width: 200px;">
                                     <input id="PRECOMPLETETIME" class="form-control datetimepicker-input" data_target="#PRECOMPLETETIME_Shell " />
                                     <div class="input-group-text" data-target="#PRECOMPLETETIME_Shell" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
                                 </div>
@@ -448,10 +448,7 @@
                                                             }
                                                         }
                                                     </select>
-                                                }
-
-                                                @*                <select class="form-control initSelect2" id="EXPENSE_DESC_SEL" style="width: 150px" class="select_class">
-                                        </select> *@
+                                                } 
                                             </td>
                                             <td>
                                                 <input id="FAULT_REASON" class="form-control " />
@@ -478,7 +475,6 @@
                                                     <img src="/Images/Icon/view.gif" align="absMiddle" />
                                                     <span class="leftTooltip">
                                                         <label id="COMMENT"></label>
-                                                        @* <asp:Label ID="COMMENT" runat="server"></asp:Label> *@
                                                     </span>
                                                 </span>
                                             </td>

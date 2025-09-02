@@ -42,7 +42,7 @@ namespace FTT_API.Common.OriginClass.EntiityClass
         public string delay_reason { get; set; }
     }
 
-    public partial class ftt_formDTO : ftt_formEntity
+    public partial class Ftt_formDTO : ftt_formEntity
     {
         public string cp_name { get; set; }
         public string cp_tel { get; set; }
@@ -53,7 +53,7 @@ namespace FTT_API.Common.OriginClass.EntiityClass
     }
 
 
-    public partial class ftt_formDTO : ftt_formEntity
+    public partial class Ftt_formDTO : ftt_formEntity
     {
         public bool updateCOMPLETETIME { get; set; }
         public bool updatePRECOMPLETETIME { get; set; }

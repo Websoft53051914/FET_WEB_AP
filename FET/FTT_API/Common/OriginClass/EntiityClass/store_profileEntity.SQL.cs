@@ -8,7 +8,7 @@ namespace FTT_API.Common.OriginClass.EntiityClass
 {
     public class store_profileSQL
     {
-        public List<store_profileDTO> GetListByFormNo(string form_no)
+        public List<Store_profileDTO> GetListByFormNo(string form_no)
         {
 
             BaseDBHandler baseHandler = new BaseDBHandler();
@@ -25,11 +25,11 @@ where form_no=@form_no
 
 ";
 
-            return baseHandler.GetDBHelper().FindList<store_profileDTO>(qrySQL, paras);
+            return baseHandler.GetDBHelper().FindList<Store_profileDTO>(qrySQL, paras);
 
         }
 
-        public store_profileDTO GetInfoByFormNo(string form_no)
+        public Store_profileDTO GetInfoByFormNo(string form_no)
         {
 
             BaseDBHandler baseHandler = new BaseDBHandler();
@@ -48,11 +48,11 @@ SELECT IVRCODE FROM FTT_FORM WHERE FORM_NO=@form_no
 
 ";
 
-            return baseHandler.GetDBHelper().Find<store_profileDTO>(qrySQL, paras);
+            return baseHandler.GetDBHelper().Find<Store_profileDTO>(qrySQL, paras);
 
         }
 
-        internal store_profileDTO GetListByFormNoDate365(string form_no)
+        internal Store_profileDTO GetListByFormNoDate365(string form_no)
         {
             //select '1' from STORE_PROFILE where IVR_CODE IN (SELECT IVRCODE FROM FTT_FORM WHERE FORM_NO=" + formNo + ") AND SYSDATE BETWEEN APPROVAL_DATE AND APPROVAL_DATE+365
 
@@ -73,10 +73,10 @@ AND APPROVAL_DATE+365
 
 ";
 
-            return baseHandler.GetDBHelper().Find<store_profileDTO>(qrySQL, paras);
+            return baseHandler.GetDBHelper().Find<Store_profileDTO>(qrySQL, paras);
         }
 
-        internal store_profileDTO GetListByFormNoNotIn1278And1260(string form_no)
+        internal Store_profileDTO GetListByFormNoNotIn1278And1260(string form_no)
         {
             //select '1' from STORE_PROFILE where IVR_CODE IN (SELECT IVRCODE FROM FTT_FORM WHERE FORM_NO=" + formNo + " and ci_sid_l1 (category_id) not in (1278,1260))
 
@@ -95,7 +95,7 @@ and ci_sid_l1 (category_id) not in (1278,1260))
 
 ";
 
-            return baseHandler.GetDBHelper().Find<store_profileDTO>(qrySQL, paras);
+            return baseHandler.GetDBHelper().Find<Store_profileDTO>(qrySQL, paras);
         }
     }
 }

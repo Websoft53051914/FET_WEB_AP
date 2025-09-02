@@ -8,7 +8,7 @@ namespace FTT_API.Common.OriginClass.EntiityClass
 {
     public class ftt_formSQL
     {
-        public ftt_formDTO GetInfoByFormNo(string form_no)
+        public Ftt_formDTO GetInfoByFormNo(string form_no)
         {
 
             BaseDBHandler baseHandler = new BaseDBHandler();
@@ -21,16 +21,15 @@ namespace FTT_API.Common.OriginClass.EntiityClass
 SELECT b.cp_name,b.cp_tel,b.merchant_name,a.*,(SELECT CINAME FROM CI_RELATIONS WHERE CI_RELATIONS.CISID=a.CATEGORY_ID AND ROWNUM=1) as CIDesc 
 FROM FTT_FORM a
 left outer join store_vender_profile b on a.vender_id=b.order_id
-
 where form_no=@form_no
 
 ";
 
-            return baseHandler.GetDBHelper().Find<ftt_formDTO>(qrySQL, paras);
+            return baseHandler.GetDBHelper().Find<Ftt_formDTO>(qrySQL, paras);
 
         }
 
-        internal ftt_formDTO GetTT_COUNTByCATEGORY_ID(string form_no, string CATEGORY_ID)
+        internal Ftt_formDTO GetTT_COUNTByCATEGORY_ID(string form_no, string CATEGORY_ID)
         {
             //select decode(count(FORM_NO),0,'NO','YES') from FTT_FORM where CATEGORY_ID=" + mCIID + " AND IVRCODE='" + mFormNo + "' AND CREATETIME > to_date(to_char(sysdate,'yyyy/mm/dd')||' 00:00:00','yyyy/mm/dd hh24:mi:ss')
 
@@ -50,7 +49,7 @@ AND CREATETIME > to_date(to_char(sysdate,'yyyy/mm/dd')||' 00:00:00','yyyy/mm/dd 
 
 ";
 
-            return baseHandler.GetDBHelper().Find<ftt_formDTO>(qrySQL, paras);
+            return baseHandler.GetDBHelper().Find<Ftt_formDTO>(qrySQL, paras);
 
         }
     }

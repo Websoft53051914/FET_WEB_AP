@@ -6,7 +6,7 @@ using System.Data;
 
 namespace FTT_API.Common.OriginClass.EntiityClass
 {
-    public class ftt_form_amountEntity
+    public class Ftt_form_amountEntity
     {
         public decimal form_no { get; set; }
 
@@ -35,7 +35,7 @@ namespace FTT_API.Common.OriginClass.EntiityClass
         public string repair_action { get; set; }
     }
 
-    public class ftt_form_amountDTO : ftt_form_amountEntity
+    public class Ftt_form_amountDTO : Ftt_form_amountEntity
     {
 
     }

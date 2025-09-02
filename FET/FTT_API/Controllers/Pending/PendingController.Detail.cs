@@ -30,6 +30,8 @@ namespace FTT_API.Controllers.Pending
         [HttpGet("[action]")]
         public IActionResult Detail(string formNo)
         {
+            FormTableVM vm = new FormTableVM();
+
             ViewData["FORM_NO"] = formNo;
             var ActionName = "";
             if (LoginSession.Current.empname != LoginSession.Current.engname)
@@ -70,7 +72,7 @@ namespace FTT_API.Controllers.Pending
                 if (approve_form.form_type != "")
                 {
                     Approve Approve_Auth = new Approve(LoginSession.Current.empno);
-                    string[] UserAuth = Approve_Auth.Form_Auth(approve_form.form_type, formNo, approve_form.status, approve_form.form_type + "_PRIOR_STATUS", LoginSession.Current.ivrcode);
+                    string[] UserAuth = Approve_Auth.Form_Auth(vm, approve_form.form_type, formNo, approve_form.status, approve_form.form_type + "_PRIOR_STATUS", LoginSession.Current.ivrcode);
                     string SubmitButton = UserAuth[0];
                     string Role = UserAuth[1];
                     string UpdateField = UserAuth[2];
@@ -96,7 +98,7 @@ namespace FTT_API.Controllers.Pending
                 ViewData["STATUS_NAME"] = approve_form.STATUS_NAME;
 
 
-                GetTicketInfo(formNo, _TicketInfo.TTType, _TicketInfo.TTStatus, _TicketInfo.ShowTicketInfo);
+                GetTicketInfo(vm, formNo, _TicketInfo.TTType, _TicketInfo.TTStatus, _TicketInfo.ShowTicketInfo);
 
                 if (!string.IsNullOrEmpty(formNo))
                 {
@@ -108,8 +110,8 @@ namespace FTT_API.Controllers.Pending
                         if (TTStatus != "TICKET")
                         {   // 如果不是已派單，則顯示資料！
 
-                            ftt_form_amountSQL _ftt_form_amountSQL = new ftt_form_amountSQL();
-                            var totalPrice = _ftt_form_amountSQL.GetTotalPrice(formNo);
+                            Ftt_form_amountSQL _Ftt_form_amountSQL = new Ftt_form_amountSQL();
+                            var totalPrice = _Ftt_form_amountSQL.GetTotalPrice(formNo);
                             ViewData["Totals"] = totalPrice;
 
                             ViewData["Hide_dele"] = true;
@@ -145,11 +147,10 @@ namespace FTT_API.Controllers.Pending
                 }
             }
 
-            FormTableVM vm = new FormTableVM();
-            //vm.ftt_formDTO = GetTTInfo(formNo);
-            //vm.store_profileDTO = GetStoreInfo(formNo);
+            //vm.Ftt_formDTO = GetTTInfo(formNo);
+            //vm.Store_profileDTO = GetStoreInfo(formNo);
 
-            if (vm.ftt_formDTO == null)
+            if (vm.Ftt_formDTO == null)
             {
                 return RedirectToAction("Redirection", "AlertMsg", new AlertMsgRedirection()
                 {
@@ -165,7 +166,7 @@ namespace FTT_API.Controllers.Pending
                 });
             }
 
-            if (vm.store_profileDTO == null)
+            if (vm.Store_profileDTO == null)
             {
                 return RedirectToAction("Redirection", "AlertMsg", new AlertMsgRedirection()
                 {
@@ -199,12 +200,12 @@ namespace FTT_API.Controllers.Pending
 
             ViewData["CATEGORY_ID"] = dto.category_id;
 
-            ftt_form_amountSQL _ftt_form_amountSQL = new ftt_form_amountSQL();
-            var dto_ftt_form_amountSQL = _ftt_form_amountSQL.GetInfoByFormNo_ENABLE_Y(formNo);
+            Ftt_form_amountSQL _Ftt_form_amountSQL = new Ftt_form_amountSQL();
+            var dto_Ftt_form_amountSQL = _Ftt_form_amountSQL.GetInfoByFormNo_ENABLE_Y(formNo);
 
-            if (dto_ftt_form_amountSQL != null)
+            if (dto_Ftt_form_amountSQL != null)
             {
-                var total = _ftt_form_amountSQL.GetTotalPrice(formNo);
+                var total = _Ftt_form_amountSQL.GetTotalPrice(formNo);
                 var _AMOUNT_COST = total;
                 ViewData["AMOUNT_COST"] = _AMOUNT_COST;
                 ViewData["Totals"] = _AMOUNT_COST;
@@ -216,8 +217,8 @@ namespace FTT_API.Controllers.Pending
                 ViewData["Totals"] = _AMOUNT_COST;
             }
 
-            var dtos = _ftt_form_amountSQL.GetListByFormNo(formNo);
-            ViewData["ftt_form_amountDTOs"] = dtos;
+            var dtos = _Ftt_form_amountSQL.GetListByFormNo(formNo);
+            ViewData["Ftt_form_amountDTOs"] = dtos;
 
             amount_selectSQL _amount_selectSQL = new amount_selectSQL();
             var dto_amount_select = _amount_selectSQL.GetInfoByCategory_Id(dto.category_id);
@@ -250,118 +251,118 @@ namespace FTT_API.Controllers.Pending
             ViewData["showEXPENSE_DESC_TEXT"] = showEXPENSE_DESC_TEXT;
         }
 
-        private void GetTicketInfo(string formNo, string mTTType, string TTStatus, string mTicketInfo)
-        {
-            string tempStr = "";
-            string mRunScript = "";
-            if (formNo != "")
-            {
-                bool disableOffer = true;  // 是否為保固內
+        //private void GetTicketInfo(string formNo, string mTTType, string TTStatus, string mTicketInfo)
+        //{
+        //    string tempStr = "";
+        //    string mRunScript = "";
+        //    if (formNo != "")
+        //    {
+        //        bool disableOffer = true;  // 是否為保固內
 
 
-                store_profileSQL _store_profileSQL = new store_profileSQL();
-                var dto_store = _store_profileSQL.GetInfoByFormNo(formNo);
+        //        store_profileSQL _store_profileSQL = new store_profileSQL();
+        //        var dto_store = _store_profileSQL.GetInfoByFormNo(formNo);
 
-                if (dto_store != null)
-                    if (dto_store.store_type.ToUpper().IndexOf("FRANCHISE") == -1)
-                    {   // 為直營店
+        //        if (dto_store != null)
+        //            if (dto_store.store_type.ToUpper().IndexOf("FRANCHISE") == -1)
+        //            {   // 為直營店
 
-                        ci_exception_configSQL _ci_exception_configSQL = new ci_exception_configSQL();
-                        var dto_ci_exception_config = _ci_exception_configSQL.GetInfoByFormNo(formNo);
+        //                ci_exception_configSQL _ci_exception_configSQL = new ci_exception_configSQL();
+        //                var dto_ci_exception_config = _ci_exception_configSQL.GetInfoByFormNo(formNo);
 
-                        if (dto_ci_exception_config == null)
-                        {
-                            var dtoTemp = _store_profileSQL.GetListByFormNoDate365(formNo);
-                            if (dtoTemp == null)
-                            {  // 保固外
-                                disableOffer = false;
-                            }
-                        }
-                    }
-                    else //12/1新需求，加盟[影音/招牌]也要報價
-                    {
-                        var dtoTemp = _store_profileSQL.GetListByFormNoNotIn1278And1260(formNo);
-                        if (dtoTemp == null)
-                        {
-                            mRunScript += "//is FRANCHISE\r\n";
-                            disableOffer = false;
-                        }
+        //                if (dto_ci_exception_config == null)
+        //                {
+        //                    var dtoTemp = _store_profileSQL.GetListByFormNoDate365(formNo);
+        //                    if (dtoTemp == null)
+        //                    {  // 保固外
+        //                        disableOffer = false;
+        //                    }
+        //                }
+        //            }
+        //            else //12/1新需求，加盟[影音/招牌]也要報價
+        //            {
+        //                var dtoTemp = _store_profileSQL.GetListByFormNoNotIn1278And1260(formNo);
+        //                if (dtoTemp == null)
+        //                {
+        //                    mRunScript += "//is FRANCHISE\r\n";
+        //                    disableOffer = false;
+        //                }
 
-                    }
+        //            }
 
-                {
-                    mRunScript += "document.all.SELECTSTATUS.options[2].text='故障排除';";
-                }
+        //        {
+        //            mRunScript += "document.all.SELECTSTATUS.options[2].text='故障排除';";
+        //        }
 
-                if (disableOffer == true)
-                {
-                    mRunScript += "document.all.SELECTSTATUS.remove(3);\r\n";
-                }
-                bool mShowAmount = true;
-                if (mTTType == "SECURITY_FORM")
-                {
-                    mShowAmount = false;
-                }
-                ViewData["mShowAmount"] = mShowAmount;
+        //        if (disableOffer == true)
+        //        {
+        //            mRunScript += "document.all.SELECTSTATUS.remove(3);\r\n";
+        //        }
+        //        bool mShowAmount = true;
+        //        if (mTTType == "SECURITY_FORM")
+        //        {
+        //            mShowAmount = false;
+        //        }
+        //        ViewData["mShowAmount"] = mShowAmount;
 
-                if (TTStatus == "TICKET")
-                {
-                    mRunScript += "document.all.SELECTSTATUS_PANEL.style.display = \"\";\r\n";
+        //        if (TTStatus == "TICKET")
+        //        {
+        //            mRunScript += "document.all.SELECTSTATUS_PANEL.style.display = \"\";\r\n";
 
-                    ftt_form_logSQL _ftt_form_logSQL = new ftt_form_logSQL();
-                    var dtoTemp = _ftt_form_logSQL.GetInfoByFormNo(formNo, "STATUS", "AGREE", "ASSIGN");
-                    if (dtoTemp != null)
-                    {
-                        dtoTemp = _ftt_form_logSQL.GetInfoByFormNo(formNo, "STATUS", "ASSIGN", "PRWP");
-                        if (dtoTemp != null)
-                        {
-                            dtoTemp = _ftt_form_logSQL.GetInfoByFormNo(formNo, "STATUS", "PRWP", "TICKET");
-                            if (dtoTemp != null)
-                            {
-                                mRunScript += "document.all.SELECTSTATUS.remove(2);\r\ndocument.all.SELECTSTATUS.remove(2);\r\ndocument.all.SELECTSTATUS.remove(2);\r\n";
-                            }
-                        }
-                    }
-                }
+        //            ftt_form_logSQL _ftt_form_logSQL = new ftt_form_logSQL();
+        //            var dtoTemp = _ftt_form_logSQL.GetInfoByFormNo(formNo, "STATUS", "AGREE", "ASSIGN");
+        //            if (dtoTemp != null)
+        //            {
+        //                dtoTemp = _ftt_form_logSQL.GetInfoByFormNo(formNo, "STATUS", "ASSIGN", "PRWP");
+        //                if (dtoTemp != null)
+        //                {
+        //                    dtoTemp = _ftt_form_logSQL.GetInfoByFormNo(formNo, "STATUS", "PRWP", "TICKET");
+        //                    if (dtoTemp != null)
+        //                    {
+        //                        mRunScript += "document.all.SELECTSTATUS.remove(2);\r\ndocument.all.SELECTSTATUS.remove(2);\r\ndocument.all.SELECTSTATUS.remove(2);\r\n";
+        //                    }
+        //                }
+        //            }
+        //        }
 
-                if (mTicketInfo != "")
-                {
-                    mRunScript += "document.all." + mTicketInfo + "_PANEL.style.display = \"\";\r\n";
-                    mRunScript += "document.all.TICKET_INFO.value = \"" + mTicketInfo + "\";\r\n";
+        //        if (mTicketInfo != "")
+        //        {
+        //            mRunScript += "document.all." + mTicketInfo + "_PANEL.style.display = \"\";\r\n";
+        //            mRunScript += "document.all.TICKET_INFO.value = \"" + mTicketInfo + "\";\r\n";
 
-                    ftt_formSQL _ftt_formSQL = new ftt_formSQL();
-                    var dtoFttFrom = _ftt_formSQL.GetInfoByFormNo(formNo);
+        //            ftt_formSQL _ftt_formSQL = new ftt_formSQL();
+        //            var dtoFttFrom = _ftt_formSQL.GetInfoByFormNo(formNo);
 
-                    if (mTicketInfo == "COMPLETE")
-                    {   // 完修則取得完成日期
-                        mRunScript += "document.all.AMOUNT_PANEL.style.display = \"\";\r\n";
-                        //mRunScript += "document.all.VENDOR_ARRIVE_DATE.value = \"" + baseHandler.GetDBHelper().FindScalar<string>("to_char(VENDOR_ARRIVE_DATE,'yyyy/mm/dd')", "FTT_FORM", "FORM_NO=" + mTTNo) + "\";\r\n";
-                        mRunScript += "document.all.COMPLETETIME.value = \"" + dtoFttFrom.completetime + "\";\r\n";
-                    }
+        //            if (mTicketInfo == "COMPLETE")
+        //            {   // 完修則取得完成日期
+        //                mRunScript += "document.all.AMOUNT_PANEL.style.display = \"\";\r\n";
+        //                //mRunScript += "document.all.VENDOR_ARRIVE_DATE.value = \"" + baseHandler.GetDBHelper().FindScalar<string>("to_char(VENDOR_ARRIVE_DATE,'yyyy/mm/dd')", "FTT_FORM", "FORM_NO=" + mTTNo) + "\";\r\n";
+        //                mRunScript += "document.all.COMPLETETIME.value = \"" + dtoFttFrom.completetime + "\";\r\n";
+        //            }
 
-                    if (mTicketInfo == "PENDING")
-                    {   // 待料則取得預計完成日期
-                        mRunScript += "document.all.AMOUNT_PANEL.style.display = \"none\";\r\n";
-                        mRunScript += "document.all.PRECOMPLETETIME.value = \"" + dtoFttFrom.precompletetime + "\";\r\n";
-                    }
+        //            if (mTicketInfo == "PENDING")
+        //            {   // 待料則取得預計完成日期
+        //                mRunScript += "document.all.AMOUNT_PANEL.style.display = \"none\";\r\n";
+        //                mRunScript += "document.all.PRECOMPLETETIME.value = \"" + dtoFttFrom.precompletetime + "\";\r\n";
+        //            }
 
-                    if (mTicketInfo == "OFFER")
-                    {   // 報價則取得報價資訊
-                        mRunScript += "document.all.AMOUNT_PANEL.style.display = \"\";\r\n";
-                    }
+        //            if (mTicketInfo == "OFFER")
+        //            {   // 報價則取得報價資訊
+        //                mRunScript += "document.all.AMOUNT_PANEL.style.display = \"\";\r\n";
+        //            }
 
-                    ftt_form_amountSQL _ftt_form_amountSQL = new ftt_form_amountSQL();
-                    var dtoTEMP = _ftt_form_amountSQL.GetInfoByFormNo_ENABLE_Y(formNo);
+        //            Ftt_form_amountSQL _Ftt_form_amountSQL = new Ftt_form_amountSQL();
+        //            var dtoTEMP = _Ftt_form_amountSQL.GetInfoByFormNo_ENABLE_Y(formNo);
 
-                    // 2008 12 28 Add - 只要金額彙總欄有資料就秀出來
-                    if (dtoTEMP != null)
-                    {  // 判斷是否已有顯示
-                        if (mRunScript.IndexOf("document.all.AMOUNT_PANEL.style.display = \"\";") == -1)
-                            mRunScript += "document.all.AMOUNT_PANEL.style.display = \"\";\r\n";
-                    }
-                }
-            }
-        }
+        //            // 2008 12 28 Add - 只要金額彙總欄有資料就秀出來
+        //            if (dtoTEMP != null)
+        //            {  // 判斷是否已有顯示
+        //                if (mRunScript.IndexOf("document.all.AMOUNT_PANEL.style.display = \"\";") == -1)
+        //                    mRunScript += "document.all.AMOUNT_PANEL.style.display = \"\";\r\n";
+        //            }
+        //        }
+        //    }
+        //}
         private string GetPreHandleDesc(string mFormAction, string formNo, string mCIID, string mCIName)
         {
             //string mFormAction = "TT_LAST_DESC";
@@ -399,8 +400,10 @@ namespace FTT_API.Controllers.Pending
                     case "TT_LAST_DESC":
                         ftt_form_descSQL _ftt_form_descSQL = new ftt_form_descSQL();
                         var dtoTemp = _ftt_form_descSQL.GetInfoByFormNo(formNo);
-
-                        mResult = "'<img src=\"/images/icon/date.gif\" align=\"absmiddle\" />'" + dtoTemp.create_date.Value.ToString("yyyy/MM/dd HH:mm") + "'&nbsp;&nbsp;&nbsp;<img src=\"/images/icon/emp.gif\" align=\"absmiddle\" />' " + dtoTemp.action_name + " '&nbsp;&nbsp;&nbsp;<img src=\"/images/icon/edit.gif\" align=\"absmiddle\" />' " + dtoTemp.description;
+                        if (dtoTemp != null)
+                        {
+                            mResult = "'<img src=\"/images/icon/date.gif\" align=\"absmiddle\" />'" + dtoTemp.create_date.Value.ToString("yyyy/MM/dd HH:mm") + "'&nbsp;&nbsp;&nbsp;<img src=\"/images/icon/emp.gif\" align=\"absmiddle\" />' " + dtoTemp.action_name + " '&nbsp;&nbsp;&nbsp;<img src=\"/images/icon/edit.gif\" align=\"absmiddle\" />' " + dtoTemp.description;
+                        }
                         break;
                     case "TT_COUNT":
                         ftt_formSQL _ftt_formSQL = new ftt_formSQL();
@@ -492,111 +495,91 @@ namespace FTT_API.Controllers.Pending
             }
         }
 
-        public class Add_FTT_FORM_AMOUNT_VM
+        public class Add_Ftt_form_amount_VM
         {
-            public List<ftt_form_amountDTO> vms { get; set; }
+            public List<Ftt_form_amountDTO> vms { get; set; }
             public string FORM_ACTION { get; set; }
-            public decimal form_no { get; set; }
+            public string form_no { get; set; }
         }
 
-        [HttpPost("[action]")]
-        public ActionResult Add_FTT_FORM_AMOUNT(Add_FTT_FORM_AMOUNT_VM vm)
-        {
-            //m_Logger.Debug("FORM_ACTION：" + Request.QueryString["FORM_ACTION"]);
+        //[HttpPost("[action]")]
+        //public ActionResult Add_Ftt_form_amount(Add_Ftt_form_amount_VM vm)
+        //{
+        //    //m_Logger.Debug("FORM_ACTION：" + Request.QueryString["FORM_ACTION"]);
 
-            if (vm != null && !string.IsNullOrEmpty(vm.FORM_ACTION))
-            {
-                if (vm.FORM_ACTION == "INSERT")
-                {
-                    //Trace.Write("Prepare to Convert Form Collection ...");
-                    //System.Collections.Specialized.NameValueCollection coll;
-                    //System.Collections.Specialized.NameValueCollection m_Request = new System.Collections.Specialized.NameValueCollection();
-                    //coll = Request.Form;
-                    //String[] arrKeys = coll.AllKeys;
-                    //string m_collName = "";
-                    //for (int i = 0; i < arrKeys.Length; i++)
-                    //{
-                    //    // 如果從 User Control 取得的變數，過濾掉 ClassName$ 
-                    //    m_collName = arrKeys[i];
-                    //    if (m_collName.IndexOf('$') > -1)
-                    //    {
-                    //        m_collName = arrKeys[i].Substring(arrKeys[i].IndexOf('$') + 1);
-                    //    }
-                    //    m_Request.Add(m_collName, coll[arrKeys[i]]);
+        //    if (vm != null && !string.IsNullOrEmpty(vm.FORM_ACTION))
+        //    {
+        //        if (vm.FORM_ACTION == "INSERT")
+        //        {
+        //            try
+        //            {
+        //                string inserSQL = "";
+        //                BaseDBHandler baseHandler = new BaseDBHandler();
+        //                baseHandler.GetDBHelper().Execute("DELETE FROM Ftt_form_amount WHERE FORM_NO = '" + vm.form_no + "'", null);
 
-                    //    Trace.Write("Name:" + m_collName + "=" + coll[arrKeys[i]]);
+        //                foreach (var item in vm.vms)
+        //                {
+        //                    inserSQL = string.Format(@"INSERT INTO Ftt_form_amount (FORM_NO, EXPENSE_TYPE, EXPENSE_DESC, QTY, PRICE, SUBTOTAL, ORDERID, UNIT, FAULT_REASON, REPAIR_ACTION) VALUES ( {0}, '{1}', '{2}', '{3}', {4}, '{5}', '{6}', '{7}', '{8}', '{9}' );",
+        //                                    vm.form_no, item.expense_type, item.expense_desc, item.qty, item.price, item.subtotal, item.orderid, item.unit, item.fault_reason, item.repair_action);
 
-                    //}
+        //                    baseHandler.GetDBHelper().Execute(inserSQL, null);
+        //                }
 
-                    try
-                    {
-                        string inserSQL = "";
-                        BaseDBHandler baseHandler = new BaseDBHandler();
-                        baseHandler.GetDBHelper().Execute("DELETE FROM FTT_FORM_AMOUNT WHERE FORM_NO = '" + vm.form_no + "'", null);
+        //                baseHandler.GetDBHelper().Commit();
 
-                        foreach (var item in vm.vms)
-                        {
-                            inserSQL = string.Format(@"INSERT INTO FTT_FORM_AMOUNT (FORM_NO, EXPENSE_TYPE, EXPENSE_DESC, QTY, PRICE, SUBTOTAL, ORDERID, UNIT, FAULT_REASON, REPAIR_ACTION) VALUES ( {0}, '{1}', '{2}', '{3}', {4}, '{5}', '{6}', '{7}', '{8}', '{9}' );",
-                                            vm.form_no, item.expense_type, item.expense_desc, item.qty, item.price, item.subtotal, item.orderid, item.unit, item.fault_reason, item.repair_action);
+        //                //DB db = new DB();
+        //                //// 取得資料庫目前時間，藉以查詢資料取得入庫產生的 SystemID
+        //                //DbConnection conn = db.CreateConnection();
+        //                //DbTransaction tran = null;
+        //                //DbCommand dbComm = null;
+        //                //DataTable m_table = new DataTable();
 
-                            baseHandler.GetDBHelper().Execute(inserSQL, null);
-                        }
+        //                // 開啟 DB Transaction 機制
+        //                //conn.Open();
+        //                //tran = conn.BeginTransaction();
 
-                        baseHandler.GetDBHelper().Commit();
+        //                //int attMaxIdx = int.Parse(m_Request["AMOUNT_MAX_IDX"]);
 
-                        //DB db = new DB();
-                        //// 取得資料庫目前時間，藉以查詢資料取得入庫產生的 SystemID
-                        //DbConnection conn = db.CreateConnection();
-                        //DbTransaction tran = null;
-                        //DbCommand dbComm = null;
-                        //DataTable m_table = new DataTable();
+        //                //m_Logger.Debug("attMaxIdx:" + attMaxIdx);
 
-                        // 開啟 DB Transaction 機制
-                        //conn.Open();
-                        //tran = conn.BeginTransaction();
+        //                //db.ExecuteNonQuery(tran, "DELETE FROM Ftt_form_amount WHERE FORM_NO='" + m_Request["FORM_NO"] + "'");
 
-                        //int attMaxIdx = int.Parse(m_Request["AMOUNT_MAX_IDX"]);
+        //                //for (int index = 1; index <= attMaxIdx; index++)
+        //                //{
+        //                //    string inserSQL = string.Format(@"INSERT INTO Ftt_form_amount (FORM_NO, EXPENSE_TYPE, EXPENSE_DESC, QTY, PRICE, SUBTOTAL, ORDERID, UNIT, FAULT_REASON, REPAIR_ACTION) VALUES ( {0}, '{1}', '{2}', '{3}', {4}, '{5}', '{6}', '{7}', '{8}', '{9}' );",
+        //                //        m_Request["FORM_NO"], m_Request["EXPENSE_TYPE_" + index].Replace("'", "''"), m_Request["EXPENSE_DESC_" + index].Replace("'", "''"), m_Request["QTY_" + index], m_Request["PRICE_" + index], m_Request["SUBTOTAL_" + index], index, m_Request["UNIT_" + index], m_Request["FAULT_REASON_" + index].Replace("'", "''"), m_Request["REPAIR_ACTION_" + index].Replace("'", "''"));
 
-                        //m_Logger.Debug("attMaxIdx:" + attMaxIdx);
+        //                //    m_Logger.Debug("inserSQL:" + inserSQL);
+        //                //    db.ExecuteNonQuery(tran, inserSQL);
+        //                //}
 
-                        //db.ExecuteNonQuery(tran, "DELETE FROM FTT_FORM_AMOUNT WHERE FORM_NO='" + m_Request["FORM_NO"] + "'");
+        //                //Trace.Write("Form No:" + m_Request["FORM_NO"] + "，Finished.");
+        //                //tran.Commit();
 
-                        //for (int index = 1; index <= attMaxIdx; index++)
-                        //{
-                        //    string inserSQL = string.Format(@"INSERT INTO FTT_FORM_AMOUNT (FORM_NO, EXPENSE_TYPE, EXPENSE_DESC, QTY, PRICE, SUBTOTAL, ORDERID, UNIT, FAULT_REASON, REPAIR_ACTION) VALUES ( {0}, '{1}', '{2}', '{3}', {4}, '{5}', '{6}', '{7}', '{8}', '{9}' );",
-                        //        m_Request["FORM_NO"], m_Request["EXPENSE_TYPE_" + index].Replace("'", "''"), m_Request["EXPENSE_DESC_" + index].Replace("'", "''"), m_Request["QTY_" + index], m_Request["PRICE_" + index], m_Request["SUBTOTAL_" + index], index, m_Request["UNIT_" + index], m_Request["FAULT_REASON_" + index].Replace("'", "''"), m_Request["REPAIR_ACTION_" + index].Replace("'", "''"));
+        //                return JsonSuccess("新增完成");
+        //            }
+        //            catch (Exception err)
+        //            {
+        //                return JsonValidFail("系統異常");
+        //            }
+        //            finally
+        //            {
 
-                        //    m_Logger.Debug("inserSQL:" + inserSQL);
-                        //    db.ExecuteNonQuery(tran, inserSQL);
-                        //}
-
-                        //Trace.Write("Form No:" + m_Request["FORM_NO"] + "，Finished.");
-                        //tran.Commit();
-
-                        return JsonSuccess("新增完成");
-                    }
-                    catch (Exception err)
-                    {
-                        return JsonValidFail("系統異常");
-                    }
-                    finally
-                    {
-
-                    }
+        //            }
 
 
 
-                }
+        //        }
 
-                return JsonValidFail("不是INSERT方法");
-            }
+        //        return JsonValidFail("不是INSERT方法");
+        //    }
 
-            return JsonValidFail("工單不存在");
-        }
+        //    return JsonValidFail("工單不存在");
+        //}
 
 
         [HttpPost("[action]")]
-        public IActionResult Detail(ftt_formDTO vm)
+        public IActionResult Detail(Ftt_formDTO vm)
         {
             var ttt = vm.form_no;
 

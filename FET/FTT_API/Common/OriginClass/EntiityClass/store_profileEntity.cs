@@ -66,7 +66,7 @@ namespace FTT_API.Common.OriginClass.EntiityClass
         public DateTime? updatetime { get; set; }
     }
 
-    public class store_profileDTO : store_profileEntity
+    public class Store_profileDTO : store_profileEntity
     {
 
     }

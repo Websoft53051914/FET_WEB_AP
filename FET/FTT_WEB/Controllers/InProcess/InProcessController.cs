@@ -9,8 +9,10 @@ namespace FTT_WEB.Controllers.InProcess
             return View();
         }
 
-        public IActionResult Detail()
+        public IActionResult Detail(string formNo)
         {
+            ViewData["form_no"] = formNo; ;
+
             return View();
         }
     }
