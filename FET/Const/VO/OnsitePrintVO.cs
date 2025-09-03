@@ -1,4 +1,4 @@
-﻿namespace Const.ViewModel
+﻿namespace Const.VO
 {
     public class OnsitePrintVO
     {

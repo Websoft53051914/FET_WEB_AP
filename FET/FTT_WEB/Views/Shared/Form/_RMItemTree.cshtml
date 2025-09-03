@@ -102,6 +102,16 @@
             }
         });
 
+        // Modal 開啟事件
+        $('#@(mapData.IdModal)').on('show.bs.modal', function (e) {
+            // 清除選擇
+            if (ctx.selectedItem) {
+                $('#@(mapData.IdTree)').jstree(true).deselect_node(ctx.selectedItem.id);
+            }
+            ctx.selectedItem = null;
+            ctx.result = '';
+        });
+
         $("#@mapData.IdBtnOk").on("click", function () {
             if (ctx.selectedItem) {
                 ctx.result = '1';
