@@ -34,6 +34,9 @@ namespace FTT_API.Common.OriginClass.EntiityClass
     public class ftt_form_logDTO : ftt_form_logEntity
     {
         public int No { get; set; }
+        public string RowCount { get; set; }
+
+        
 
     }
 

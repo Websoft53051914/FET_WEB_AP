@@ -1,5 +1,7 @@
 ﻿@model FormEditVM
 @{
+    var form_no = ViewData["form_no"];
+
     var mapAttr = new
     {
         IdStatusLogGrid = Guid.NewGuid().ToString(),
@@ -11,76 +13,148 @@
     <h5>表單狀態異動紀錄</h5>
     <div id="@mapAttr.IdStatusLogGrid"></div>
 </div>
-<div >
+<div>
     <h5>表單內容異動紀錄</h5>
     <div id="@mapAttr.IdContentLogGrid"></div>
 </div>
 
 <script>
     $(document).ready(function () {
+        var cookiePageIndex = 1;
+        $("#@(mapAttr.IdStatusLogGrid)").jsGrid({
+            pageIndex: cookiePageIndex,
+            paging: true,
+            width: "100%",
+            pageSize: pageDataSource[0].id,
+            pageButtonCount: 5,
+            pagerFormat: "{first} {prev} {pages} {next} {last}    第 {pageIndex} 頁 共 {pageCount} 頁",
+            pagePrevText: "上一頁",
+            pageNextText: "下一頁",
+            pageFirstText: "第一頁",
+            pageLastText: "最後一頁",
+            pageLoading: true,
+            autoload: true,
+            changePageSize: function (pageSize) {
+                var $this = this;
+                $this.pageSize = pageSize;
 
-        $("#@(mapAttr.IdStatusLogGrid)").jsGrid(
-            {
-                width: "100%",
-                height: "auto",
-                autoload: true,
-                controller: {
-                    loadData: function (filter) {
-                        // return $.ajax({
-                        //     type: "GET",
-                        //     url: "@Url.Action("GetUpdateLog", "Form")",
-                        //     data: filter
-                        // });
-                        //先用假資料
-                        return [
+                context.$Grid.jsGrid("openPage", 1);
+            },
+            pagerContainer: "#pagers",
+            onDataLoaded: function () {
+                feather.replace();
+            },
+            controller: {
+                loadData: function (filter) {
+                    var d = $.Deferred();
+                    filter.vm = {};
+                    filter.vm.form_no = '@form_no';
 
-                        ];
-                    }
-                },
-                fields: [
-                    { name: "Seq", type: "text", title: "項目", width: 50, visible: false },
-                    { name: "UpdateTime", type: "text", title: "異動時間" },
-                    { name: "USER_TYPE", type: "text", title: "角色" },
-                    { name: "UpdateUserName", type: "text", title: "異動人員" },
-                    { name: "Desc", type: "text", title: "描述" },
-                    { name: "BeforeStatus", type: "text", title: "異動前狀態" },
-                    { name: "Status", type: "text", title: "狀態" }
-                ]
-            }
+                    $.ajax({
+                        // xhrFields: { withCredentials: true },
+                        type: "POST",
+                        url: "@(config.GetBackendUrl() + Url.Action("GetPageList_Desc", "Pending"))",
+                        data: filter,
+                        dataType: "json",
+                        credentials: "include",
+                        success: function (res) {
+                            if (res.Success === false) {
+                                swal({
+                                    text: res.Message,
+                                    icon: "error",
+                                    button: "確認"
+                                });
+                                d.reject();
+                                return;
+                            }
+                            var da = {
+                                data: res.Data,
+                                itemsCount: res.Total
+                            }
+                            d.resolve(da);
+                        }
+                    })
+
+                    return d.promise();
+                }
+            },
+            fields: [
+                { name: "RowCount", type: "text", title: "項目", width: 50, visible: false },
+                { name: "create_date", type: "text", title: "異動時間" },
+                { name: "User_Type", type: "text", title: "角色" },
+                { name: "action_name", type: "text", title: "異動人員" },
+                { name: "description", type: "text", title: "描述" },
+                { name: "PRIOR_STATUS", type: "text", title: "異動前狀態" },
+                { name: "STATUS", type: "text", title: "狀態" }
+            ]
+        }
         );
 
         $("#@(mapAttr.IdContentLogGrid)").jsGrid(
             {
+                pageIndex: cookiePageIndex,
+                paging: true,
                 width: "100%",
-                height: "auto",
+                pageSize: pageDataSource[0].id,
+                pageButtonCount: 5,
+                pagerFormat: "{first} {prev} {pages} {next} {last}    第 {pageIndex} 頁 共 {pageCount} 頁",
+                pagePrevText: "上一頁",
+                pageNextText: "下一頁",
+                pageFirstText: "第一頁",
+                pageLastText: "最後一頁",
+                pageLoading: true,
                 autoload: true,
+                changePageSize: function (pageSize) {
+                    var $this = this;
+                    $this.pageSize = pageSize;
+
+                    context.$Grid.jsGrid("openPage", 1);
+                },
+                pagerContainer: "#pagers",
+                onDataLoaded: function () {
+                    feather.replace();
+                },
                 controller: {
                     loadData: function (filter) {
-                        // return $.ajax({
-                        //     type: "GET",
-                        //     url: "@Url.Action("GetUpdateLog", "Form")",
-                        //     data: filter
-                        // });
-                        //先用假資料
-                        return [
-                            {
-                                Seq: 1,
-                                UpdateTime: "2023-10-01 12:00",
-                                UpdateContent: "開立工單",
-                                UpdateBefore: "",
-                                UpdateAfter: "",
-                                UpdateUserName: "使用者A"
-                            },
-                        ];
+                        var d = $.Deferred();
+                        filter.vm = {};
+                        filter.vm.form_no = '@form_no';
+
+                        $.ajax({
+                            // xhrFields: { withCredentials: true },
+                            type: "POST",
+                            url: "@(config.GetBackendUrl() + Url.Action("GetPageList_Log", "Pending"))",
+                            data: filter,
+                            dataType: "json",
+                            credentials: "include",
+                            success: function (res) {
+                                if (res.Success === false) {
+                                    swal({
+                                        text: res.Message,
+                                        icon: "error",
+                                        button: "確認"
+                                    });
+                                    d.reject();
+                                    return;
+                                }
+                                var da = {
+                                    data: res.Data,
+                                    itemsCount: res.Total
+                                }
+                                d.resolve(da);
+                            }
+                        })
+
+                        return d.promise();
                     }
                 },
                 fields: [
-                    { name: "Seq", type: "text", title: "項目", width: 50, visible: false },
-                    { name: "UpdateTime", type: "text", title: "異動時間" },
-                    { name: "UpdateContent", type: "text", title: "異動欄位" },
-                    { name: "UpdateBefore", type: "text", title: "異動前" },
-                    { name: "UpdateAfter", type: "text", title: "異動後" },
-                    { name: "UpdateUserName", type: "text", title: "異動人員" },
+                    { name: "ROWCOUNT", type: "text", title: "項目", width: 50, visible: false },
+                    { name: "updatetime", type: "text", title: "異動時間" },
+                    { name: "fieldname", type: "text", title: "異動欄位" },
+                    { name: "OLDVALUE", type: "text", title: "異動前" },
+                    { name: "NEWVALUE", type: "text", title: "異動後" },
+                    { name: "UPDATE_EMPNO", type: "text", title: "異動人員" },
 
                 ]
             }

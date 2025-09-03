@@ -16,11 +16,11 @@ using static Const.Enums;
 
 namespace FTT_API.Models.Handler
 {
-    public class PenddingHanlder : BaseDBHandler
+    public class PendingHanlder : BaseDBHandler
     {
         private readonly ConfigurationHelper _configHelper;
         private readonly Microsoft.AspNetCore.Http.HttpContext _httpContext;
-        public PenddingHanlder(ConfigurationHelper confighelper, Microsoft.AspNetCore.Http.HttpContext httpContext)
+        public PendingHanlder(ConfigurationHelper confighelper, Microsoft.AspNetCore.Http.HttpContext httpContext)
         {
             _configHelper = confighelper;
             _httpContext = httpContext;
@@ -296,6 +296,225 @@ DELETE FROM Ftt_form_amount WHERE FORM_NO = @FORM_NO
             GetDBHelper().Execute(strSQL, paras);
 
             throw new NotImplementedException();
+        }
+
+        internal PageResult<ftt_form_descDTO> GetPageList_Desc(PageEntity pageEntity, v_ftt_form2DTO dto)
+        {
+            Dictionary<string, object> paras = new Dictionary<string, object>();
+            paras.Add("form_no", dto.form_no);
+
+            string originSQL = @"
+SELECT ROWNUM                                          AS ROWCOUNT,
+       create_date,
+       Substr(User_Type, 1, Instr(User_Type, ',') - 1) AS User_Type,
+       action_name,
+       description,
+       Get_status_real_name('FTT_FORM', prior_status)  AS PRIOR_STATUS,
+       Get_status_real_name('FTT_FORM', status)        AS STATUS
+FROM   ftt_form_desc
+WHERE  ( ROWNUM = 0 ) 
+";
+
+            if (!string.IsNullOrEmpty(dto.form_no))
+            {
+                switch (dto.USERROLE.ToUpper())
+                {
+                    case "VENDOR":
+                        originSQL = @"
+SELECT ROWNUM                                          AS ROWCOUNT,
+       create_date,
+       Substr(user_type, 1, Instr(user_type, ',') - 1) AS USER_TYPE,
+       action_name,
+       description,
+       Get_status_real_name('FTT_FORM', prior_status)  AS PRIOR_STATUS,
+       Get_status_real_name('FTT_FORM', status)        AS STATUS
+FROM   ftt_form_desc
+WHERE  user_type NOT LIKE '%MANAGER%'
+       AND form_no =@form_no
+ORDER  BY create_date 
+";
+                        break;
+                    default:
+                        originSQL = @"
+SELECT ROWNUM                                          AS ROWCOUNT,
+       create_date,
+       Substr(user_type, 1, Instr(user_type, ',') - 1) AS USER_TYPE,
+       action_name,
+       description,
+       Get_status_real_name('FTT_FORM', prior_status)  AS PRIOR_STATUS,
+       Get_status_real_name('FTT_FORM', status)        AS STATUS
+FROM   ftt_form_desc
+WHERE  form_no =@form_no
+ORDER  BY create_date 
+";
+                        break;
+                }
+            }
+
+            string countSQL = @"
+  SELECT  
+    count(0)
+  FROM 
+  (
+" + originSQL + @"
+) as pageData
+ where 1=1 
+";
+
+            var result = GetDBHelper().FindPageList<ftt_form_descDTO>(originSQL, countSQL, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
+            return result;
+        }
+
+        internal PageResult<ftt_form_logDTO> GetPageList_Log(PageEntity pageEntity, v_ftt_form2DTO dto)
+        {
+            Dictionary<string, object> paras = new Dictionary<string, object>();
+            paras.Add("form_no", dto.form_no);
+
+            string originSQL = @"
+SELECT ROWNUM                                     AS ROWCOUNT,
+       updatetime,
+       fieldname,
+       Get_status_real_name('FTT_FORM', oldvalue) AS OLDVALUE,
+       Get_status_real_name('FTT_FORM', newvalue) AS NEWVALUE,
+       Get_employee_name('empno', update_empno)   AS UPDATE_EMPNO,
+       update_engname
+FROM   ftt_form_log
+WHERE  ( ROWNUM = 0 ) 
+";
+
+            if (!string.IsNullOrEmpty(dto.form_no))
+            {
+                switch (dto.USERROLE.ToUpper())
+                {
+                    case "VENDOR":
+                        originSQL = @"
+SELECT ROWNUM                                     AS ROWCOUNT,
+       updatetime,
+       fieldname,
+       Get_status_real_name('FTT_FORM', oldvalue) AS OLDVALUE,
+       Get_status_real_name('FTT_FORM', newvalue) AS NEWVALUE,
+       Get_employee_name('empno', update_empno)   AS UPDATE_EMPNO,
+       update_engname
+FROM   ftt_form_log
+WHERE  oldvalue NOT IN ( 'REVIEW', 'REVIEW2', 'AGREE' )
+       AND form_no = @form_no
+       AND fieldname <> 'STATUS'
+ORDER  BY updatetime 
+";
+                        break;
+                    default:
+                        originSQL = @"
+SELECT ROWNUM                                     AS ROWCOUNT,
+       updatetime,
+       fieldname,
+       Get_status_real_name('FTT_FORM', oldvalue) AS OLDVALUE,
+       Get_status_real_name('FTT_FORM', newvalue) AS NEWVALUE,
+       Get_action_name(update_empno)              AS UPDATE_EMPNO,
+       update_engname
+FROM   ftt_form_log
+WHERE  form_no = @form_no
+ORDER  BY updatetime 
+";
+                        break;
+                }
+            }
+
+            string countSQL = @"
+  SELECT  
+    count(0)
+  FROM 
+  (
+" + originSQL + @"
+) as pageData
+ where 1=1 
+";
+
+            var result = GetDBHelper().FindPageList<ftt_form_logDTO>(originSQL, countSQL, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
+            return result;
+        }
+
+        internal PageResult<v_access_roleView> GetPageList_V_ACCESS_ROLE(PageEntity pageEntity, v_ftt_form2DTO dto)
+        {
+            Dictionary<string, object> paras = new Dictionary<string, object>();
+            paras.Add("form_no", dto.form_no);
+
+            string originSQL = @"
+SELECT form_type,
+       user_type,
+       empno,
+       deptcode,
+       engname,
+       action,
+       Get_form_status(form_type, form_no) AS STATUSID
+FROM   v_access_role
+WHERE  form_no = @form_no
+";
+
+            string countSQL = @"
+  SELECT  
+    count(0)
+  FROM 
+  (
+" + originSQL + @"
+) as pageData
+ where 1=1 
+";
+
+            var result = GetDBHelper().FindPageList<v_access_roleView>(originSQL, countSQL, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
+            return result;
+        }
+
+        internal PageResult<form_access_statusDTO> GetPageList_Access(PageEntity pageEntity, v_ftt_form2DTO dto)
+        {
+            Dictionary<string, object> paras = new Dictionary<string, object>();
+            paras.Add("form_no", dto.form_no);
+
+            string originSQL = @"
+SELECT DISTINCT status,
+                status_name
+FROM   form_access_status 
+";
+
+            string countSQL = @"
+  SELECT  
+    count(0)
+  FROM 
+  (
+" + originSQL + @"
+) as pageData
+ where 1=1 
+";
+
+            var result = GetDBHelper().FindPageList<form_access_statusDTO>(originSQL, countSQL, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
+            return result;
+        }
+
+        internal PageResult<store_vender_profileDTO> GetPageList_Vender(PageEntity pageEntity, v_ftt_form2DTO dto)
+        {
+            Dictionary<string, object> paras = new Dictionary<string, object>();
+            paras.Add("form_no", dto.form_no);
+
+            string originSQL = @"
+
+SELECT order_id,
+       merchant_name
+FROM   store_vender_profile
+ORDER  BY order_id 
+
+";
+
+            string countSQL = @"
+  SELECT  
+    count(0)
+  FROM 
+  (
+" + originSQL + @"
+) as pageData
+ where 1=1 
+";
+
+            var result = GetDBHelper().FindPageList<store_vender_profileDTO>(originSQL, countSQL, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
+            return result;
         }
     }
 }

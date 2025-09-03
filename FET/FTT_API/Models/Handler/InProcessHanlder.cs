@@ -59,7 +59,7 @@ FROM   v_ftt_form2
 WHERE  statusid NOT IN ( 'CLOSE', 'REJECT', 'CANCEL', 'NOSHOW' )
        AND form_no IN (SELECT form_no
                        FROM   access_role
-                       WHERE  user_type = @USERROLE
+                       WHERE  User_Type = @USERROLE
                                OR empno = @EMPNO
                                OR deptcode = @IVRCODE)
 ORDER  BY updatetime DESC 
@@ -84,7 +84,7 @@ FROM   v_ftt_form2
 WHERE  statusid IN ( 'AGREE', 'OFFER', 'COMPLETE' )
        AND form_no IN (SELECT form_no
                        FROM   access_role
-                       WHERE  user_type = @USERROLE
+                       WHERE  User_Type = @USERROLE
                               AND deptcode = @IVRCODE
                               AND @EMPNO IS NOT NULL)
 ORDER  BY updatetime DESC 
@@ -107,7 +107,7 @@ FROM   v_ftt_form2
 WHERE  statusid NOT IN ( 'CLOSE', 'REJECT', 'CANCEL', 'NOSHOW' )
        AND form_no IN (SELECT form_no
                        FROM   access_role
-                       WHERE  user_type = @USERROLE
+                       WHERE  User_Type = @USERROLE
                               AND empno = @EMPNO
                               AND @IVRCODE IS NOT NULL)
 ORDER  BY updatetime DESC 

@@ -76,7 +76,7 @@ namespace FTT_WEB.Common.OriginClass
             if (dto != null)
             {
                 UpdateField = $"{dto.option_field},{dto.require_field},";
-                Role += dto.user_type + ",";
+                Role += dto.User_Type + ",";
                 RequireField += dto.require_field + ",";
 
                 string Temp = dto.allow_status;
@@ -114,7 +114,7 @@ namespace FTT_WEB.Common.OriginClass
                             {
                                 if (dto.approve == "Y")
                                 {
-                                    SubmitButton += "　<input type=submit onclick=\"document.all.STATUSWORDING.value=this.value;RequireField='" + dto.require_field + "';document.all.FORM_TYPE.value='" + dto.form_type + "';document.all.APPROVE.value='Y';document.all.USER_TYPE.value='" + dto.user_type + "';document.all.STATUS.value='" + StatusTemp.GetValue(j) + "';\" value='" + StatusName.GetValue(j) + "' Class='customButton'  style='vertical-align:middle;border:none 0px black;'   >";
+                                    SubmitButton += "　<input type=submit onclick=\"document.all.STATUSWORDING.value=this.value;RequireField='" + dto.require_field + "';document.all.FORM_TYPE.value='" + dto.form_type + "';document.all.APPROVE.value='Y';document.all.User_Type.value='" + dto.User_Type + "';document.all.STATUS.value='" + StatusTemp.GetValue(j) + "';\" value='" + StatusName.GetValue(j) + "' Class='customButton'  style='vertical-align:middle;border:none 0px black;'   >";
                                 }
                                 else
                                 {
@@ -167,25 +167,25 @@ namespace FTT_WEB.Common.OriginClass
             if ((_request_STATUS.Contains("+") || _request_STATUS.Contains("-1")) && !m.Success)
             {
                 //簽核
-                Access_Control = baseHandler.GetDBHelper().FindDataTable("SELECT USER_TYPE,ORDERID,STATUS FROM ACCESS_CONTROL WHERE  FORM_TYPE='" + form_type + "' AND ORDERID IN (SELECT ORDERID" + _request_STATUS + " from ACCESS_CONTROL WHERE FORM_TYPE='" + form_type + "' AND STATUS='" + Status + "') ", null);
-                getresponse1 += "<br>2SELECT USER_TYPE,ORDERID,STATUS FROM ACCESS_CONTROL WHERE  FORM_TYPE='" + form_type + "' AND ORDERID IN (SELECT ORDERID" + _request_STATUS + " from ACCESS_CONTROL WHERE FORM_TYPE='" + form_type + "' AND STATUS='" + Status + "') ";
+                Access_Control = baseHandler.GetDBHelper().FindDataTable("SELECT User_Type,ORDERID,STATUS FROM ACCESS_CONTROL WHERE  FORM_TYPE='" + form_type + "' AND ORDERID IN (SELECT ORDERID" + _request_STATUS + " from ACCESS_CONTROL WHERE FORM_TYPE='" + form_type + "' AND STATUS='" + Status + "') ", null);
+                getresponse1 += "<br>2SELECT User_Type,ORDERID,STATUS FROM ACCESS_CONTROL WHERE  FORM_TYPE='" + form_type + "' AND ORDERID IN (SELECT ORDERID" + _request_STATUS + " from ACCESS_CONTROL WHERE FORM_TYPE='" + form_type + "' AND STATUS='" + Status + "') ";
             }
             else
             {
-                Access_Control = baseHandler.GetDBHelper().FindDataTable("SELECT USER_TYPE,ORDERID,STATUS FROM ACCESS_CONTROL WHERE  FORM_TYPE='" + form_type + "' and STATUS='" + Status + "' order by orderid", null);
-                getresponse1 += "<br>3SELECT USER_TYPE,ORDERID,STATUS FROM ACCESS_CONTROL WHERE  STATUS='" + Status + "' AND FORM_TYPE='" + form_type + "'";
+                Access_Control = baseHandler.GetDBHelper().FindDataTable("SELECT User_Type,ORDERID,STATUS FROM ACCESS_CONTROL WHERE  FORM_TYPE='" + form_type + "' and STATUS='" + Status + "' order by orderid", null);
+                getresponse1 += "<br>3SELECT User_Type,ORDERID,STATUS FROM ACCESS_CONTROL WHERE  STATUS='" + Status + "' AND FORM_TYPE='" + form_type + "'";
             }
 
             for (int i = 0; i < Access_Control.Rows.Count; i++)
             {
                 //判斷簽核人員是否為空值, 若為空值是否要stop
-                DataTable Access_Role = baseHandler.GetDBHelper().FindDataTable("SELECT *  FROM ACCESS_ROLE WHERE FORM_TYPE='" + form_type + "' AND FORM_NO='" + form_no + "' AND USER_TYPE='" + Access_Control.Rows[i]["USER_TYPE"].ToString() + "'", null);
-                getresponse1 += "<br>4SELECT *  FROM ACCESS_ROLE WHERE FORM_TYPE='" + form_type + "' AND FORM_NO='" + form_no + "' AND USER_TYPE='" + Access_Control.Rows[i]["USER_TYPE"].ToString() + "'";
+                DataTable Access_Role = baseHandler.GetDBHelper().FindDataTable("SELECT *  FROM ACCESS_ROLE WHERE FORM_TYPE='" + form_type + "' AND FORM_NO='" + form_no + "' AND User_Type='" + Access_Control.Rows[i]["User_Type"].ToString() + "'", null);
+                getresponse1 += "<br>4SELECT *  FROM ACCESS_ROLE WHERE FORM_TYPE='" + form_type + "' AND FORM_NO='" + form_no + "' AND User_Type='" + Access_Control.Rows[i]["User_Type"].ToString() + "'";
                 //2-12 UPDATE BY LING  
                 if ((Access_Role.Rows[0]["IFNULLSKIP"].ToString() == "N" || Access_Role.Rows[0]["EMPNO"].ToString() + Access_Role.Rows[0]["DEPTCODE"].ToString() != "") && Access_Role.Rows[0]["APPROVE_STATUS"].ToString() != "同意")
                 {
-                    //DBtable.ExecuteNonQuery("UPDATE ACCESS_ROLE SET ACTION='Y' WHERE  FORM_TYPE='" + form_type + "' AND FORM_NO='" + form_no + "' AND USER_TYPE='" + Access_Control.Rows[i]["USER_TYPE"].ToString() + "'");
-                    getresponse1 += "<br>5UPDATE ACCESS_ROLE SET ACTION='Y' WHERE  FORM_TYPE='" + form_type + "' AND FORM_NO='" + form_no + "' AND USER_TYPE='" + Access_Control.Rows[i]["USER_TYPE"].ToString() + "'";
+                    //DBtable.ExecuteNonQuery("UPDATE ACCESS_ROLE SET ACTION='Y' WHERE  FORM_TYPE='" + form_type + "' AND FORM_NO='" + form_no + "' AND User_Type='" + Access_Control.Rows[i]["User_Type"].ToString() + "'");
+                    getresponse1 += "<br>5UPDATE ACCESS_ROLE SET ACTION='Y' WHERE  FORM_TYPE='" + form_type + "' AND FORM_NO='" + form_no + "' AND User_Type='" + Access_Control.Rows[i]["User_Type"].ToString() + "'";
                     //當找到下個執行人員或沒找到但並須stop(IFNULLSKIP==N) 
                     Status_Change = "Y";//==>找到下個執行狀態, 不須再往下找
                 }

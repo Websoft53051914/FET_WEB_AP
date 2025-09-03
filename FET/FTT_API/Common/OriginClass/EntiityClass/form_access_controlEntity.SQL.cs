@@ -43,9 +43,9 @@ WHERE  form_no =@form_no
 
             string qrySQL = "";
             if (IVRCode == "" || IVRCode == "NULL")
-                qrySQL = "select * from form_access_control where form_type=@FormType and (status=@TSTATUS) and USER_TYPE IN (SELECT USER_TYPE FROM V_ACCESS_ROLE WHERE FORM_TYPE=@FormType AND FORM_NO=@FormNo AND (EMPNO=@EmpNo or instr(AGENT,@EmpNo)>0 OR USER_GROUP IN (SELECT FTT_GROUP AS USER_GROUP FROM FTT_GROUP WHERE EMPNO=@EmpNo))) order by orderid";
+                qrySQL = "select * from form_access_control where form_type=@FormType and (status=@TSTATUS) and User_Type IN (SELECT User_Type FROM V_ACCESS_ROLE WHERE FORM_TYPE=@FormType AND FORM_NO=@FormNo AND (EMPNO=@EmpNo or instr(AGENT,@EmpNo)>0 OR USER_GROUP IN (SELECT FTT_GROUP AS USER_GROUP FROM FTT_GROUP WHERE EMPNO=@EmpNo))) order by orderid";
             else
-                qrySQL = "select * from form_access_control where form_type=@FormType and (status=@TSTATUS) and USER_TYPE IN (SELECT USER_TYPE FROM V_ACCESS_ROLE WHERE FORM_TYPE=@FormType AND FORM_NO=@FormNo AND (EMPNO=@EmpNo or DEPTCODE=@IVRCode or instr(AGENT,@EmpNo)>0 OR USER_GROUP IN (SELECT FTT_GROUP AS USER_GROUP FROM FTT_GROUP WHERE EMPNO=@EmpNo))) order by orderid";
+                qrySQL = "select * from form_access_control where form_type=@FormType and (status=@TSTATUS) and User_Type IN (SELECT User_Type FROM V_ACCESS_ROLE WHERE FORM_TYPE=@FormType AND FORM_NO=@FormNo AND (EMPNO=@EmpNo or DEPTCODE=@IVRCode or instr(AGENT,@EmpNo)>0 OR USER_GROUP IN (SELECT FTT_GROUP AS USER_GROUP FROM FTT_GROUP WHERE EMPNO=@EmpNo))) order by orderid";
 
             return baseHandler.GetDBHelper().Find<form_access_controlDTO>(qrySQL, paras);
         }

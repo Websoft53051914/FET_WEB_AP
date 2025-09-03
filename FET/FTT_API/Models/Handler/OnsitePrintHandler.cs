@@ -54,7 +54,7 @@ FROM   v_ftt_form2
 WHERE  statusid = 'PRWP'
        AND form_no IN (SELECT form_no
                        FROM   access_role
-                       WHERE  user_type = 'VENDOR'
+                       WHERE  User_Type = 'VENDOR'
                               AND deptcode = @ivr_code)
 ORDER  BY vender 
 ";

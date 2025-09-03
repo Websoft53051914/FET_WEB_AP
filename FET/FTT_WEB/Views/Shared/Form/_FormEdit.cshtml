@@ -9,7 +9,7 @@
     <li class="nav-item">
         <a class="nav-link " id="" data-bs-toggle="tab" href="#FormEditTab2"><span class="fw-bold">異動紀錄</span></a>
     </li>
-    <li class="nav-item">
+    <li class="nav-item" id="FormEditNavItem3" style="display:none;">
         <a class="nav-link " id="" data-bs-toggle="tab" href="#FormEditTab3"><span class="fw-bold">表單修改</span></a>
     </li>
 </ul>
@@ -23,7 +23,7 @@
     <div class="tab-pane fade  " id="FormEditTab2">
         @await Html.PartialAsync("Form/_FormLog", new FormEditVM())
     </div>
-    <div class="tab-pane fade  " id="FormEditTab3">
+    <div class="tab-pane fade  " id="FormEditTab3" style="display:none;">
         @await Html.PartialAsync("Form/_FormMaintain", new FormEditVM())
     </div>
 

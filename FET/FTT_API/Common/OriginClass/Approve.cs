@@ -77,7 +77,7 @@ namespace FTT_API.Common.OriginClass
             if (dto != null)
             {
                 UpdateField = $"{dto.option_field},{dto.require_field},";
-                Role += dto.user_type + ",";
+                Role += dto.User_Type + ",";
                 RequireField += dto.require_field + ",";
 
                 string Temp = dto.allow_status;
@@ -134,7 +134,7 @@ namespace FTT_API.Common.OriginClass
                                     vm.Form_Type = dto.form_type;
                                     vm.Approve = "Y"; //前端沒有找到這個id
 
-                                    vm.User_Type = dto.user_type;
+                                    vm.User_Type = dto.User_Type;
                                     vm.Status = StatusTemp.GetValue(j).ToString();
 
                                     SubmitButton += @$"　
@@ -146,7 +146,7 @@ document.all.STATUSWORDING.value=this.value;
 RequireField='{dto.require_field}';
 document.all.FORM_TYPE.value='{dto.form_type}';
 document.all.APPROVE.value='Y';
-document.all.USER_TYPE.value='{dto.user_type}';
+document.all.User_Type.value='{dto.User_Type}';
 document.all.STATUS.value='{StatusTemp.GetValue(j)}';"" 
 
 value='{StatusName.GetValue(j)}' 

@@ -7,6 +7,9 @@ namespace FTT_API.Models
 {
     public class FormTableVM
     {
+        public bool IsAdmin { get; set; }
+
+
         public string ActionName { get; set; }
         public string RequireField { get; set; }
         public string UpdateField { get; set; }

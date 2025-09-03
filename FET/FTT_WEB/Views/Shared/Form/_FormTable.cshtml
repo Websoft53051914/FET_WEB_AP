@@ -20,7 +20,7 @@
 
 <form id="form1" name="form1">
     <input type=hidden name="FORM_NO" id="FORM_NO" value="@form_no" />
-    <input type=hidden name="USER_TYPE" id="USER_TYPE" value="" />
+    <input type=hidden name="User_Type" id="User_Type" value="" />
     <input type=hidden name="STATUS_DESC" id="STATUS_DESC" value="" />
     <input type=hidden name="FORM" id="FORM" value="" />
     <input type=hidden name="STATUSWORDING" id="STATUSWORDING" value="" />
@@ -396,7 +396,7 @@
                                 @* <input id="btnSubmit" type="submit" value="" /> *@
                                 @* @(Html.Raw(SubmitButton)) *@
                             </span>
-                            <button type="button" onclick="parent.window.close();">關閉視窗</button>
+                            <button type="button" onclick="parent.window.close();" class="btn btn-primary">關閉視窗</button>
                         </td>
                     </tr>
                 </tbody>
@@ -535,7 +535,7 @@
                 selected: 'selected'
             },
             ajax: {
-                url: '@Url.Action("SelectDesc", "Pending")',
+                url: '@(config.GetBackendUrl() + Url.Action("SelectDesc", "Pending"))',
                 dataType: 'json',
                 type: 'POST',
                 delay: 200,
@@ -568,7 +568,7 @@
             var selectedID = $('#EXPENSE_DESC_SEL :selected').val();
             $.ajax({
                 type: 'POST',
-                url: '@Url.Action("ShowDesc", "Pending")',
+                url: '@(config.GetBackendUrl() + Url.Action("ShowDesc", "Pending"))',
                 data: function (params) {
                     var selectId = $('#EXPENSE_DESC_SEL').val();
                     var query = {
@@ -613,7 +613,7 @@
             vm.vms = vms;
 
             $.ajax({
-                url: '@Url.Action("Add_FTT_FORM_AMOUNT")',
+                url: '@(config.GetBackendUrl() + Url.Action("Add_FTT_FORM_AMOUNT"))',
                 dataType: 'json',
                 type: 'POST',
                 data: { vm: vm },
@@ -688,7 +688,7 @@
                     $('#ApprovalDate').text(data.Data.ApprovalDate);
                     $('#WarrantyTime').text(data.Data.WarrantyTime);
 
-                    $('#USER_TYPE').val(data.Data.USER_TYPE);
+                    $('#User_Type').val(data.Data.User_Type);
                     $('#STATUS_DESC').val(data.Data.STATUS_DESC);
                     $('#FORM').val(data.Data.Form_Type);
                     $('#FORM_TYPE').val(data.Data.Form_Type);
@@ -816,7 +816,7 @@
                         RequireField = data.Data.RequireField;
                         $('#FORM_TYPE').val(data.Data.Form_Type);
                         document.all.APPROVE.value = 'Y';
-                        $('#USER_TYPE').val(data.Data.User_Type);
+                        $('#User_Type').val(data.Data.User_Type);
                         $('#STATUS').val(data.Data.Status);
                     }
                     else {
@@ -831,7 +831,7 @@
                         $('#btnSubmit').remove();
                     }
 
-                    $('#USER_TYPE').val(data.Data.User_Type);
+                    $('#User_Type').val(data.Data.User_Type);
                     UpdateField = data.Data.UpdateField;
                     RequireField = data.Data.RequireField;
 
@@ -916,6 +916,16 @@
                                 $('.select_class').hide();
                             }
                         }
+                    }
+
+                    if (data.Data.IsAdmin) {
+                        $('#FormEditTab3').show();
+                        $('#FormEditNavItem3').show();
+
+                    }
+                    else {
+                        $('#FormEditTab3').remove();
+                        $('#FormEditNavItem3').remove();
                     }
 
                     hideLoader();

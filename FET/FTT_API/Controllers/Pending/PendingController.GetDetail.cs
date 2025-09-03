@@ -28,6 +28,11 @@ namespace FTT_API.Controllers.Pending
 
                 HandleForm_Load(vm, form_no);
 
+                if (LoginSession.Current.userrole.ToLower() == "admin")
+                {
+                    vm.IsAdmin = true;
+                }
+
                 return JsonSuccess(vm);
             }
             catch (Exception ex)
@@ -37,10 +42,9 @@ namespace FTT_API.Controllers.Pending
             }
         }
 
-
         protected void HandleForm_Load(FormTableVM vm, string form_no)
         {
-            PenddingHanlder _PenddingHanlder = new PenddingHanlder(_config, HttpContext);
+            PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
 
             var mIVRCode = _PenddingHanlder.GetIVRCode(form_no);
 
@@ -111,7 +115,7 @@ namespace FTT_API.Controllers.Pending
 
             if (!string.IsNullOrEmpty(formNo))
             {
-                PenddingHanlder _PenddingHanlder = new PenddingHanlder(_config, HttpContext);
+                PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
 
                 bool disableOffer = true;  // 是否為保固內
                 var storeProfile = _PenddingHanlder.GetStoreProfileInfoByFormNo(formNo);
@@ -250,7 +254,7 @@ namespace FTT_API.Controllers.Pending
 
         private void GetAmountInfo(FormTableVM vm, string formNo)
         {
-            PenddingHanlder _PenddingHanlder = new PenddingHanlder(_config, HttpContext);
+            PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
 
             var fttFormDto = _PenddingHanlder.GetFttFormInfo(formNo);
 
@@ -290,7 +294,7 @@ namespace FTT_API.Controllers.Pending
 
             if (!string.IsNullOrEmpty(form_No))
             {
-                PenddingHanlder _PenddingHanlder = new PenddingHanlder(_config, HttpContext);
+                PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
                 var create_time = _PenddingHanlder.GetCreateTime(form_No);
 
                 var mIVRCode = _PenddingHanlder.GetIVRCode(form_No);
@@ -352,7 +356,7 @@ namespace FTT_API.Controllers.Pending
             Ftt_formDTO _Ftt_formDTO = new Ftt_formDTO();
             if (!string.IsNullOrEmpty(formNo))
             {
-                PenddingHanlder _PenddingHanlder = new PenddingHanlder(_config, HttpContext);
+                PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
                 _Ftt_formDTO = _PenddingHanlder.GetFttFormInfo(formNo);
 
                 if (_Ftt_formDTO != null)
@@ -393,8 +397,6 @@ namespace FTT_API.Controllers.Pending
             return _Ftt_formDTO;
         }
 
-
-
         [HttpPost("[action]")]
         public ActionResult Add_Ftt_form_amount(Add_Ftt_form_amount_VM vm)
         {
@@ -406,7 +408,7 @@ namespace FTT_API.Controllers.Pending
                     {
                         string inserSQL = "";
 
-                        PenddingHanlder _PenddingHanlder = new PenddingHanlder(_config, HttpContext);
+                        PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
 
                         _PenddingHanlder.DeleteFttFormAmount(vm.form_no);
                         foreach (var item in vm.vms)
@@ -432,6 +434,82 @@ namespace FTT_API.Controllers.Pending
             }
 
             return JsonValidFail("工單不存在");
+        }
+
+
+        [HttpPost("[action]")]
+        public IActionResult Detail(Ftt_formDTO vm)
+        {
+            var ttt = vm.form_no;
+
+            BaseDBHandler baseHandler = new BaseDBHandler();
+
+            string updateSQL = "  ";
+
+            Dictionary<string, object> dic = new();
+            dic.Add("ticket_info", vm.ticket_info);
+
+            dic.Add("completetime", vm.completetime);
+            dic.Add("precompletetime", vm.precompletetime);
+
+            dic.Add("selfconfig", vm.selfconfig);
+            dic.Add("remark", vm.remark);
+
+            dic.Add("form_no", vm.form_no);
+
+            if (vm.updateCOMPLETETIME == true)
+                updateSQL += " completetime=@completetime, ";
+
+            if (vm.updatePRECOMPLETETIME == true)
+                updateSQL += " precompletetime=@precompletetime, ";
+
+
+            baseHandler.GetDBHelper().Execute($@" 
+update ftt_form set 
+ticket_info=@ticket_info,
+
+{updateSQL}
+
+selfconfig=@selfconfig,
+remark=@remark
+
+where 
+form_no=@form_no
+"
+, dic);
+
+
+            Dictionary<string, object> dic2 = new();
+            dic2.Add("form_no", vm.form_no);
+            dic2.Add("DESCRIPTION", vm.DESCRIPTION);
+
+            baseHandler.GetDBHelper().Execute($@" 
+update FTT_FORM_DESC set 
+
+DESCRIPTION=@DESCRIPTION
+
+where 
+form_no=@form_no
+"
+, dic2);
+
+            baseHandler.GetDBHelper().Commit();
+
+            string SELFCONFIG = baseHandler.GetDBHelper().FindScalar<string>("select SELFCONFIG from FTT_FORM where FORM_NO=" + vm.form_no, null);
+            if (SELFCONFIG == "Y" && vm.STATUS == "DISPATCH")
+                baseHandler.GetDBHelper().ExecStoredProcedureWithTransation("SET_STATUS('" + vm.FORM_TYPE + "', '" + vm.form_no + "', 'TICKET', '" + LoginSession.Current.empno + "', '', '')");
+            //db.ExecuteNonQuery(tran, CommandType.StoredProcedure, "SET_STATUS('" + vm.FORM_TYPE + "','" + vm.form_no + "','TICKET','" + LoginSession.Current.empno + "','','')");
+            else
+                baseHandler.GetDBHelper().ExecStoredProcedureWithTransation("SET_STATUS('" + vm.FORM_TYPE + "','" + vm.form_no + "','" + vm.STATUS + "','" + LoginSession.Current.empno + "','','')");
+            //db.ExecuteNonQuery(tran, CommandType.StoredProcedure, "SET_STATUS('" + vm.FORM_TYPE+ "','" + vm.form_no+ "','" + vm.STATUS + "','" + LoginSession.Current.empno + "','','')");
+
+            ////TODO 不知道甚麼時候未有 APPROVE="Y" 的參數
+            //if (Request.QueryString["APPROVE"] == "Y")
+            //{
+            //    db.ExecuteNonQuery(tran, "INSERT INTO APPROVE_FORM_LOG (FORM_TYPE,FORM_NO,User_Type,STATUS,AGENT,COMMON,ROOT_NO) VALUES ('" + m_Request["FORM_TYPE"] + "','" + m_Request["FORM_NO"] + "','" + m_Request["User_Type"] + "','" + m_Request["STATUSWORDING"] + "','" + Context.User.Identity.Name + "','" + m_Request["APPROVECOMMON"].Replace("'", "’").ToString() + "'),");
+            //}
+
+            return JsonSuccess("申請單單號【" + vm.form_no + "】更新成功！");
         }
     }
 }

@@ -13,7 +13,7 @@ namespace FTT_API.Common.OriginClass.EntiityClass
 
         public DateTime? create_date { get; set; }
 
-        public string user_type { get; set; }
+        public string User_Type { get; set; }
 
         public string action_name { get; set; }
 

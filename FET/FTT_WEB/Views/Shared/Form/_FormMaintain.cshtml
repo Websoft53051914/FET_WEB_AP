@@ -1,5 +1,7 @@
 ﻿@model FormEditVM
 @{
+    var form_no = ViewData["form_no"];
+
     var mapAttr = new
     {
         IdGrid1 = Guid.NewGuid().ToString(),
@@ -7,27 +9,18 @@
         IdGrid3 = Guid.NewGuid().ToString(),
     };
 }
-@* <div class="d-flex gap-5 align-items-center fs-5 ms-3">
-    <div>表單編號 : 14564 </div>
-    <div class="d-inline-block">
-        表單狀態 :    <div class="d-inline-block">
-            <select id="_FormMaintainStatus" ><option value="1">Review</option></select>
-        </div>
-    </div>
-    <div class="ms-auto  ms-lg-5">
-        <button class="btn btn-info" id="">儲存</button>
-    </div>
-</div> *@
 
 <div class="d-flex align-items-center gap-3">
     <div class="d-flex flex-nowrap align-items-center me-3">
         <label class="bg-info px-2 me-2">表單編號：</label>
-        <span>48312</span>
+        <span>@form_no</span>
     </div>
 
     <div class="d-flex flex-nowrap align-items-center me-3">
         <label class="bg-info px-2 me-2" style="text-wrap-mode:nowrap">表單狀態：</label>
-        <select id="_FormMaintainStatus" class="form-control form-control-sm"><option value="1">Review</option></select>
+        <input id="_FormMaintainStatus" class="form-control form-control-sm" />
+        @* <select id="_FormMaintainStatus" class="form-control form-control-sm">
+        </select> *@
     </div>
 
     <div class="ms-auto  ms-lg-5">
@@ -38,97 +31,270 @@
 <div class="d-flex flex-wrap">
     <div class="mt-4" id="@mapAttr.IdGrid1"></div>
 
+    <div class="mt-4" id="@mapAttr.IdGrid3" style="max-width:600px"></div>
+
     <div class="mt-4 me-2" id="@mapAttr.IdGrid2" style="max-width:600px"></div>
 
-    <div class="mt-4" id="@mapAttr.IdGrid3" style="max-width:600px"></div>
 </div>
 
 <script>
-    $(function(){
-        $("#_FormMaintainStatus").select2();
+    $(function () {
+        var cookiePageIndex1 = 1;
+        var cookiePageIndex2 = 1;
+        var cookiePageIndex3 = 1;
+        // $("#_FormMaintainStatus").select2();
 
         // Grid1 假資料
         $("#@(mapAttr.IdGrid1)").jsGrid({
+            pageIndex: cookiePageIndex1,
+            paging: true,
             width: "100%",
-            height: "auto",
+            pageSize: 10000,
+            pageButtonCount: 5,
+            pagerFormat: "{first} {prev} {pages} {next} {last}    第 {pageIndex} 頁 共 {pageCount} 頁",
+            pagePrevText: "上一頁",
+            pageNextText: "下一頁",
+            pageFirstText: "第一頁",
+            pageLastText: "最後一頁",
+            pageLoading: true,
             autoload: true,
+            changePageSize: function (pageSize) {
+                var $this = this;
+                $this.pageSize = pageSize;
+
+                context.$Grid.jsGrid("openPage", 1);
+            },
+            pagerContainer: "#pagers",
+            onDataLoaded: function () {
+                feather.replace();
+            },
             controller: {
                 loadData: function (filter) {
-                    // 假資料
-                    return [
-                        { Id: "1", FormType: "FTT_FORM", UserType: "Submitter", EmpNo: "", Deptcode: "", EngName:"高雄草衙", Action: "" },
-                    ];
+                    var d = $.Deferred();
+                    filter.vm = {};
+                    filter.vm.form_no = '@form_no';
+
+                    $.ajax({
+                        // xhrFields: { withCredentials: true },
+                        type: "POST",
+                        url: "@(config.GetBackendUrl() + Url.Action("GetPageList_V_ACCESS_ROLE", "Pending"))",
+                        data: filter,
+                        dataType: "json",
+                        credentials: "include",
+                        success: function (res) {
+                            if (res.Success === false) {
+                                swal({
+                                    text: res.Message,
+                                    icon: "error",
+                                    button: "確認"
+                                });
+                                d.reject();
+                                return;
+                            }
+
+                            if (res.Data.length > 0) {
+                                $('#_FormMaintainStatus').val(res.Data[0].STATUSID);
+                            }
+
+                            var da = {
+                                data: res.Data,
+                                itemsCount: res.Total
+                            }
+                            d.resolve(da);
+                        }
+                    })
+
+                    return d.promise();
                 }
             },
             fields: [
                 { name: "Id", type: "text", width: 50, visible: false },
-                { name: "FormType", type: "text", title: "Form Type" },
-                { name: "UserType", type: "text", title: "User Type" },
-                { name: "EmpNo", type: "text", title: "對應人員" },
-                { name: "Deptcode", type: "text", title: "對應門市/廠商" },
-                { name: "EngName", type: "text", title: "對應名稱" },
-                { name: "Action", type: "text", title: "Action" }
+                { name: "form_type", type: "text", title: "Form Type" },
+                { name: "user_type", type: "text", title: "User Type" },
+
+                {
+                    type: 'control', align: "center",
+                    width: 150,
+                    editButton: false,
+                    deleteButton: false,
+                    headerTemplate: (value, item) => {
+                        return $("<div>對應人員<div>").attr({ class: '' });
+                    },
+                    itemTemplate: (value, item) => {
+
+                        switch (item['user_type']) {
+                            case "MANAGER":
+                                ADMIN
+                                return $('<input value="' + item["empno"] + '">');
+                                break;
+                            default:
+                                return '';
+                                break;
+                        }
+                    }
+                },
+                {
+                    type: 'control', align: "center",
+                    width: 150,
+                    editButton: false,
+                    deleteButton: false,
+                    headerTemplate: (value, item) => {
+                        return $("<div>對應門市/廠商<div>").attr({ class: '' });
+                    },
+                    itemTemplate: (value, item) => {
+
+                        switch (item['user_type']) {
+                            case "SUBMITTER":
+                            case "VENDOR":
+                                return $('<input value="' + item["deptcode"] + '">');
+                                break;
+                            default:
+                                return '';
+                                break;
+                        }
+                    }
+                },
+
+                // { name: "empno", type: "text", title: "對應人員" },
+                // { name: "deptcode", type: "text", title: "對應門市/廠商" },
+                { name: "engname", type: "text", title: "對應名稱" },
+                { name: "action", type: "text", title: "Action" }
             ]
         });
 
         // Grid2 假資料
         $("#@(mapAttr.IdGrid2)").jsGrid({
+            pageIndex: cookiePageIndex2,
+            paging: true,
             width: "100%",
-            height: "auto",
+            pageSize: 10000,
+            pageButtonCount: 5,
+            pagerFormat: "{first} {prev} {pages} {next} {last}    第 {pageIndex} 頁 共 {pageCount} 頁",
+            pagePrevText: "上一頁",
+            pageNextText: "下一頁",
+            pageFirstText: "第一頁",
+            pageLastText: "最後一頁",
+            pageLoading: true,
             autoload: true,
+            changePageSize: function (pageSize) {
+                var $this = this;
+                $this.pageSize = pageSize;
+
+                context.$Grid.jsGrid("openPage", 1);
+            },
+            pagerContainer: "#pagers",
+            onDataLoaded: function () {
+                feather.replace();
+            },
             controller: {
                 loadData: function (filter) {
-                    // 假資料
-                    return [
-                        { Id: "1", ORDER_ID: "1001", MERCHANT_NAME: "XX公司" },
-                        { Id: "2", ORDER_ID: "1002", MERCHANT_NAME: "YY企業" },
-                        { Id: "3", ORDER_ID: "1003", MERCHANT_NAME: "ZZ商行" },
-                        { Id: "4", ORDER_ID: "1004", MERCHANT_NAME: "AA股份有限公司" }
-                    ];
+                    var d = $.Deferred();
+                    filter.vm = {};
+                    filter.vm.form_no = '@form_no';
+
+                    $.ajax({
+                        // xhrFields: { withCredentials: true },
+                        type: "POST",
+                        url: "@(config.GetBackendUrl() + Url.Action("GetPageList_Vender", "Pending"))",
+                        data: filter,
+                        dataType: "json",
+                        credentials: "include",
+                        success: function (res) {
+                            if (res.Success === false) {
+                                swal({
+                                    text: res.Message,
+                                    icon: "error",
+                                    button: "確認"
+                                });
+                                d.reject();
+                                return;
+                            }
+                            var da = {
+                                data: res.Data,
+                                itemsCount: res.Total
+                            }
+                            d.resolve(da);
+                        }
+                    })
+
+                    return d.promise();
                 }
             },
             fields: [
                 { name: "Id", type: "text", width: 50, visible: false },
-                { name: "ORDER_ID", type: "text", title: "ORDER_ID" },
-                { name: "MERCHANT_NAME", type: "text", title: "MERCHANT_NAME" },
+                { name: "order_id", type: "text", title: "ORDER_ID" },
+                { name: "merchant_name", type: "text", title: "MERCHANT_NAME" },
             ]
         });
 
         // Grid3 假資料
         $("#@(mapAttr.IdGrid3)").jsGrid({
+            pageIndex: cookiePageIndex3,
+            paging: true,
             width: "100%",
-            height: "auto",
+            pageSize: 10000,
+            pageButtonCount: 5,
+            pagerFormat: "{first} {prev} {pages} {next} {last}    第 {pageIndex} 頁 共 {pageCount} 頁",
+            pagePrevText: "上一頁",
+            pageNextText: "下一頁",
+            pageFirstText: "第一頁",
+            pageLastText: "最後一頁",
+            pageLoading: true,
             autoload: true,
+            changePageSize: function (pageSize) {
+                var $this = this;
+                $this.pageSize = pageSize;
+
+                context.$Grid.jsGrid("openPage", 1);
+            },
+            pagerContainer: "#pagers",
+            onDataLoaded: function () {
+                feather.replace();
+            },
             controller: {
                 loadData: function (filter) {
-                    // 假資料，依照註解
-                    return [
-                        { STATUS: "REVIEW3", STATUS_NAME: "同意報價(大於5萬)" },
-                        { STATUS: "PENDING", STATUS_NAME: "待料中" },
-                        { STATUS: "REVIEW", STATUS_NAME: "審單中" },
-                        { STATUS: "CANCEL", STATUS_NAME: "取消報修" },
-                        { STATUS: "CONFIRM", STATUS_NAME: "確認到場日期" },
-                        { STATUS: "ASSIGN", STATUS_NAME: "派工中" },
-                        { STATUS: "AGREE", STATUS_NAME: "同意報價" },
-                        { STATUS: "COMPLETE", STATUS_NAME: "已完修" },
-                        { STATUS: "TICKET", STATUS_NAME: "已派工" },
-                        { STATUS: "REVISE", STATUS_NAME: "退回修正" },
-                        { STATUS: "USED", STATUS_NAME: "自行尋商" },
-                        { STATUS: "PRWP", STATUS_NAME: "列印維修單" },
-                        { STATUS: "DISPATCH", STATUS_NAME: "等待系統派工中" },
-                        { STATUS: "NOSHOW", STATUS_NAME: "不需到場處理" },
-                        { STATUS: "CLOSE", STATUS_NAME: "結案" },
-                        { STATUS: "ASSETER", STATUS_NAME: "拒絕處理" },
-                        { STATUS: "REVIEW2", STATUS_NAME: "同意拒絕" },
-                        { STATUS: "OFFER", STATUS_NAME: "報價處理" },
-                        { STATUS: "REJECT", STATUS_NAME: "拒絕" },
-                        { STATUS: "DENY", STATUS_NAME: "不同意報價" }
-                    ];
+                    var d = $.Deferred();
+                    filter.vm = {};
+                    filter.vm.form_no = '@form_no';
+
+                    $.ajax({
+                        // xhrFields: { withCredentials: true },
+                        type: "POST",
+                        url: "@(config.GetBackendUrl() + Url.Action("GetPageList_Access", "Pending"))",
+                        data: filter,
+                        dataType: "json",
+                        credentials: "include",
+                        success: function (res) {
+                            if (res.Success === false) {
+                                swal({
+                                    text: res.Message,
+                                    icon: "error",
+                                    button: "確認"
+                                });
+                                d.reject();
+                                return;
+                            }
+                            var da = {
+                                data: res.Data,
+                                itemsCount: res.Total
+                            }
+
+                            for (var i = 0; i < res.Data.length; i++) {
+                                var item = res.Data[i];
+                                var option = new Option(item.status, item.status, true, true);
+                                $('#_FormMaintainStatus').append(option);
+                            }
+
+                            d.resolve(da);
+                        }
+                    })
+
+                    return d.promise();
                 }
             },
             fields: [
-                { name: "STATUS", type: "text", title: "STATUS" },
-                { name: "STATUS_NAME", type: "text", title: "STATUS_NAME" },
+                { name: "status", type: "text", title: "STATUS" },
+                { name: "status_name", type: "text", title: "STATUS_NAME" },
             ]
         });
     })

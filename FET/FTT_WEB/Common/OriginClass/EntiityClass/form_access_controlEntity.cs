@@ -10,7 +10,7 @@ namespace FTT_WEB.Common.OriginClass.EntiityClass
     {
         public string orderid { get; set; }
         public string form_type { get; set; }
-        public string user_type { get; set; }
+        public string User_Type { get; set; }
         public string status { get; set; }
         public string allow_status { get; set; }
         public string allow_wording { get; set; }
