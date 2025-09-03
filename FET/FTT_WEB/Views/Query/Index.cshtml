@@ -1,7 +1,41 @@
-﻿@{
-    var mapAttr = new
+﻿@model QueryIndexVO
+@{
+    var mapData = new
     {
-        IdGrid = Guid.NewGuid(),
+        Grid = new
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            IdPageSelect = Guid.NewGuid().ToString("N"),
+            IdPagers = Guid.NewGuid().ToString("N"),
+            UrlGetPageList = $"{config.GetBackendUrl()}/Query/GetPageList",
+            CbGroup = Guid.NewGuid().ToString("N"),
+        },
+        FormSearch = new
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            IdBtnSearch = Guid.NewGuid().ToString("N"),
+        },
+        PartialDIG = new DialogIvrCodeGridVO(),
+        PartialDVG = new DialogVenderGridVO(),
+        TreeModalId = Guid.NewGuid().ToString("N"),
+        UrlGetInitData = $"{config.GetBackendUrl()}/Query/GetInitData",
+        UrlDetail = Url.Action("Detail", "Pending", new { formNo = "tempId" }),
+    };
+    ;
+    ViewData["TreeModalId"] = mapData.TreeModalId;
+    Model.CloseDateGte = Model.CompleteDateGte = Model.CreateDateGte = DateTime.Now.AddDays(-3).Date;
+    Model.CloseDateLte = Model.CompleteDateLte = Model.CreateDateLte = DateTime.Now.Date;
+    // 依角色隱藏
+    List<SelectListItem> SelectListTtCategory = new()
+{
+        new SelectListItem("一般","一般"),
+        new SelectListItem("新開單","緊急(新開單)"),
+        new SelectListItem("補單","緊急(補單)"),
+    };
+    List<SelectListItem> SelectListSelfConfig = new()
+{
+        new SelectListItem("N","N"),
+        new SelectListItem("Y","Y"),
     };
 }
 
@@ -21,300 +55,501 @@
 </div>
 
 <div class="container-fluid">
-    <div class="card mb-2">
-        <div class="card-body py-3 card-body-reduction">
-            <div class="row none_hover row-cols-1  row-cols-md-2  row-cols-xl-3">
-                <div class="col mb-2">
-                    <label class="col-form-label websoft-form-label pt-2">報修日起訖時間</label>
-                    <div class="row align-items-center">
-                        <div class="col-12 col-md-6 col-lg-6">
-                            <div class="input-group initDatepicker " id="d1" data-target-input="nearest">
-                                <input class="form-control datetimepicker-input" type="text" data-target="#d1">
-                                <div class="input-group-text" data-target="#d1" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
-                                <label class="_custom_middle_label">~</label>
+    <form id="@(mapData.FormSearch.Id)">
+        <div class="card mb-2">
+            <div class="card-body py-3 card-body-reduction">
+                <div class="row none_hover row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 gy-2 mb-2">
+                    <div class="col-12 col-md-6 col-lg-4 col-xl-4">
+                        <label class="col-form-label websoft-form-label pt-2">報修日起訖時間</label>
+                        <div class="row align-items-center">
+                            <div class="col-12 col-md-6 col-lg-6">
+                                <div class="input-group initDatepicker" id="@(Html.IdFor(m => m.CreateDateGte))Container" data-target-input="nearest">
+                                    <input asp-for="CreateDateGte" class="form-control datetimepicker-input" type="text" data-target="#@(Html.IdFor(m => m.CreateDateGte))Container">
+                                    <div class="input-group-text" data-target="#@(Html.IdFor(m => m.CreateDateGte))Container" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
+                                    <label class="_custom_middle_label">~</label>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-12 col-md-6 col-lg-6">
-                            <div class="input-group initDatepicker " id="d2" data-target-input="nearest">
-                                <input class="form-control datetimepicker-input" type="text" data-target="#d2">
-                                <div class="input-group-text" data-target="#d2" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col mb-2">
-                    <label class="col-form-label websoft-form-label pt-2">完修日起訖時間</label>
-                    <div class="row align-items-center">
-                        <div class="col-12 col-md-6 col-lg-6">
-                            <div class="input-group initDatepicker " id="d3" data-target-input="nearest">
-                                <input class="form-control datetimepicker-input" type="text" data-target="#d3">
-                                <div class="input-group-text" data-target="#d3" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
-                                <label class="_custom_middle_label">~</label>
-                            </div>
-                        </div>
-                        <div class="col-12 col-md-6 col-lg-6">
-                            <div class="input-group initDatepicker " id="d4" data-target-input="nearest">
-                                <input class="form-control datetimepicker-input" type="text" data-target="#d4">
-                                <div class="input-group-text" data-target="#d4" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
+                            <div class="col-12 col-md-6 col-lg-6">
+                                <div class="input-group initDatepicker" id="@(Html.IdFor(m => m.CreateDateLte))Container" data-target-input="nearest">
+                                    <input asp-for="CreateDateLte" class="form-control datetimepicker-input" type="text" data-target="#@(Html.IdFor(m => m.CreateDateLte))Container">
+                                    <div class="input-group-text" data-target="#@(Html.IdFor(m => m.CreateDateLte))Container" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                <div class="col mb-2">
-                    <label class="col-form-label websoft-form-label pt-2">結案日起訖時間</label>
-                    <div class="row align-items-center">
-                        <div class="col-12 col-md-6 col-lg-6">
-                            <div class="input-group initDatepicker " id="d5" data-target-input="nearest">
-                                <input class="form-control datetimepicker-input" type="text" data-target="#d5">
-                                <div class="input-group-text" data-target="#d5" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
-                                <label class="_custom_middle_label">~</label>
+                    <div class="col-12 col-md-6 col-lg-4 col-xl-4">
+                        <label class="col-form-label websoft-form-label pt-2">完修日起訖時間</label>
+                        <div class="row align-items-center">
+                            <div class="col-12 col-md-6 col-lg-6">
+                                <div class="input-group initDatepicker" id="@(Html.IdFor(m => m.CompleteDateGte))Container" data-target-input="nearest">
+                                    <input asp-for="CompleteDateGte" class="form-control datetimepicker-input" type="text" data-target="#@(Html.IdFor(m => m.CompleteDateGte))Container">
+                                    <div class="input-group-text" data-target="#@(Html.IdFor(m => m.CompleteDateGte))Container" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
+                                    <label class="_custom_middle_label">~</label>
+                                </div>
                             </div>
-                        </div>
-                        <div class="col-12 col-md-6 col-lg-6">
-                            <div class="input-group initDatepicker " id="d6" data-target-input="nearest">
-                                <input class="form-control datetimepicker-input" type="text" data-target="#d6">
-                                <div class="input-group-text" data-target="#d6" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
+                            <div class="col-12 col-md-6 col-lg-6">
+                                <div class="input-group initDatepicker" id="@(Html.IdFor(m => m.CompleteDateLte))Container" data-target-input="nearest">
+                                    <input asp-for="CompleteDateLte" class="form-control datetimepicker-input" type="text" data-target="#@(Html.IdFor(m => m.CompleteDateLte))Container">
+                                    <div class="input-group-text" data-target="#@(Html.IdFor(m => m.CompleteDateLte))Container" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
+                                </div>
                             </div>
                         </div>
                     </div>
+                    <div class="col-12 col-md-6 col-lg-4 col-xl-4">
+                        <label class="col-form-label websoft-form-label pt-2">結案日起訖時間</label>
+                        <div class="row align-items-center">
+                            <div class="col-12 col-md-6 col-lg-6">
+                                <div class="input-group initDatepicker" id="@(Html.IdFor(m => m.CloseDateGte))Container" data-target-input="nearest">
+                                    <input asp-for="CloseDateGte" class="form-control datetimepicker-input" type="text" data-target="#@(Html.IdFor(m => m.CloseDateGte))Container">
+                                    <div class="input-group-text" data-target="#@(Html.IdFor(m => m.CloseDateGte))Container" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
+                                    <label class="_custom_middle_label">~</label>
+                                </div>
+                            </div>
+                            <div class="col-12 col-md-6 col-lg-6">
+                                <div class="input-group initDatepicker" id="@(Html.IdFor(m => m.CloseDateLte))Container" data-target-input="nearest">
+                                    <input asp-for="CloseDateLte" class="form-control datetimepicker-input" type="text" data-target="#@(Html.IdFor(m => m.CloseDateLte))Container">
+                                    <div class="input-group-text" data-target="#@(Html.IdFor(m => m.CloseDateLte))Container" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">工單狀態</label>
+                        <select asp-for="StatusIdEq" class="form-control initSelect2Clearable">
+                            <option></option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">工單號碼</label>
+                        <input asp-for="FormNoEq" type="text" class="form-control" placeholder="">
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">報修型態</label>
+                        <select asp-for="TtCategoryEq" asp-items="@(new SelectList(SelectListTtCategory, nameof(SelectListItem.Value), nameof(SelectListItem.Text)))" class="form-select initSelect2Clearable">
+                            <option></option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">報修類別</label>
+                        <button id="btnSelectCategoryId" type="button" class="btn btn btn-info">選擇項目</button>
+                        <input asp-for="CategoryIdEq" type="hidden" />
+                        <input asp-for="CategoryName" type="hidden" />
+                        <input asp-for="CategoryDesc" type="text" class="form-control" placeholder="" readonly>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">報修廠商</label>
+                        <input asp-for="VenderIdEq" type="hidden" />
+                        <input asp-for="VendorName" type="text" class="form-control" placeholder="" readonly>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">報修門市</label>
+                        <input asp-for="IvrCodeEq" type="hidden" />
+                        <input asp-for="StoreName" type="text" class="form-control" placeholder="" readonly>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">公司別</label>
+                        <select asp-for="CompanyEq" class="form-control initSelect2Clearable">
+                            <option></option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">店格</label>
+                        <select asp-for="StoreTypeEq" class="form-control initSelect2Clearable">
+                            <option></option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">通路</label>
+                        <select asp-for="ChannelEq" class="form-control initSelect2Clearable">
+                            <option></option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">區域</label>
+                        <select asp-for="AreaEq" class="form-control initSelect2Clearable">
+                            <option></option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">區經理/業務</label>
+                        <select asp-for="AsEmpNoEq" class="form-control initSelect2Clearable">
+                            <option></option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">門市自行尋商</label>
+                        <select asp-for="SelfConfigEq" asp-items="@(new SelectList(SelectListSelfConfig, nameof(SelectListItem.Value), nameof(SelectListItem.Text)))" class="form-select initSelect2Clearable">
+                            <option></option>
+                        </select>
+                    </div>
                 </div>
-
+                <button id="@(mapData.FormSearch.IdBtnSearch)" type="button" class="btn btn-primary">送出查詢</button>
+                <button id="btnExportExcel" type="button" class="btn btn-primary">匯出Excel</button>
             </div>
-            <div class="row  mb-2">
-                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
-                    <label class="col-form-label websoft-form-label pt-2">工單狀態</label>
-                    <select class="form-control select2-Clear">
-                        <option></option>
-                        <option value="1">審單中</option>
-                        <option value="2">等待系統派工</option>
-                    </select>
-                </div>
-                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
-                    <label class="col-form-label websoft-form-label pt-2">工單號碼</label>
-                    <input type="text" class="form-control" placeholder="">
-                </div>
-                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
-                    <label class="col-form-label websoft-form-label pt-2">報修型態</label>
-                    <select class="form-control select2-Clear">
-                        <option></option>
-                        <option value="1">一般</option>
-                        <option value="2">緊急 (新開單)</option>
-                        <option value="2">緊急 (補單)</option>
-                    </select>
-                </div>
-                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
-                    <label class="col-form-label websoft-form-label pt-2">報修類別</label>
-                    <select class="form-control select2-Clear">
-                        <option></option>
-                        <option>後場家具</option>
-                        <option>監視系統</option>
-                    </select>
-                </div>
-                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
-                    <label class="col-form-label websoft-form-label pt-2">報修廠商</label>
-                    <input type="text" class="form-control" placeholder="">
-                </div>
-                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
-                    <label class="col-form-label websoft-form-label pt-2">報修門市</label>
-                    <input type="text" class="form-control" placeholder="">
-                </div>
-                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
-                    <label class="col-form-label websoft-form-label pt-2">公司別</label>
-                    <select class="form-control select2-Clear">
-                        <option></option>
-                    </select>
-                </div>
-                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
-                    <label class="col-form-label websoft-form-label pt-2">店格</label>
-                    <select class="form-control select2-Clear">
-                        <option></option>
-                    </select>
-                </div>
-                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
-                    <label class="col-form-label websoft-form-label pt-2">通路</label>
-                    <select class="form-control select2-Clear">
-                        <option></option>
-                    </select>
-                </div>
-                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
-                    <label class="col-form-label websoft-form-label pt-2">區域</label>
-                    <select class="form-control select2-Clear">
-                        <option></option>
-                    </select>
-                </div>
-                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
-                    <label class="col-form-label websoft-form-label pt-2">區經理/業務</label>
-                    <select class="form-control select2-Clear">
-                        <option></option>
-                    </select>
-                </div>
-                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
-                    <label class="col-form-label websoft-form-label pt-2">門市自行尋商</label>
-                    <select class="form-control select2-Clear">
-                        <option></option>
-                        <option>Y</option>
-                        <option>N</option>
-                    </select>
-                </div>
-            </div>
-            <button class="btn btn-primary">送出查詢</button>
         </div>
-    </div>
-
+    </form>
     <div class="card">
         <div class="card-body">
-            <div id="@(mapAttr.IdGrid)"></div>
-
+            <div id="@(mapData.Grid.Id)"></div>
             <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
                 <div id="pageResizer" class="jsgrid-pager-page">
                     <span>每頁筆數:</span>
-                    <select id="pageSelect">
+                    <select id="@(mapData.Grid.IdPageSelect)">
                     </select>
                 </div>
-                <div id="pagers">
+                <div id="@(mapData.Grid.IdPagers)">
                 </div>
             </div>
         </div>
     </div>
 </div>
 
+<partial name="Form/_DialogIvrCodeGrid" model="mapData.PartialDIG" />
+<partial name="Form/_DialogVenderGrid" model="mapData.PartialDVG" />
+<partial name="Form/_RMItemTree" view-data='new ViewDataDictionary(ViewData)' />
+
 @section scripts
 {
     <script>
+        var context = {
 
-        const context = {
-            $Grid: $("#@(mapAttr.IdGrid)"),
         };
+        var cookieName = 'QueryGridInfo';
 
         $(function () {
-            initGrid(1);
-
-            $("#pageSelect").on("change", function () {
-                const val = this.value;
-                onPageLenghtSelect(val, context.$Grid);
-            })
-
-            $("#pageSelect").select2({
-                minimumResultsForSearch: -1,
-                data: pageDataSource
-            });
-            $("#pageSelect").data("select2").$container.addClass("w-auto");
-
             $('.initDatepicker').datetimepicker({
                 format: 'YYYY/MM/DD',
             });
 
-            $(".select2-Clear").select2({
-                placeholder: "請選擇",
-                allowClear: true,
+            $('.initSelect2Clearable').select2({
+                allowClear: true
             });
-        });
 
-        function initGrid(cookiePageIndex) {
-            $("#@(mapAttr.IdGrid)").jsGrid({
-                pageIndex: cookiePageIndex,
-                paging: true,
-                width: "100%",
-                pageSize: pageDataSource[0].id,
-                pageButtonCount: 5,
-                pagerFormat: "{first} {prev} {pages} {next} {last}    第 {pageIndex} 頁 共 {pageCount} 頁",
-                pagePrevText: "上一頁",
-                pageNextText: "下一頁",
-                pageFirstText: "第一頁",
-                pageLastText: "最後一頁",
-                pageLoading: true,
-                autoload: true,
-                changePageSize: function (pageSize) {
-                    var $this = this;
-                    $this.pageSize = pageSize;
+            $('#@(mapData.PartialDIG.Id)').on('hidden.bs.modal', function (e) {
+                let ctx = context['@(mapData.PartialDIG.Id)'];
+                console.log(ctx);
+                if (ctx.result && ctx.selectedItem) {
+                    $('#@(Html.IdFor(m => m.IvrCodeEq))').val(ctx.selectedItem['@(nameof(DialogIvrCodeGridGridVO.IvrCode))'] || '');
+                    $('#@(Html.IdFor(m => m.StoreName))').val(ctx.selectedItem['@(nameof(DialogIvrCodeGridGridVO.ShopName))'] || '');
+                }
+                else {
+                    $('#@(Html.IdFor(m => m.IvrCodeEq))').val(null);
+                    $('#@(Html.IdFor(m => m.StoreName))').val(null);
+                }
+            });
 
-                    context.$Grid.jsGrid("openPage", 1);
-                },
-                pagerContainer: "#pagers",
-                onDataLoaded: function () {
-                    feather.replace();
-                },
-                data: [
-                    {
-                        Id :10,
-                        OrderNumber: "123456",
-                        RepairType: "一般",
-                        RepairCategory: "監視系統",
-                        RepairItem: "數位錄影機",
-                        OrderDate: "2023-10-01 16:12:56",
-                        StoreName: "台北南昌",
-                        OrderStatusName: "等待系統派工",
-                        CurrentInchargeName: "王小明"
+            $('#@(mapData.PartialDVG.Id)').on('hidden.bs.modal', function (e) {
+                let ctx = context['@(mapData.PartialDVG.Id)'];
+
+                if (ctx.result && ctx.selectedItem) {
+                    $('#@(Html.IdFor(m => m.VenderIdEq))').val(ctx.selectedItem['@(nameof(DialogVenderGridGridVO.OrderId))'] || '');
+                    $('#@(Html.IdFor(m => m.VendorName))').val(ctx.selectedItem['@(nameof(DialogVenderGridGridVO.MerchantName))'] || '');
+                }
+                else {
+                    $('#@(Html.IdFor(m => m.VenderIdEq))').val(null);
+                    $('#@(Html.IdFor(m => m.VendorName))').val(null);
+                }
+            });
+
+            $('#@(mapData.TreeModalId)').on('hidden.bs.modal', function (e) {
+                let ctx = context['@(mapData.TreeModalId)'];
+
+                if (ctx.result && ctx.selectedItem) {
+                    let data = ctx.selectedItem.original['OtherAttr'];
+                    $('#@(Html.IdFor(m => m.CategoryIdEq))').val(data['CATEGORY_ID'] || '');
+                    $('#@(Html.IdFor(m => m.CategoryName))').val(data['CATEGORY_NAME'] || '');
+                    $('#@(Html.IdFor(m => m.CategoryDesc))').val(data['CATEGORY_NAME'] || '');
+                }
+                else {
+                    $('#@(Html.IdFor(m => m.CategoryIdEq))').val(null);
+                    $('#@(Html.IdFor(m => m.CategoryName))').val(null);
+                    $('#@(Html.IdFor(m => m.CategoryDesc))').val(null);
+                }
+            });
+
+            callInitData();
+
+            let pageIndex = 1;
+            let pageSize = pageDataSource[0].id;
+            if (Cookies.get(cookieName)) {
+                var cookieObj = JSON.parse(Cookies.get(cookieName));
+                if (cookieObj && cookieObj.FromEdit == true) {
+                    if (cookieObj.PageIndex) {
+                        pageIndex = parseInt(cookieObj.PageIndex);
                     }
-                ],
-                // controller: {
-                //     loadData: function (filter) {
-                //         var d = $.Deferred();
-                //         $.ajax({
-                //             type: "POST",
-                //             url: "@Url.Action("GetPageList")",
-                //             data: filter,
-                //             dataType: "json",
-                //             success: function (res) {
-                //                 if (res.Success === false) {
-                //                     swal({
-                //                         text: res.Message,
-                //                         icon: "error",
-                //                         button: "確認"
-                //                     });
-                //                     d.reject();
-                //                     return;
-                //                 }
-                //                 var da = {
-                //                     data: res.Data,
-                //                     itemsCount: res.Total
-                //                 }
-                //                 d.resolve(da);
-                //             }
-                //         })
 
-                //         return d.promise();
-                //     }
-                // },
-                fields: [
-                    { name: "Id", visible: false },
-                    {
-                        type: 'control', align: "center",
-                        width: 60,
-                        editButton: false,
-                        deleteButton: false,
-                        headerTemplate: (value, item) => {
-                            return $("<div>操作<div>").attr({ class: '' });
-                        },
-                        itemTemplate: (value, item) => {
+                    if (cookieObj.PageSize) {
+                        pageSize = parseInt(cookieObj.PageSize);
+                    }
 
-                            $viewButton = $('<a>')
-                                 .attr({
-                                     'class': 'd-inline-block fs-5 me-2 jsgrid-button ',
-                                     'title': '查看',
-                                     'href':"@Url.Action("Index", "FormEdit")"
-                                 }).append("<i class='fa fa-eye'></i>").css({ 'background': 'none', 'color': 'green' })
-                            // result.append($deleteButton);
-
-                            return $viewButton;
-                        }
-                    },
-                    { name: "OrderNumber", title: "工單號碼", type: "text", width: 100, align: "center" },
-                    { name: "RepairType", title: "報修型態", type: "text", width: 100, align: "center" },
-                    { name: "RepairCategory", title: "報修類別", type: "text", width: 100, align: "center" },
-                    { name: "RepairItem", title: "報修品項", type: "text", width: 150, align: "center" },
-                    { name: "OrderDate", title: "報修日期", type: "text", width: 120, align: "center" },
-                    { name: "StoreName", title: "店名", type: "text", width: 120, align: "center" },
-                    { name: "OrderStatusName", title: "工單狀態", type: "text", width: 100, align: "center" },
-                    { name: "CurrentInchargeName", title: "目前處理者", type: "text", width: 120, align: "center" },
-
-                ],
-
+                    Cookies.remove(cookieName);
+                }
+            }
+            initGrid(pageIndex, pageSize);
         });
 
-            //分頁頁數紀錄相關
-            context.$Grid.jsGrid('_setPage', cookiePageIndex);//jsgrid bug 不會自動將頁碼設定成pageindex
+        function callInitData() {
+            let data = {};
+            showLoader();
+            $.ajax({
+                url: '@(mapData.UrlGetInitData?.ToHtmlString())',
+                dataType: 'json',
+                type: 'POST',
+                data: data,
+                cache: false
+            })
+                .done((response) => {
+                    if (response.Success && response.Data) {
+                        if (response.Data['@(nameof(QueryIndexVO.SelectListStatus))']) {
+                            let $control = $('#@(Html.IdFor(m => m.StatusIdEq))');
+                            let dataSource = $.map(response.Data['@(nameof(QueryIndexVO.SelectListStatus))'], (val, idx) => {
+                                $.extend(val, {
+                                    id: val['@(nameof(SelectListItem.Value))'],
+                                    text: val['@(nameof(SelectListItem.Text))'],
+                                });
+
+                                return val;
+                            });
+                            $control.empty();
+                            $control.html('<option></option>')
+                            $control.select2({
+                                allowClear: true,
+                                data: dataSource,
+                            });
+                        }
+
+                        if (response.Data['@(nameof(QueryIndexVO.SelectListCompany))']) {
+                            let $control = $('#@(Html.IdFor(m => m.CompanyEq))');
+                            let dataSource = $.map(response.Data['@(nameof(QueryIndexVO.SelectListCompany))'], (val, idx) => {
+                                $.extend(val, {
+                                    id: val['@(nameof(SelectListItem.Value))'],
+                                    text: val['@(nameof(SelectListItem.Text))'],
+                                });
+
+                                return val;
+                            });
+                            $control.empty();
+                            $control.html('<option></option>')
+                            $control.select2({
+                                allowClear: true,
+                                data: dataSource,
+                            });
+                        }
+
+                        if (response.Data['@(nameof(QueryIndexVO.SelectListStoreType))']) {
+                            let $control = $('#@(Html.IdFor(m => m.StoreTypeEq))');
+                            let dataSource = $.map(response.Data['@(nameof(QueryIndexVO.SelectListStoreType))'], (val, idx) => {
+                                $.extend(val, {
+                                    id: val['@(nameof(SelectListItem.Value))'],
+                                    text: val['@(nameof(SelectListItem.Text))'],
+                                });
+
+                                return val;
+                            });
+                            $control.empty();
+                            $control.html('<option></option>')
+                            $control.select2({
+                                allowClear: true,
+                                data: dataSource,
+                            });
+                        }
+
+                        if (response.Data['@(nameof(QueryIndexVO.SelectListChannel))']) {
+                            let $control = $('#@(Html.IdFor(m => m.ChannelEq))');
+                            let dataSource = $.map(response.Data['@(nameof(QueryIndexVO.SelectListChannel))'], (val, idx) => {
+                                $.extend(val, {
+                                    id: val['@(nameof(SelectListItem.Value))'],
+                                    text: val['@(nameof(SelectListItem.Text))'],
+                                });
+
+                                return val;
+                            });
+                            $control.empty();
+                            $control.html('<option></option>')
+                            $control.select2({
+                                allowClear: true,
+                                data: dataSource,
+                            });
+                        }
+
+                        if (response.Data['@(nameof(QueryIndexVO.SelectListArea))']) {
+                            let $control = $('#@(Html.IdFor(m => m.AreaEq))');
+                            let dataSource = $.map(response.Data['@(nameof(QueryIndexVO.SelectListArea))'], (val, idx) => {
+                                $.extend(val, {
+                                    id: val['@(nameof(SelectListItem.Value))'],
+                                    text: val['@(nameof(SelectListItem.Text))'],
+                                });
+
+                                return val;
+                            });
+                            $control.empty();
+                            $control.html('<option></option>')
+                            $control.select2({
+                                allowClear: true,
+                                data: dataSource,
+                            });
+                        }
+
+                        if (response.Data['@(nameof(QueryIndexVO.SelectListAsEmp))']) {
+                            let $control = $('#@(Html.IdFor(m => m.AsEmpNoEq))');
+                            let dataSource = $.map(response.Data['@(nameof(QueryIndexVO.SelectListAsEmp))'], (val, idx) => {
+                                $.extend(val, {
+                                    id: val['@(nameof(SelectListItem.Value))'],
+                                    text: val['@(nameof(SelectListItem.Text))'],
+                                });
+
+                                return val;
+                            });
+                            $control.empty();
+                            $control.html('<option></option>')
+                            $control.select2({
+                                allowClear: true,
+                                data: dataSource,
+                            });
+                        }
+                    }
+                    else {
+                        swal({
+                            text: '初始化失敗' + response['Message'],
+                            button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                            icon: 'error'
+                        });
+                    }
+                })
+                .fail((err) => {
+                    console.log(err);
+                    swal({
+                        text: '初始化失敗',
+                        button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                        icon: 'error'
+                    });
+                })
+                .always(() => {
+                    hideLoader();
+                });
         }
 
+        $('#@(Html.IdFor(m => m.StoreName))').on('click', function (e) {
+            $('#@(mapData.PartialDIG.Id)').modal('show');
+        });
+
+        $('#@(Html.IdFor(m => m.VendorName))').on('click', function (e) {
+            $('#@(mapData.PartialDVG.Id)').modal('show');
+        });
+
+        $('#btnSelectCategoryId').on('click', function (e) {
+            $('#@(mapData.TreeModalId)').modal('show');
+        });
+    </script>
+    <script>
+        function initGrid(cookiePageIndex, cookiePageSize) {
+            context['@(mapData.Grid.Id)'] = {};
+            var ctxGrid = context['@(mapData.Grid.Id)'];
+            ctxGrid.$Grid = $('#@(mapData.Grid.Id)');
+            ctxGrid.$Grid.jsGrid({
+                pageIndex: cookiePageIndex,
+                paging: true,
+                pageSize: cookiePageSize,
+                pageLoading: true,
+                pagerContainer: '#@(mapData.Grid.IdPagers)',
+                autoload: true,
+                rowDoubleClick: function (e) {
+                    // [/pool/query.aspx]gridView_RowDataBound()
+                    let formNo = e.item['@(nameof(OnsitePrintVO.FormNo))'];
+                    window.open('@(mapData.UrlDetail)'.replace("tempId", formNo), '_blank');
+                },
+                controller: {
+                    loadData: function (filter) {
+                        var d = $.Deferred();
+                        filter.vm = {};
+
+                        //分頁頁數紀錄相關 紀錄查詢時將查詢條件、頁數 start
+                        var cookieobj = {
+                            PageIndex: filter.pageIndex,
+                            PageSize: filter.pageSize,
+                            ...filter.vm
+                        };
+                        Cookies.set(cookieName, JSON.stringify(cookieobj), { expires: 1 });
+
+                        $.ajax({
+                            type: 'POST',
+                            url: '@(mapData.Grid.UrlGetPageList?.ToHtmlString())',
+                            data: filter,
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.Success === false) {
+                                    swal({
+                                        text: res.Message,
+                                        button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                                        icon: 'error'
+                                    });
+                                    d.reject();
+                                    return;
+                                }
+                                var da = {
+                                    data: res.Data,
+                                    itemsCount: res.Total
+                                }
+                                d.resolve(da);
+                            }
+                        });
+
+                        return d.promise();
+                    }
+                },
+                fields: [
+                    {
+                        type: 'control',
+                        width: 80,
+                        editButton: false,
+                        deleteButton: false,
+
+                        headerTemplate: (value, item) => {
+                            return $("<div>操作<div>").attr({ class: 'd-flex' });
+                        },
+                        itemTemplate: (value, item) => {
+                            let $btnPrint = $('<button>', {
+                                'class': 'icofont icofont-print fs-5 m-0 p-0 btn btn-link',
+                                'title': '列印維修單',
+                            })
+                                .on('click', () => {
+
+                                });
+
+                            var result = $('<div>');
+                            result.append($btnPrint);
+
+                            return result;
+                        }
+                    },
+                    { name: '@(nameof(QueryGridVO.FormNo))', title: '工單號碼', type: 'text', width: 100, align: 'center' },
+                    { name: '@(nameof(QueryGridVO.TtCategory))', title: '報修型態', type: 'text', width: 100, align: 'center' },
+                    { name: '@(nameof(QueryGridVO.Ciname))', title: '報修類別', type: 'text', width: 150, align: 'center' },
+                    { name: '@(nameof(QueryGridVO.CreateTimeText))', title: '報修日期', type: 'text', width: 180, align: 'center' },
+                    { name: '@(nameof(QueryGridVO.ShopName))', title: '報修門市', type: 'text', width: 120, align: 'center' },
+                    { name: '@(nameof(QueryGridVO.StatusName))', title: '工單狀態', type: 'text', width: 100, align: 'center' },
+                    { name: '@(nameof(QueryGridVO.DispatchTimeText))', title: '派單日期', type: 'text', width: 180, align: 'center' },
+                    { name: '@(nameof(QueryGridVO.Vender))', title: '負責廠商', type: 'text', width: 150, align: 'center' },
+                    { name: '@(nameof(QueryGridVO.Descr))', title: '報修說明', type: 'text', width: 200, align: 'center' },
+                    { name: '@(nameof(QueryGridVO.Processer))', title: '處理者', type: 'text', width: 150, align: 'center' },
+                    { width: 'auto' }
+                ],
+            });
+
+            //分頁頁數紀錄相關
+            ctxGrid.$Grid.jsGrid('_setPage', cookiePageIndex);//jsgrid bug 不會自動將頁碼設定成pageindex
+
+            $('#@(mapData.Grid.IdPageSelect)').select2({
+                minimumResultsForSearch: -1,
+                data: pageDataSource
+            });
+            $('#@(mapData.Grid.IdPageSelect)').data('select2').$container.addClass('w-auto');
+            $('#@(mapData.Grid.IdPageSelect)').on('change', (e) => {
+                onPageLenghtSelect(e.currentTarget.value, ctxGrid.$Grid);
+            });
+            ctxGrid.reload = function () {
+                ctxGrid.$Grid.jsGrid('search');
+            };
+        }
     </script>
 }

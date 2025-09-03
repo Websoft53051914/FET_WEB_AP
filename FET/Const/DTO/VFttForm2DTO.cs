@@ -31,7 +31,14 @@
         /// 工單狀態
         /// </summary>
         public string? statusname { get; set; }
-
+        /// <summary>
+        /// 報修門市
+        /// </summary>
+        public string? shop_name { get; set; }
+        /// <summary>
+        /// 報修說明
+        /// </summary>
+        public string? descr { get; set; }
         #endregion -- 資料庫欄位 --
         /// <summary>
         /// 報修日期
@@ -49,5 +56,13 @@
         /// 到場最小日期
         /// </summary>
         public string? limit_date_text { get; set; }
+        /// <summary>
+        /// 派單日期
+        /// </summary>
+        public string? dispatchtime_text { get; set; }
+        /// <summary>
+        /// 處理者
+        /// </summary>
+        public string? processer { get; set; }
     }
 }

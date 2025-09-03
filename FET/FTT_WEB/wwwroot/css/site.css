@@ -1,20 +1,20 @@
 html {
-  font-size: 14px;
+    font-size: 14px;
 }
 
 @media (min-width: 768px) {
-  html {
-    font-size: 16px;
-  }
+    html {
+        font-size: 16px;
+    }
 }
 
 html {
-  position: relative;
-  min-height: 100%;
+    position: relative;
+    min-height: 100%;
 }
 
 body {
-  margin-bottom: 60px;
+    margin-bottom: 60px;
 }
 
 /* 於 label 增加必填符號 */
@@ -53,9 +53,9 @@ a._tb_button {
     border-color: #28a745 !important;
 }
 /*select2 form 驗證*/
-.websoft-form-label{
-    margin-bottom:0.5rem!important;
-    padding-bottom:0!important;
+.websoft-form-label {
+    margin-bottom: 0.5rem !important;
+    padding-bottom: 0 !important;
 }
 
 .timepicker-hours td.hour {
@@ -79,18 +79,18 @@ a._tb_button {
     z-index: 1000;
 }
 
-/* 放大的圖片 */
-.image-overlay img {
-    max-width: 90%;
-    max-height: 90%;
-    border-radius: 8px;
-    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-}
+    /* 放大的圖片 */
+    .image-overlay img {
+        max-width: 90%;
+        max-height: 90%;
+        border-radius: 8px;
+        box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+    }
 
-/* 遮罩顯示時 */
-.image-overlay.active {
-    display: flex;
-}
+    /* 遮罩顯示時 */
+    .image-overlay.active {
+        display: flex;
+    }
 
 /* JsGrid排序icon樣式*/
 .jsgrid-header-sort-asc:before {
@@ -103,4 +103,8 @@ a._tb_button {
 
 .txt-cnt {
     color: red;
+}
+
+.even .jsgrid-cell {
+    background-color: white;
 }

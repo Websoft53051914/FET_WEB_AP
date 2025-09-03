@@ -274,7 +274,7 @@
                 $Loder.show();
 
                 $.ajax({
-                    url: '@(backendUrl + Url.Action("Login", "Login"))',
+                    url: '@(Url.Action("Login", "Login"))',
                     type: 'POST',
                     data: {
                         Role: role,
