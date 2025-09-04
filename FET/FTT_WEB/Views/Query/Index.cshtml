@@ -450,6 +450,38 @@
         }
 
         $('#@(mapData.FormSearch.IdBtnSearch)').on('click', function (e) {
+            let data = $('#@(mapData.FormSearch.Id)').serializeObject();
+
+            if (data['@(Html.IdFor(m => m.CreateDateGte))'] && data['@(Html.IdFor(m => m.CreateDateLte))']
+                && new Date(data['@(Html.IdFor(m => m.CreateDateGte))']) > new Date(data['@(Html.IdFor(m => m.CreateDateLte))'])) {
+                swal({
+                    text: '報修日結束日期必須大於開始日期',
+                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            if (data['@(Html.IdFor(m => m.CompleteDateGte))'] && data['@(Html.IdFor(m => m.CompleteDateLte))']
+                && new Date(data['@(Html.IdFor(m => m.CompleteDateGte))']) > new Date(data['@(Html.IdFor(m => m.CompleteDateLte))'])) {
+                swal({
+                    text: '完修日起訖時間結束日期必須大於開始日期',
+                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            if (data['@(Html.IdFor(m => m.CloseDateGte))'] && data['@(Html.IdFor(m => m.CloseDateLte))']
+                && new Date(data['@(Html.IdFor(m => m.CloseDateGte))']) > new Date(data['@(Html.IdFor(m => m.CloseDateLte))'])) {
+                swal({
+                    text: '結案日結束日期必須大於開始日期',
+                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                    icon: 'warning'
+                });
+                return;
+            }
+
             context['@(mapData.Grid.Id)'].reload();
         });
 
