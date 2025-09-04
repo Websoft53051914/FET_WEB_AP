@@ -1,12 +1,15 @@
-﻿using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
+﻿using DocumentFormat.OpenXml.InkML;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using FTT_API.Common;
 using FTT_API.Common.OriginClass;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models;
 using FTT_API.Models.Handler;
+using FTT_API.Models.Partial;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Npgsql;
+using System.Data;
 using System.Linq;
 
 namespace FTT_API.Controllers.Pending
@@ -436,35 +439,35 @@ namespace FTT_API.Controllers.Pending
             return JsonValidFail("工單不存在");
         }
 
-
         [HttpPost("[action]")]
         public IActionResult Detail(Ftt_formDTO vm)
         {
-            var ttt = vm.form_no;
+            try
+            {
+                var ttt = vm.form_no;
 
-            BaseDBHandler baseHandler = new BaseDBHandler();
+                BaseDBHandler baseHandler = new BaseDBHandler();
 
-            string updateSQL = "  ";
+                string updateSQL = "  ";
 
-            Dictionary<string, object> dic = new();
-            dic.Add("ticket_info", vm.ticket_info);
+                Dictionary<string, object> dic = new();
+                dic.Add("ticket_info", vm.ticket_info);
 
-            dic.Add("completetime", vm.completetime);
-            dic.Add("precompletetime", vm.precompletetime);
+                dic.Add("completetime", vm.completetime);
+                dic.Add("precompletetime", vm.precompletetime);
 
-            dic.Add("selfconfig", vm.selfconfig);
-            dic.Add("remark", vm.remark);
+                dic.Add("selfconfig", vm.selfconfig);
+                dic.Add("remark", vm.remark);
 
-            dic.Add("form_no", vm.form_no);
+                dic.Add("form_no", vm.form_no);
 
-            if (vm.updateCOMPLETETIME == true)
-                updateSQL += " completetime=@completetime, ";
+                if (vm.updateCOMPLETETIME == true)
+                    updateSQL += " completetime=@completetime, ";
 
-            if (vm.updatePRECOMPLETETIME == true)
-                updateSQL += " precompletetime=@precompletetime, ";
+                if (vm.updatePRECOMPLETETIME == true)
+                    updateSQL += " precompletetime=@precompletetime, ";
 
-
-            baseHandler.GetDBHelper().Execute($@" 
+                baseHandler.GetDBHelper().Execute($@" 
 update ftt_form set 
 ticket_info=@ticket_info,
 
@@ -475,41 +478,165 @@ remark=@remark
 
 where 
 form_no=@form_no
-"
-, dic);
+", dic);
 
 
-            Dictionary<string, object> dic2 = new();
-            dic2.Add("form_no", vm.form_no);
-            dic2.Add("DESCRIPTION", vm.DESCRIPTION);
+                Dictionary<string, object> dic2 = new();
+                dic2.Add("form_no", vm.form_no);
+                dic2.Add("DESCRIPTION", vm.DESCRIPTION);
 
-            baseHandler.GetDBHelper().Execute($@" 
+                baseHandler.GetDBHelper().Execute($@" 
 update FTT_FORM_DESC set 
 
 DESCRIPTION=@DESCRIPTION
 
 where 
 form_no=@form_no
-"
-, dic2);
+", dic2);
+                baseHandler.GetDBHelper().Commit();
 
-            baseHandler.GetDBHelper().Commit();
+                string SELFCONFIG = baseHandler.GetDBHelper().FindScalar<string>("select SELFCONFIG from FTT_FORM where FORM_NO=" + vm.form_no, null);
+                if (SELFCONFIG == "Y" && vm.STATUS == "DISPATCH")
+                    baseHandler.GetDBHelper().ExecStoredProcedureWithTransation("SET_STATUS('" + vm.FORM_TYPE + "', '" + vm.form_no + "', 'TICKET', '" + LoginSession.Current.empno + "', '', '')");
+                //db.ExecuteNonQuery(tran, CommandType.StoredProcedure, "SET_STATUS('" + vm.FORM_TYPE + "','" + vm.form_no + "','TICKET','" + LoginSession.Current.empno + "','','')");
+                else
+                    baseHandler.GetDBHelper().ExecStoredProcedureWithTransation("SET_STATUS('" + vm.FORM_TYPE + "','" + vm.form_no + "','" + vm.STATUS + "','" + LoginSession.Current.empno + "','','')");
+                //db.ExecuteNonQuery(tran, CommandType.StoredProcedure, "SET_STATUS('" + vm.FORM_TYPE+ "','" + vm.form_no+ "','" + vm.STATUS + "','" + LoginSession.Current.empno + "','','')");
 
-            string SELFCONFIG = baseHandler.GetDBHelper().FindScalar<string>("select SELFCONFIG from FTT_FORM where FORM_NO=" + vm.form_no, null);
-            if (SELFCONFIG == "Y" && vm.STATUS == "DISPATCH")
-                baseHandler.GetDBHelper().ExecStoredProcedureWithTransation("SET_STATUS('" + vm.FORM_TYPE + "', '" + vm.form_no + "', 'TICKET', '" + LoginSession.Current.empno + "', '', '')");
-            //db.ExecuteNonQuery(tran, CommandType.StoredProcedure, "SET_STATUS('" + vm.FORM_TYPE + "','" + vm.form_no + "','TICKET','" + LoginSession.Current.empno + "','','')");
-            else
-                baseHandler.GetDBHelper().ExecStoredProcedureWithTransation("SET_STATUS('" + vm.FORM_TYPE + "','" + vm.form_no + "','" + vm.STATUS + "','" + LoginSession.Current.empno + "','','')");
-            //db.ExecuteNonQuery(tran, CommandType.StoredProcedure, "SET_STATUS('" + vm.FORM_TYPE+ "','" + vm.form_no+ "','" + vm.STATUS + "','" + LoginSession.Current.empno + "','','')");
+                ////TODO 不知道甚麼時候未有 APPROVE="Y" 的參數
+                //if (Request.QueryString["APPROVE"] == "Y")
+                //{
+                //    db.ExecuteNonQuery(tran, "INSERT INTO APPROVE_FORM_LOG (FORM_TYPE,FORM_NO,User_Type,STATUS,AGENT,COMMON,ROOT_NO) VALUES ('" + m_Request["FORM_TYPE"] + "','" + m_Request["FORM_NO"] + "','" + m_Request["User_Type"] + "','" + m_Request["STATUSWORDING"] + "','" + Context.User.Identity.Name + "','" + m_Request["APPROVECOMMON"].Replace("'", "’").ToString() + "'),");
+                //}
 
-            ////TODO 不知道甚麼時候未有 APPROVE="Y" 的參數
-            //if (Request.QueryString["APPROVE"] == "Y")
-            //{
-            //    db.ExecuteNonQuery(tran, "INSERT INTO APPROVE_FORM_LOG (FORM_TYPE,FORM_NO,User_Type,STATUS,AGENT,COMMON,ROOT_NO) VALUES ('" + m_Request["FORM_TYPE"] + "','" + m_Request["FORM_NO"] + "','" + m_Request["User_Type"] + "','" + m_Request["STATUSWORDING"] + "','" + Context.User.Identity.Name + "','" + m_Request["APPROVECOMMON"].Replace("'", "’").ToString() + "'),");
-            //}
+                return JsonSuccess("申請單單號【" + vm.form_no + "】更新成功！");
+            }
+            catch (Exception ex)
+            {
+                return JsonValidFail("系統異常");
+            }
+        }
 
-            return JsonSuccess("申請單單號【" + vm.form_no + "】更新成功！");
+        private string GetPreHandleDesc(string mFormAction, string formNo, string mCIID, string mCIName)
+        {
+            //string mFormAction = "TT_LAST_DESC";
+            string mResult = "";
+            //string mCIID = "";
+            //string mCIName = "";
+            //string mFormNo = "";
+
+            //if (Request.QueryString["CIID"] != null)
+            //    mCIID = Server.HtmlEncode(Request.QueryString["CIID"].ToString());
+            //if (Request.QueryString["CIName"] != null)
+            //    mCIName = Server.HtmlEncode(Request.QueryString["CIName"].ToString());
+            //if (Request.QueryString["FORM_NO"] != null)
+            //    mFormNo = Server.HtmlEncode(Request.QueryString["FORM_NO"].ToString());
+
+            if (mFormAction != "")
+            {
+                ci_relations_categorySQL _ci_relations_categorySQL = new ci_relations_categorySQL();
+                var dtoTEMP = _ci_relations_categorySQL.GetInfoByCISID(mCIID);
+                switch (mFormAction)
+                {
+                    case "TT_IMAGE":
+                        mCIName = Path.Combine(_hostingEnvironment.WebRootPath, "Images/Item/" + mCIName + ".jpg");
+                        if (System.IO.File.Exists(Path.Combine(_hostingEnvironment.WebRootPath, "Images/Item/" + mCIName + ".jpg")) == true)
+                            mResult = "/Images/Item/" + mCIName;
+                        else
+                            mResult = "/images/item/no-product.gif";
+                        break;
+                    case "TT_CATEGORY_NOTE":
+                        mResult = dtoTEMP.notes;
+                        break;
+                    case "TT_CATEGORY_DESC":
+                        mResult = dtoTEMP.descr;
+                        break;
+                    case "TT_LAST_DESC":
+                        ftt_form_descSQL _ftt_form_descSQL = new ftt_form_descSQL();
+                        var dtoTemp = _ftt_form_descSQL.GetInfoByFormNo(formNo);
+                        if (dtoTemp != null)
+                        {
+                            mResult = "'<img src=\"/images/icon/date.gif\" align=\"absmiddle\" />'" + dtoTemp.create_date.Value.ToString("yyyy/MM/dd HH:mm") + "'&nbsp;&nbsp;&nbsp;<img src=\"/images/icon/emp.gif\" align=\"absmiddle\" />' " + dtoTemp.action_name + " '&nbsp;&nbsp;&nbsp;<img src=\"/images/icon/edit.gif\" align=\"absmiddle\" />' " + dtoTemp.description;
+                        }
+                        break;
+                    case "TT_COUNT":
+                        ftt_formSQL _ftt_formSQL = new ftt_formSQL();
+                        var dtoftt_form = _ftt_formSQL.GetTT_COUNTByCATEGORY_ID(formNo, mCIID);
+                        mResult = dtoftt_form.TT_COUNT;
+                        break;
+                    case "TT_CATEGORY_SELFCONFIG":
+                        mResult = dtoTEMP.selfconfig;
+                        break;
+                    default:
+                        break;
+                }
+
+                return mResult;
+            }
+
+            return "";
+        }
+
+        public class TemplateConfigVM
+        {
+            public string ID { get; set; }
+            public string UNIT { get; set; }
+            public string QTY { get; set; }
+            public string PRICE { get; set; }
+            public string REMARK { get; set; }
+        }
+        public class Add_Ftt_form_amount_VM
+        {
+            public List<Ftt_form_amountDTO> vms { get; set; }
+            public string FORM_ACTION { get; set; }
+            public string form_no { get; set; }
+        }
+        public class SelectDescVM
+        {
+            public string categoryID { get; set; }
+            public string ExpenseType { get; set; }
+        }
+
+        [HttpPost("[action]")]
+        public ActionResult SelectDesc(SelectDescVM vm)
+        {
+            string ip = Method.GetClientIPAddress();
+            try
+            {
+                PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
+                var list = _PenddingHanlder.GetAmountSelectInfo(vm.categoryID, vm.ExpenseType);
+                var selectLists = list.Select(s => new SelectListItem() { Text = s.dataValue, Value = s.id.ToString() }).ToList();
+
+                return JsonOK(selectLists);
+            }
+            catch (Exception ex)
+            {
+                return JsonValidFail("系統發生異常");
+            }
+        }
+
+        [HttpPost("[action]")]
+        public ActionResult ShowDesc(TemplateConfigVM vm)
+        {
+            try
+            {
+                PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
+                var list = _PenddingHanlder.GetAmountSelectInfoById(vm.ID);
+                var result = list.Select(s => new TemplateConfigVM()
+                {
+                    ID = s.id.ToString(),
+                    UNIT = s.unit,
+                    QTY = s.qty.ToString(),
+                    PRICE = s.price.ToString(),
+                    REMARK = s.remark
+                }).ToList();
+
+                return JsonOK(result);
+            }
+            catch (Exception ex)
+            {
+                return JsonValidFail("系統發生異常");
+            }
         }
     }
 }

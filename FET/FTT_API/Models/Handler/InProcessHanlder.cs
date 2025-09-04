@@ -54,9 +54,9 @@ SELECT DISTINCT form_no                                      AS form_no,
                 To_char(updatetime, 'yyyy/mm/dd hh24:mi:ss') AS updatetime,
                 Find_action_name(form_no)                    AS CurrentInchargeName,
 
-                statusid
+                StatusId
 FROM   v_ftt_form2
-WHERE  statusid NOT IN ( 'CLOSE', 'REJECT', 'CANCEL', 'NOSHOW' )
+WHERE  StatusId NOT IN ( 'CLOSE', 'REJECT', 'CANCEL', 'NOSHOW' )
        AND form_no IN (SELECT form_no
                        FROM   access_role
                        WHERE  User_Type = @USERROLE
@@ -79,9 +79,9 @@ SELECT DISTINCT form_no                                      AS form_no,
                 To_char(updatetime, 'yyyy/mm/dd hh24:mi:ss') AS updatetime,
                 Find_action_name(form_no)                    AS CurrentInchargeName,
                 @EMPNO,
-                statusid
+                StatusId
 FROM   v_ftt_form2
-WHERE  statusid IN ( 'AGREE', 'OFFER', 'COMPLETE' )
+WHERE  StatusId IN ( 'AGREE', 'OFFER', 'COMPLETE' )
        AND form_no IN (SELECT form_no
                        FROM   access_role
                        WHERE  User_Type = @USERROLE
@@ -102,9 +102,9 @@ SELECT DISTINCT form_no                                      AS form_no,
                 To_char(updatetime, 'yyyy/mm/dd hh24:mi:ss') AS updatetime,
                 Find_action_name(form_no)                    AS CurrentInchargeName,
                 @EMPNO,
-                statusid
+                StatusId
 FROM   v_ftt_form2
-WHERE  statusid NOT IN ( 'CLOSE', 'REJECT', 'CANCEL', 'NOSHOW' )
+WHERE  StatusId NOT IN ( 'CLOSE', 'REJECT', 'CANCEL', 'NOSHOW' )
        AND form_no IN (SELECT form_no
                        FROM   access_role
                        WHERE  User_Type = @USERROLE

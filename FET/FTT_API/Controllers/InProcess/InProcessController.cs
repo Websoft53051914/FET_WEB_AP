@@ -38,7 +38,7 @@ namespace FTT_API.Controllers.InProcess
                     var item = pageList.Results[i];
                     item.No = (request.pageIndex - 1) * request.pageSize + i + 1;
 
-                    item.IsTicket = item.statusid == "TICKET";
+                    item.IsTicket = item.StatusId == "TICKET";
                 }
 
                 return Json(new DataSourceResult

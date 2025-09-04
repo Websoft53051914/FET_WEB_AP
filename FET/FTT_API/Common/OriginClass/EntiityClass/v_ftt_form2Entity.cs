@@ -16,7 +16,7 @@ namespace FTT_API.Common.OriginClass.EntiityClass
         public string shop_name { get; set; }
         public string statusname { get; set; }
         public string updatetime { get; set; }
-        public string statusid { get; set; }
+        public string StatusId { get; set; }
 
 
     }

@@ -17,7 +17,7 @@ namespace FTT_API.Common.OriginClass.EntiityClass
 
     public class form_access_statusDTO : form_access_statusEntity
     {
-        public string STATUSID { get; set; }
+        public string StatusId { get; set; }
         public int No { get; set; }
     }
 

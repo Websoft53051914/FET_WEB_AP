@@ -1,6 +1,7 @@
 ﻿using Core.Utility.Extensions;
 using Core.Utility.Helper.DB.Entity;
 using DocumentFormat.OpenXml.Drawing.Charts;
+using DocumentFormat.OpenXml.InkML;
 using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using FTT_API.Common;
 using FTT_API.Common.ConfigurationHelper;
@@ -11,6 +12,7 @@ using MathNet.Numerics;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using NPOI.SS.Formula.Functions;
 using NPOI.Util;
+using System.ServiceModel;
 using System.Text;
 using static Const.Enums;
 
@@ -515,6 +517,128 @@ ORDER  BY order_id
 
             var result = GetDBHelper().FindPageList<store_vender_profileDTO>(originSQL, countSQL, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
             return result;
+        }
+
+        internal void UpdateAccessRole(decimal? form_no, string user_type, string empno, string deptcode, string updateEmpno)
+        {
+            Dictionary<string, object> paras = new()
+            {
+                {"form_no", form_no },
+                {"user_type", user_type },
+                {"empno", empno },
+                {"deptcode", deptcode },
+                {"updateEmpno", updateEmpno },
+            };
+
+            var inserSQL = "";
+            inserSQL = @"
+Update Access_Role 
+
+Set 
+Empno =@empno, 
+Deptcode = @deptcode, 
+Update_Empno = @updateEmpno, 
+UpdateTime = SysDate 
+
+Where 
+Form_No =@form_no 
+And User_Type = @user_type
+";
+
+            GetDBHelper().Execute(inserSQL, paras);
+        }
+
+        internal void UpdateFttForm_VENDOR(decimal? form_no, string deptcode)
+        {
+            Dictionary<string, object> paras = new()
+            {
+                {"form_no", form_no },
+                {"deptcode", decimal.Parse(deptcode) },
+            };
+
+            var inserSQL = "";
+            inserSQL = @"
+UPDATE FTT_FORM 
+SET VENDER_ID=@deptcode
+WHERE FORM_NO=@form_no
+";
+
+            GetDBHelper().Execute(inserSQL, paras);
+        }
+
+        internal void UpdateApproveForm(string form_no, string statusId, string empno)
+        {
+            Dictionary<string, object> paras = new()
+            {
+                {"form_no", form_no },
+                {"statusId", statusId },
+                {"empno", empno },
+            };
+
+            var inserSQL = "";
+            inserSQL = @"
+Update Approve_Form 
+
+Set 
+Status = @statusId , 
+Update_Empno = @empno, 
+UpdateTime = SysDate  
+
+Where 
+Form_No = @form_no
+
+";
+
+            GetDBHelper().Execute(inserSQL, paras);
+        }
+
+        internal List<amount_selectDTO> GetAmountSelectInfo(string categoryID, string expenseType)
+        {
+            //AMOUNT_SELECT
+            Dictionary<string, object> paras = new()
+            {
+                {"categoryID", categoryID },
+                {"expenseType", expenseType },
+            };
+
+            string sql = @" 
+SELECT 
+DISTINCT ID, 
+DECODE(L2_DESC,NULL,L1_DESC,L1_DESC || '-' || L2_DESC) as dataValue 
+FROM AMOUNT_SELECT 
+WHERE 
+ENABLE='Y' 
+AND CHK_CI_LIST(@categoryID::text,category_id::text)='Y' AND EXPENSE_TYPE=@expenseType
+ORDER BY ID
+                ";
+
+            return GetDBHelper().FindList<amount_selectDTO>(sql, paras);
+        }
+
+        internal IEnumerable<amount_selectDTO> GetAmountSelectInfoById(string id)
+        {
+            Dictionary<string, object> paras = new()
+            {
+                {"id", id },
+            };
+
+            string sql = @" 
+SELECT 
+
+ID, 
+UNIT, 
+QTY, 
+PRICE, 
+REMARK 
+
+FROM 
+AMOUNT_SELECT 
+
+WHERE ENABLE='Y' 
+AND ID=@id
+                ";
+
+            return GetDBHelper().FindList<amount_selectDTO>(sql, paras);
         }
     }
 }

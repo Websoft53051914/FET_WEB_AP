@@ -18,13 +18,13 @@
 
     <div class="d-flex flex-nowrap align-items-center me-3">
         <label class="bg-info px-2 me-2" style="text-wrap-mode:nowrap">表單狀態：</label>
-        <input id="_FormMaintainStatus" class="form-control form-control-sm" />
-        @* <select id="_FormMaintainStatus" class="form-control form-control-sm">
+        <input id="StatusId" class="form-control form-control-sm" />
+        @* <select id="StatusId" class="form-control form-control-sm">
         </select> *@
     </div>
 
     <div class="ms-auto  ms-lg-5">
-        <button class="btn btn-info btn-sm">更新</button>
+        <button type="button" class="btn btn-info btn-sm" id="btnUpdate">更新</button>
     </div>
 </div>
 
@@ -42,7 +42,7 @@
         var cookiePageIndex1 = 1;
         var cookiePageIndex2 = 1;
         var cookiePageIndex3 = 1;
-        // $("#_FormMaintainStatus").select2();
+        // $("#StatusId").select2();
 
         // Grid1 假資料
         $("#@(mapAttr.IdGrid1)").jsGrid({
@@ -93,7 +93,7 @@
                             }
 
                             if (res.Data.length > 0) {
-                                $('#_FormMaintainStatus').val(res.Data[0].STATUSID);
+                                $('#StatusId').val(res.Data[0].StatusId);
                             }
 
                             var da = {
@@ -124,9 +124,15 @@
 
                         switch (item['user_type']) {
                             case "MANAGER":
-                                ADMIN
-                                return $('<input value="' + item["empno"] + '">');
+
+                                return $('<input name="empno" value="' + item["empno"] + '">');
                                 break;
+                            case "ADMIN":
+                            case "ASSETER":
+                            case "VENDOR":
+                            case "SUBMITTER":
+                                return item["empno"];
+
                             default:
                                 return '';
                                 break;
@@ -146,8 +152,11 @@
                         switch (item['user_type']) {
                             case "SUBMITTER":
                             case "VENDOR":
-                                return $('<input value="' + item["deptcode"] + '">');
-                                break;
+                                return $('<input name="deptcode" value="' + item["deptcode"] + '">');
+                            case "ADMIN":
+                            case "ASSETER":
+                            case "MANAGER":
+                                return item["deptcode"];
                             default:
                                 return '';
                                 break;
@@ -282,7 +291,7 @@
                             for (var i = 0; i < res.Data.length; i++) {
                                 var item = res.Data[i];
                                 var option = new Option(item.status, item.status, true, true);
-                                $('#_FormMaintainStatus').append(option);
+                                $('#StatusId').append(option);
                             }
 
                             d.resolve(da);
@@ -297,5 +306,48 @@
                 { name: "status_name", type: "text", title: "STATUS_NAME" },
             ]
         });
+
+
+        $('#btnUpdate').on("click", function (e) {
+            var vm = {};
+            var vms = [];
+            var formNo = $('#FORM_NO').val();
+            vm.form_no = formNo;
+            vm.StatusId = $('#StatusId').val();
+
+            var rows = $("#@(mapAttr.IdGrid1)").jsGrid("option", "data");
+
+            for (var i = 0; i < rows.length; i++) {
+                var item = {};
+                item.form_no = formNo;
+
+                item.form_type = rows[i].form_type;
+                item.user_type = rows[i].user_type;
+
+                item.Empno = $('#@(mapAttr.IdGrid1) .jsgrid-table').eq(1).find('tr').eq(i).find('[name="empno"]').val();
+                item.Deptcode = $('#@(mapAttr.IdGrid1) .jsgrid-table').eq(1).find('tr').eq(i).find('[name="deptcode"]').val();
+
+                vms.push(item);
+            }
+
+            vm.vms = vms;
+
+            $.ajax({
+                url: '@(config.GetBackendUrl() + Url.Action("UpdateEmpnoDeptCode","pending"))',
+                dataType: 'json',
+                type: 'POST',
+                data: { vm: vm },
+                success: function (data) {
+                    if (data.Success == true) {
+                        alert(data.Data);
+                    } else {
+                        alert(data.Data);
+                    }
+                },
+                error: function (msg) {
+                    alert("新增異常！");
+                }
+            });
+        })
     })
 </script>

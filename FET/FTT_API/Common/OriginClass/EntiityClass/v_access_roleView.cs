@@ -56,7 +56,7 @@ namespace FTT_API.Common.OriginClass.EntiityClass
     public partial class v_access_roleView
     {
         public int No { get; set; }
-        public string STATUSID { get; set; }
+        public string StatusId { get; set; }
     }
 
 

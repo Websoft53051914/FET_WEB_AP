@@ -41,7 +41,7 @@ namespace FTT_API.Common.OriginClass.EntiityClass
 
     public class amount_selectDTO : amount_selectEntity
     {
-
+        public string dataValue { get; set; }
     }
 
 

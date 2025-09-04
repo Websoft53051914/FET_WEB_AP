@@ -33,7 +33,7 @@ WHERE  form_no IN (SELECT form_no
                           AND ( User_Type = @USERROLE
                                  OR empno = @EMPNO
                                  OR deptcode = @IVRCODE ))
-       AND statusid NOT IN ( 'CONFIRM' )
+       AND StatusId NOT IN ( 'CONFIRM' )
 ORDER  BY updatetime DESC 
 ";
 
@@ -46,7 +46,7 @@ ORDER  BY updatetime DESC
             //        originSQL = "SELECT DISTINCT form_no as form_no,tt_category as tt_category,l2_desc as l2_desc,ciname as ciname,to_char(createtime,'yyyy/mm/dd hh24:mi:ss') as createtime,shop_name as shop_name,statusname as statusname,to_char(updatetime,'yyyy/mm/dd hh24:mi:ss') as updatetime FROM v_ftt_form2 WHERE form_no in (select form_no from ACCESS_ROLE where action='Y' and  empno=@EMPNO and User_Type=@USERROLE and @IVRCODE is not null) order by updatetime desc";
             //        break;
             //    case "SUBMITTER":
-            //        originSQL = "SELECT DISTINCT form_no as form_no,tt_category as tt_category,l2_desc as l2_desc,ciname as ciname,to_char(createtime,'yyyy/mm/dd hh24:mi:ss') as createtime,shop_name as shop_name,statusname as statusname,to_char(updatetime,'yyyy/mm/dd hh24:mi:ss') as updatetime FROM v_ftt_form2 WHERE (vender='自行尋商' and ivrcode=@IVRCODE and statusid in ('DISPATCH','USED')) or (statusid not in ('CONFIRM') and form_no in (select form_no from ACCESS_ROLE where action='Y' and (User_Type=@USERROLE or empno=@EMPNO or deptcode=@IVRCODE))) order by updatetime desc";
+            //        originSQL = "SELECT DISTINCT form_no as form_no,tt_category as tt_category,l2_desc as l2_desc,ciname as ciname,to_char(createtime,'yyyy/mm/dd hh24:mi:ss') as createtime,shop_name as shop_name,statusname as statusname,to_char(updatetime,'yyyy/mm/dd hh24:mi:ss') as updatetime FROM v_ftt_form2 WHERE (vender='自行尋商' and ivrcode=@IVRCODE and StatusId in ('DISPATCH','USED')) or (StatusId not in ('CONFIRM') and form_no in (select form_no from ACCESS_ROLE where action='Y' and (User_Type=@USERROLE or empno=@EMPNO or deptcode=@IVRCODE))) order by updatetime desc";
             //        break;
             //    default:
             //        break;
