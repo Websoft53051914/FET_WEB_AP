@@ -139,12 +139,12 @@ namespace FTT_API.Controllers.OnsitePrint
         /// </summary>
         /// <returns></returns>
         [HttpPost("[action]")]
-        public IActionResult PrintWP(string data)
+        public IActionResult PrintWP(string jsonData)
         {
             try
             {
-                ArgumentNullException.ThrowIfNullOrWhiteSpace(data);
-                OnsitePrintUpdateStatusReqVO? req = JsonConvert.DeserializeObject<OnsitePrintUpdateStatusReqVO>(data);
+                ArgumentNullException.ThrowIfNullOrWhiteSpace(jsonData);
+                OnsitePrintUpdateStatusReqVO? req = JsonConvert.DeserializeObject<OnsitePrintUpdateStatusReqVO>(jsonData);
                 ArgumentNullException.ThrowIfNull(req);
                 if (req.FormNoList.IsNullOrEmpty())
                 {

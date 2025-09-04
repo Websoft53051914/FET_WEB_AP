@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc.Rendering;
+﻿using Const.DTO;
+using Core.Utility.Web.EX;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Const.VO
 {
@@ -42,7 +44,7 @@ namespace Const.VO
         /// <summary>
         /// 工單號碼
         /// </summary>
-        public string? FormNoEq { get; set; }
+        public int? FormNoEq { get; set; }
         /// <summary>
         /// 報修型態
         /// </summary>
@@ -50,7 +52,7 @@ namespace Const.VO
         /// <summary>
         /// 報修類別
         /// </summary>
-        public string? CategoryIdEq { get; set; }
+        public string? CategoryIdFilter { get; set; }
         /// <summary>
         /// 報修類別
         /// </summary>
@@ -128,42 +130,52 @@ namespace Const.VO
         /// <summary>
         /// 工單號碼
         /// </summary>
+        [SortColumn(nameof(VFttForm2DTO.form_no), IsDefault = true)]
         public int? FormNo { get; set; }
         /// <summary>
         /// 報修型態
         /// </summary>
+        [SortColumn(nameof(VFttForm2DTO.tt_category))]
         public string? TtCategory { get; set; }
         /// <summary>
         /// 報修品項
         /// </summary>
+        [SortColumn(nameof(VFttForm2DTO.ciname))]
         public string? Ciname { get; set; }
         /// <summary>
         /// 報修日期
         /// </summary>
+        [SortColumn(nameof(VFttForm2DTO.createtime_text))]
         public string? CreateTimeText { get; set; }
         /// <summary>
         /// 報修門市
         /// </summary>
+        [SortColumn(nameof(VFttForm2DTO.shop_name))]
         public string? ShopName { get; set; }
         /// <summary>
         /// 工單狀態
         /// </summary>
+        [SortColumn(nameof(VFttForm2DTO.statusname))]
         public string? StatusName { get; set; }
         /// <summary>
         /// 派單日期
         /// </summary>
+        [SortColumn(nameof(VFttForm2DTO.dispatchtime_text))]
         public string? DispatchTimeText { get; set; }
         /// <summary>
         /// 廠商
         /// </summary>
+        [SortColumn(nameof(VFttForm2DTO.vender))]
         public string? Vender { get; set; }
         /// <summary>
         /// 報修說明
         /// </summary>
+        [SortColumn(nameof(VFttForm2DTO.descr))]
         public string? Descr { get; set; }
         /// <summary>
         /// 處理者
         /// </summary>
+        [SortColumn(nameof(VFttForm2DTO.processer))]
         public string? Processer { get; set; }
     }
 }

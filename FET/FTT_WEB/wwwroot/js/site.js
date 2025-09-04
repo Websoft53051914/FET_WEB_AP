@@ -316,7 +316,7 @@ function postSubmitJson(url, postData, target) {
     });
     let $input = $('<input>', {
         type: 'hidden',
-        name: 'data',
+        name: 'jsonData',
         value: JSON.stringify(postData || {}),
     });
 
