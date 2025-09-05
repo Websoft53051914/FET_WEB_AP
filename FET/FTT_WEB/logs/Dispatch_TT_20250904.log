@@ -1,0 +1,18 @@
+﻿(2025/09/04 17:20:24) get TT data ! SQL=SELECT * FROM APPROVE_FORM 
+                       WHERE status='DISPATCH' 
+                         AND form_no IN (
+                             SELECT FORM_NO FROM V_FTT_FORM WHERE STATUSID='DISPATCH'
+                         )
+(2025/09/04 18:04:57) get TT data ! SQL=SELECT * FROM APPROVE_FORM 
+                       WHERE status='DISPATCH' 
+                         AND form_no IN (
+                             SELECT FORM_NO FROM V_FTT_FORM WHERE STATUSID='DISPATCH'
+                         )
+(2025/09/04 18:07:06) get TT data ! SQL=SELECT * FROM APPROVE_FORM 
+                       WHERE status='DISPATCH' 
+                         AND form_no IN (
+                             SELECT FORM_NO FROM V_FTT_FORM WHERE STATUSID='DISPATCH'
+                         )
+(2025/09/04 18:09:31) --- Error Handler ---
+(2025/09/04 18:09:31) --- update approve_form NO=48310 Fail! ---
+(2025/09/04 18:09:31) Error: P0002: query returned no rows

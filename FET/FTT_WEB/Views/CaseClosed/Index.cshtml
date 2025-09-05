@@ -85,77 +85,39 @@
                 onDataLoaded: function () {
                     feather.replace();
                 },
-                data: [
-                    {
-                        Id :10,
-                        OrderNumber: "123456",
-                        RepairType: "一般",
-                        RepairCategory: "監視系統",
-                        RepairItem: "數位錄影機",
-                        OrderDate: "2023-10-01 16:12:56",
-                        StoreName: "台北南昌",
-                        OrderStatusName: "已完修",
-                        ReceivceDate: "2023-10-05 10:00:00"
-                    }
-                ],
-                // controller: {
-                //     loadData: function (filter) {
-                //         var d = $.Deferred();
-                //         $.ajax({
-                //             type: "POST",
-                //             url: "@Url.Action("GetPageList")",
-                //             data: filter,
-                //             dataType: "json",
-                //             success: function (res) {
-                //                 if (res.Success === false) {
-                //                     swal({
-                //                         text: res.Message,
-                //                         icon: "error",
-                //                         button: "確認"
-                //                     });
-                //                     d.reject();
-                //                     return;
-                //                 }
-                //                 var da = {
-                //                     data: res.Data,
-                //                     itemsCount: res.Total
-                //                 }
-                //                 d.resolve(da);
-                //             }
-                //         })
+                controller: {
+                    loadData: function (filter) {
+                        var d = $.Deferred();
+                        $.ajax({
+                            // xhrFields: { withCredentials: true },
+                            type: "POST",
+                            url: "@(config.GetBackendUrl() + Url.Action("GetPageList"))",
+                            data: filter,
+                            dataType: "json",
+                            credentials: "include",
+                            success: function (res) {
+                                if (res.Success === false) {
+                                    swal({
+                                        text: res.Message,
+                                        icon: "error",
+                                        button: "確認"
+                                    });
+                                    d.reject();
+                                    return;
+                                }
+                                var da = {
+                                    data: res.Data,
+                                    itemsCount: res.Total
+                                }
+                                d.resolve(da);
+                            }
+                        })
 
-                //         return d.promise();
-                //     }
-                // },
+                        return d.promise();
+                    }
+                },
                 fields: [
                     { name: "Id", visible: false },
-                    {
-                        type: 'control', align: "center",
-                        width: 60,
-                        editButton: false,
-                        deleteButton: false,
-                        headerTemplate: (value, item) => {
-                            return $("<div>操作<div>").attr({ class: '' });
-                        },
-                        itemTemplate: (value, item) => {
-
-                            $editButton = $('<a>')
-                                .attr({
-                                    'class': 'jsgrid-button jsgrid-edit-button d-inline-block',
-                                    'href': "",
-                                })
-
-                            $deleteButton = $('<button>')
-                                .attr({
-                                    'class': 'exclick jsgrid-button jsgrid-delete-button',
-                                })
-
-                            var result = $('<div>').append($editButton);
-                            // result.append($deleteButton);
-
-                            return result;
-                        }
-                    },
                     { name: "OrderNumber", title: "工單號碼", type: "text", width: 100, align: "center" },
                     { name: "RepairType", title: "報修型態", type: "text", width: 100, align: "center" },
                     { name: "RepairCategory", title: "報修類別", type: "text", width: 100, align: "center" },

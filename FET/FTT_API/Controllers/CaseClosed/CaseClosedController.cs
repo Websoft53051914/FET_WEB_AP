@@ -1,12 +1,55 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Core.Utility.Helper.DB.Entity;
+using Core.Utility.Web.EX;
+using FTT_API.Common;
+using FTT_API.Common.ConfigurationHelper;
+using FTT_API.Common.OriginClass.EntiityClass;
+using FTT_API.Models.Handler;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FTT_API.Controllers.CaseClosed
 {
-    public class CaseClosedController : Controller
+    [Route("[controller]")]
+    public class CaseClosedController : BaseProjectController
     {
-        public IActionResult Index()
+        private readonly ConfigurationHelper _config;
+        private readonly IWebHostEnvironment _hostingEnvironment;
+        public CaseClosedController(ConfigurationHelper configuration, IWebHostEnvironment hostingEnvironment)
         {
-            return View();
+            _config = configuration;
+            _hostingEnvironment = hostingEnvironment;
+        }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> GetPageList(DataSourceRequest request, v_ftt_form2DTO vm)
+        {
+            try
+            {
+                PageEntity pageEntity = base.GetPageEntity(request);
+
+                CaseClosedHanlder _PenddingHanlder = new CaseClosedHanlder(_config, HttpContext);
+
+                vm.USERROLE = LoginSession.Current.userrole;
+                vm.IVRCODE = LoginSession.Current.ivrcode;
+                vm.EMPNO = LoginSession.Current.empno;
+
+                var list = _PenddingHanlder.FindPageList(pageEntity, vm);
+
+                for (int i = 0; i < list.Results.Count; i++)
+                {
+                    var item = list.Results[i];
+                    item.No = (request.pageIndex - 1) * request.pageSize + i + 1;
+                }
+
+                return Json(new DataSourceResult
+                {
+                    Data = list.Results,
+                    Total = list.DataCount
+                });
+            }
+            catch (Exception ex)
+            {
+                return JsonValidFail("系統錯誤");
+            }
         }
     }
 }

@@ -12,6 +12,8 @@ namespace FTT_API.Common.OriginClass.EntiityClass
         public string EmpName  { get; set; }
         public string EngName { get; set; }
         public string Ext { get; set; }
+        public string aliasname { get; set; }
+        
 
     }
 

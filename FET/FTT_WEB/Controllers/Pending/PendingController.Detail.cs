@@ -20,170 +20,170 @@ namespace FTT_WEB.Controllers.Pending
 {
     public partial class PendingController : BaseProjectController
     {
-        //protected string mIVRCode = "";
-        //protected string SubmitButton = "";
-        //protected string Role = "";
-        //protected string UpdateField = "";
-        //protected string RequireField = "";
-        //protected string ActionName = "";
-
         public IActionResult Detail(string formNo)
         {
-            ViewData["FORM_NO"] = formNo;
-            var ActionName = "";
-            if (LoginSession.Current.empname != LoginSession.Current.engname)
-                ActionName = LoginSession.Current.empname + "(" + LoginSession.Current.engname + ")";
-            else
-                ActionName = LoginSession.Current.empname;
+            ViewData["form_no"] = formNo; ;
 
-            ViewData["ACTION_NAME"] = ActionName;
-
-
-            var funcId = WebMethod.SetFuncIdAndClassName(ViewData, HttpContext.Request);
-
-            ftt_formSQL _ftt_formSQL = new ftt_formSQL();
-            var dto = _ftt_formSQL.GetInfoByFormNo(formNo);
-
-            if (dto == null)
-            {
-                return RedirectToAction("Redirection", "AlertMsg", new AlertMsgRedirection()
-                {
-                    ParasJson = Newtonsoft.Json.JsonConvert.SerializeObject(new { funcId = funcId }),
-                    ActionName = "index",
-                    ControllerName = "Pending",
-                    ClassName = WebMethod.GetClassName(HttpContext.Request),
-                    Msgs = new List<string>()
-                {
-                    "表單編號不存在"
-                },
-                    AlertType = "info"
-                });
-            }
-
-            TicketInfoVM _TicketInfo = new TicketInfoVM();
-
-            approve_formSQL _approve_formSQL = new approve_formSQL();
-            var approve_form = _approve_formSQL.GetInfoByFormNo(formNo);
-            if (approve_form != null)
-            {
-                if (approve_form.form_type != "")
-                {
-                    Approve Approve_Auth = new Approve(LoginSession.Current.empno);
-                    string[] UserAuth = Approve_Auth.Form_Auth(approve_form.form_type, formNo, approve_form.status, approve_form.form_type + "_PRIOR_STATUS", LoginSession.Current.ivrcode);
-                    string SubmitButton = UserAuth[0];
-                    string Role = UserAuth[1];
-                    string UpdateField = UserAuth[2];
-                    string RequireField = UserAuth[3];
-
-                    ViewData["Role"] = Role;
-                    ViewData["UpdateField"] = UpdateField;
-                    ViewData["RequireField"] = RequireField;
-
-                    ViewData["SubmitButton"] = SubmitButton;
-
-                    // 當狀態為 [已派單] 不使用按鈕，使用下拉式選單選擇狀態與顯示相對應的控制項
-
-                    ViewData["TicketPanelVisible"] = true;
-                    _TicketInfo.TTNo = formNo;
-                    _TicketInfo.TTStatus = approve_form.status;
-                    _TicketInfo.ShowTicketInfo = dto.ticket_info;
-                    _TicketInfo.TTType = approve_form.form_type;
-
-                    ViewData["TicketInfo"] = _TicketInfo;
-                }
-
-                ViewData["STATUS_NAME"] = approve_form.STATUS_NAME;
-
-
-                GetTicketInfo(formNo, _TicketInfo.TTType, _TicketInfo.TTStatus, _TicketInfo.ShowTicketInfo);
-
-                if (!string.IsNullOrEmpty(formNo))
-                {
-                    if (!string.IsNullOrEmpty(_TicketInfo.TTStatus))
-                    {   // 判斷狀態是否有傳入
-                        string TTStatus = _TicketInfo.TTStatus;
-                        //string TTCategory = _TicketInfo.TTCategory; 沒使用
-
-                        if (TTStatus != "TICKET")
-                        {   // 如果不是已派單，則顯示資料！
-
-                            ftt_form_amountSQL _ftt_form_amountSQL = new ftt_form_amountSQL();
-                            var totalPrice = _ftt_form_amountSQL.GetTotalPrice(formNo);
-                            ViewData["Totals"] = totalPrice;
-
-                            ViewData["Hide_dele"] = true;
-                        }
-
-                        // needToCheck 沒被使用到 直接註解
-                        //// 2008 12 28 Add - 廠商保固期內完修及拒絕不應填寫金額
-                        //if (Request.QueryString["ifwarrant"] != null)
-                        //{  // 是否有過保固
-                        //    if (Request.QueryString["ifwarrant"] == "Y")
-                        //    {   // 保固內，不應填金額
-                        //        mRunScript += "needToCheck=false;";
-                        //    }
-                        //}
-                    }
-
-                    Init_Bind(formNo);
-                }
-                else
-                {
-                    return RedirectToAction("Redirection", "AlertMsg", new AlertMsgRedirection()
-                    {
-                        ParasJson = Newtonsoft.Json.JsonConvert.SerializeObject(new { funcId = funcId }),
-                        ActionName = "index",
-                        ControllerName = "Pending",
-                        ClassName = WebMethod.GetClassName(HttpContext.Request),
-                        Msgs = new List<string>()
-                {
-                    "表單編號不正確"
-                },
-                        AlertType = "info"
-                    });
-                }
-            }
-
-            FormTableVM vm = new FormTableVM();
-            vm.ftt_formDTO = GetTTInfo(formNo);
-            vm.StoreClass = GetStoreInfo(formNo);
-
-            if (vm.ftt_formDTO == null)
-            {
-                return RedirectToAction("Redirection", "AlertMsg", new AlertMsgRedirection()
-                {
-                    ParasJson = Newtonsoft.Json.JsonConvert.SerializeObject(new { funcId = funcId }),
-                    ActionName = "index",
-                    ControllerName = "Pending",
-                    ClassName = WebMethod.GetClassName(HttpContext.Request),
-                    Msgs = new List<string>()
-                {
-                    "查無開單者資訊"
-                },
-                    AlertType = "info"
-                });
-            }
-
-            if (vm.StoreClass == null)
-            {
-                return RedirectToAction("Redirection", "AlertMsg", new AlertMsgRedirection()
-                {
-                    ParasJson = Newtonsoft.Json.JsonConvert.SerializeObject(new { funcId = funcId }),
-                    ActionName = "index",
-                    ControllerName = "Pending",
-                    ClassName = WebMethod.GetClassName(HttpContext.Request),
-                    Msgs = new List<string>()
-                {
-                    "查無門市資訊"
-                },
-                    AlertType = "info"
-                });
-            }
-
-            ViewData["PreHandleDesc"] = GetPreHandleDesc("TT_LAST_DESC", formNo, "", "");
-
-            return View(vm);
+            return View();
         }
+
+        //public IActionResult Detail(string formNo)
+        //{
+        //    ViewData["FORM_NO"] = formNo;
+        //    var ActionName = "";
+        //    if (LoginSession.Current.empname != LoginSession.Current.engname)
+        //        ActionName = LoginSession.Current.empname + "(" + LoginSession.Current.engname + ")";
+        //    else
+        //        ActionName = LoginSession.Current.empname;
+
+        //    ViewData["ACTION_NAME"] = ActionName;
+
+
+        //    var funcId = WebMethod.SetFuncIdAndClassName(ViewData, HttpContext.Request);
+
+        //    ftt_formSQL _ftt_formSQL = new ftt_formSQL();
+        //    var dto = _ftt_formSQL.GetInfoByFormNo(formNo);
+
+        //    if (dto == null)
+        //    {
+        //        return RedirectToAction("Redirection", "AlertMsg", new AlertMsgRedirection()
+        //        {
+        //            ParasJson = Newtonsoft.Json.JsonConvert.SerializeObject(new { funcId = funcId }),
+        //            ActionName = "index",
+        //            ControllerName = "Pending",
+        //            ClassName = WebMethod.GetClassName(HttpContext.Request),
+        //            Msgs = new List<string>()
+        //        {
+        //            "表單編號不存在"
+        //        },
+        //            AlertType = "info"
+        //        });
+        //    }
+
+        //    TicketInfoVM _TicketInfo = new TicketInfoVM();
+
+        //    approve_formSQL _approve_formSQL = new approve_formSQL();
+        //    var approve_form = _approve_formSQL.GetInfoByFormNo(formNo);
+        //    if (approve_form != null)
+        //    {
+        //        if (approve_form.form_type != "")
+        //        {
+        //            Approve Approve_Auth = new Approve(LoginSession.Current.empno);
+        //            string[] UserAuth = Approve_Auth.Form_Auth(approve_form.form_type, formNo, approve_form.status, approve_form.form_type + "_PRIOR_STATUS", LoginSession.Current.ivrcode);
+        //            string SubmitButton = UserAuth[0];
+        //            string Role = UserAuth[1];
+        //            string UpdateField = UserAuth[2];
+        //            string RequireField = UserAuth[3];
+
+        //            ViewData["Role"] = Role;
+        //            ViewData["UpdateField"] = UpdateField;
+        //            ViewData["RequireField"] = RequireField;
+
+        //            ViewData["SubmitButton"] = SubmitButton;
+
+        //            // 當狀態為 [已派單] 不使用按鈕，使用下拉式選單選擇狀態與顯示相對應的控制項
+
+        //            ViewData["TicketPanelVisible"] = true;
+        //            _TicketInfo.TTNo = formNo;
+        //            _TicketInfo.TTStatus = approve_form.status;
+        //            _TicketInfo.ShowTicketInfo = dto.ticket_info;
+        //            _TicketInfo.TTType = approve_form.form_type;
+
+        //            ViewData["TicketInfo"] = _TicketInfo;
+        //        }
+
+        //        ViewData["STATUS_NAME"] = approve_form.STATUS_NAME;
+
+
+        //        GetTicketInfo(formNo, _TicketInfo.TTType, _TicketInfo.TTStatus, _TicketInfo.ShowTicketInfo);
+
+        //        if (!string.IsNullOrEmpty(formNo))
+        //        {
+        //            if (!string.IsNullOrEmpty(_TicketInfo.TTStatus))
+        //            {   // 判斷狀態是否有傳入
+        //                string TTStatus = _TicketInfo.TTStatus;
+        //                //string TTCategory = _TicketInfo.TTCategory; 沒使用
+
+        //                if (TTStatus != "TICKET")
+        //                {   // 如果不是已派單，則顯示資料！
+
+        //                    ftt_form_amountSQL _ftt_form_amountSQL = new ftt_form_amountSQL();
+        //                    var totalPrice = _ftt_form_amountSQL.GetTotalPrice(formNo);
+        //                    ViewData["Totals"] = totalPrice;
+
+        //                    ViewData["Hide_dele"] = true;
+        //                }
+
+        //                // needToCheck 沒被使用到 直接註解
+        //                //// 2008 12 28 Add - 廠商保固期內完修及拒絕不應填寫金額
+        //                //if (Request.QueryString["ifwarrant"] != null)
+        //                //{  // 是否有過保固
+        //                //    if (Request.QueryString["ifwarrant"] == "Y")
+        //                //    {   // 保固內，不應填金額
+        //                //        mRunScript += "needToCheck=false;";
+        //                //    }
+        //                //}
+        //            }
+
+        //            Init_Bind(formNo);
+        //        }
+        //        else
+        //        {
+        //            return RedirectToAction("Redirection", "AlertMsg", new AlertMsgRedirection()
+        //            {
+        //                ParasJson = Newtonsoft.Json.JsonConvert.SerializeObject(new { funcId = funcId }),
+        //                ActionName = "index",
+        //                ControllerName = "Pending",
+        //                ClassName = WebMethod.GetClassName(HttpContext.Request),
+        //                Msgs = new List<string>()
+        //        {
+        //            "表單編號不正確"
+        //        },
+        //                AlertType = "info"
+        //            });
+        //        }
+        //    }
+
+        //    FormTableVM vm = new FormTableVM();
+        //    vm.ftt_formDTO = GetTTInfo(formNo);
+        //    vm.StoreClass = GetStoreInfo(formNo);
+
+        //    if (vm.ftt_formDTO == null)
+        //    {
+        //        return RedirectToAction("Redirection", "AlertMsg", new AlertMsgRedirection()
+        //        {
+        //            ParasJson = Newtonsoft.Json.JsonConvert.SerializeObject(new { funcId = funcId }),
+        //            ActionName = "index",
+        //            ControllerName = "Pending",
+        //            ClassName = WebMethod.GetClassName(HttpContext.Request),
+        //            Msgs = new List<string>()
+        //        {
+        //            "查無開單者資訊"
+        //        },
+        //            AlertType = "info"
+        //        });
+        //    }
+
+        //    if (vm.StoreClass == null)
+        //    {
+        //        return RedirectToAction("Redirection", "AlertMsg", new AlertMsgRedirection()
+        //        {
+        //            ParasJson = Newtonsoft.Json.JsonConvert.SerializeObject(new { funcId = funcId }),
+        //            ActionName = "index",
+        //            ControllerName = "Pending",
+        //            ClassName = WebMethod.GetClassName(HttpContext.Request),
+        //            Msgs = new List<string>()
+        //        {
+        //            "查無門市資訊"
+        //        },
+        //            AlertType = "info"
+        //        });
+        //    }
+
+        //    ViewData["PreHandleDesc"] = GetPreHandleDesc("TT_LAST_DESC", formNo, "", "");
+
+        //    return View(vm);
+        //}
 
         private void Init_Bind(string formNo)
         {

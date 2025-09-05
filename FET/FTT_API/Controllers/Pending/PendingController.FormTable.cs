@@ -444,6 +444,7 @@ namespace FTT_API.Controllers.Pending
         {
             try
             {
+
                 var ttt = vm.form_no;
 
                 BaseDBHandler baseHandler = new BaseDBHandler();
@@ -451,12 +452,15 @@ namespace FTT_API.Controllers.Pending
                 string updateSQL = "  ";
 
                 Dictionary<string, object> dic = new();
+                dic.Add("category_id", decimal.Parse(vm.category_id));
+                dic.Add("category_name", vm.category_name);
+
                 dic.Add("ticket_info", vm.ticket_info);
 
                 dic.Add("completetime", vm.completetime);
                 dic.Add("precompletetime", vm.precompletetime);
 
-                dic.Add("selfconfig", vm.selfconfig);
+                //dic.Add("selfconfig", vm.selfconfig);
                 dic.Add("remark", vm.remark);
 
                 dic.Add("form_no", vm.form_no);
@@ -471,9 +475,12 @@ namespace FTT_API.Controllers.Pending
 update ftt_form set 
 ticket_info=@ticket_info,
 
+category_id=@category_id,
+category_name=@category_name,
+
 {updateSQL}
 
-selfconfig=@selfconfig,
+
 remark=@remark
 
 where 

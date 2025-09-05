@@ -20,7 +20,7 @@ namespace FTT_API.Common
         //public string userrole { get; set; }
 
 
-        public string empno { get; set; } = "83272";
+        public string empno { get; set; } = "23722";
         public string empname { get; set; } = "丁x珊";
         public string engname { get; set; } = "Annie Dean";
         public string ext { get; set; } = "0912345678(78181)";
@@ -29,7 +29,7 @@ namespace FTT_API.Common
         public string usertype { get; set; } = "RETAIL";
         public string ivrcode { get; set; } = "1805318";
 
-        public string userrole { get; set; } = "SUBMITTER";
+        public string userrole { get; set; } = "MANAGER";//= "SUBMITTER";
         public string shop_name { get; set; }
 
 
