@@ -45,7 +45,8 @@ namespace FTT_API.Controllers.OnsitePrint
             {
                 OnsitePrintHandler onsitePrintHandler = new(_configHelper);
                 // 取得資料(應該只有自行尋商開單的單據會顯示(vender_id 為當前門市的 ivrcode))
-                PageResult<VFttForm2DTO> pageList = onsitePrintHandler.GetPageListPrwp(GetPageEntity(request), _sessionVO.ivrcode);
+                // TODO： 目前寫死IVRCode
+                PageResult<VFttForm2DTO> pageList = onsitePrintHandler.GetPageListPrwp(GetPageEntity(request), "29");
                 // 轉成 ViewModel
                 List<OnsitePrintVO> dataList = [];
                 for (int i = 0; i < pageList.Results.Count; i++)
@@ -94,8 +95,9 @@ namespace FTT_API.Controllers.OnsitePrint
             try
             {
                 OnsitePrintHandler onsitePrintHandler = new(_configHelper);
-                // 取得資料
-                PageResult<VFttForm2DTO> pageList = onsitePrintHandler.GetPageListConfirm(GetPageEntity(request), _sessionVO.ivrcode);
+                // 取得資料 
+                // TODO： 目前寫死IVRCode
+                PageResult<VFttForm2DTO> pageList = onsitePrintHandler.GetPageListConfirm(GetPageEntity(request), "29");
                 // 轉成 ViewModel
                 List<OnsitePrintVO> dataList = [];
                 for (int i = 0; i < pageList.Results.Count; i++)
