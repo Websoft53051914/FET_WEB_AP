@@ -268,12 +268,12 @@ limit "+ pageSize + @" offset "+ (startRowNum-1) +@" ;
 select * from
 (
 select
-    ROW_NUMBER() OVER(ORDER BY " + orderColumn + @") AS [RowNum],pageData.*
+    ROW_NUMBER() OVER(ORDER BY " + orderColumn + @") AS RowNum,pageData.*
 from
     (" + _SQLScript + @") as pageData
 )pageData
 where 
-    RowNum >= " + startRowNum + @" AND RowNum <= " + endRowNum + @"
+    pageData.RowNum >= " + startRowNum + @" AND pageData.RowNum <= " + endRowNum + @"
 ";
 
             return this.iDBComoponent.GetEntitiesBySQLScript<T>(paggingSQL, CommandType.Text, paras);

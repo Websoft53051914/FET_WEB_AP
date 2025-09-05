@@ -20,6 +20,8 @@
         TreeModalId = Guid.NewGuid().ToString("N"),
         UrlGetInitData = $"{config.GetBackendUrl()}/Query/GetInitData",
         UrlDetail = Url.Action("Detail", "Pending", new { formNo = "tempId" }),
+        UrlPrintWP = $"{config.GetBackendUrl()}/OnsitePrint/PrintWP",
+        UrlExportExcel = $"{config.GetBackendUrl()}/Query/ExportExcel",
     };
     ;
     ViewData["TreeModalId"] = mapData.TreeModalId;
@@ -121,7 +123,7 @@
                     </div>
                     <div class="col">
                         <label class="col-form-label websoft-form-label pt-2">工單號碼</label>
-                        <input asp-for="FormNoEq" type="text" class="form-control" placeholder="">
+                        <input asp-for="FormNoEq" type="text" class="form-control websoft-positive-int" placeholder="" maxlength="15">
                     </div>
                     <div class="col">
                         <label class="col-form-label websoft-form-label pt-2">報修型態</label>
@@ -132,7 +134,7 @@
                     <div class="col">
                         <label class="col-form-label websoft-form-label pt-2">報修類別</label>
                         <button id="btnSelectCategoryId" type="button" class="btn btn btn-info">選擇項目</button>
-                        <input asp-for="CategoryIdEq" type="hidden" />
+                        <input asp-for="CategoryIdFilter" type="hidden" />
                         <input asp-for="CategoryName" type="hidden" />
                         <input asp-for="CategoryDesc" type="text" class="form-control" placeholder="" readonly>
                     </div>
@@ -256,12 +258,12 @@
 
                 if (ctx.result && ctx.selectedItem) {
                     let data = ctx.selectedItem.original['OtherAttr'];
-                    $('#@(Html.IdFor(m => m.CategoryIdEq))').val(data['CATEGORY_ID'] || '');
+                    $('#@(Html.IdFor(m => m.CategoryIdFilter))').val(data['CATEGORY_ID'] || '');
                     $('#@(Html.IdFor(m => m.CategoryName))').val(data['CATEGORY_NAME'] || '');
                     $('#@(Html.IdFor(m => m.CategoryDesc))').val(data['CATEGORY_NAME'] || '');
                 }
                 else {
-                    $('#@(Html.IdFor(m => m.CategoryIdEq))').val(null);
+                    $('#@(Html.IdFor(m => m.CategoryIdFilter))').val(null);
                     $('#@(Html.IdFor(m => m.CategoryName))').val(null);
                     $('#@(Html.IdFor(m => m.CategoryDesc))').val(null);
                 }
@@ -440,6 +442,56 @@
         $('#btnSelectCategoryId').on('click', function (e) {
             $('#@(mapData.TreeModalId)').modal('show');
         });
+
+        function printWp(formNoList) {
+            postSubmitJson('@(mapData.UrlPrintWP?.ToHtmlString())', {
+                '@(nameof(OnsitePrintUpdateStatusReqVO.FormNoList))': formNoList,
+            });
+        }
+
+        $('#@(mapData.FormSearch.IdBtnSearch)').on('click', function (e) {
+            let data = $('#@(mapData.FormSearch.Id)').serializeObject();
+
+            if (data['@(Html.IdFor(m => m.CreateDateGte))'] && data['@(Html.IdFor(m => m.CreateDateLte))']
+                && new Date(data['@(Html.IdFor(m => m.CreateDateGte))']) > new Date(data['@(Html.IdFor(m => m.CreateDateLte))'])) {
+                swal({
+                    text: '報修日結束日期必須大於開始日期',
+                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            if (data['@(Html.IdFor(m => m.CompleteDateGte))'] && data['@(Html.IdFor(m => m.CompleteDateLte))']
+                && new Date(data['@(Html.IdFor(m => m.CompleteDateGte))']) > new Date(data['@(Html.IdFor(m => m.CompleteDateLte))'])) {
+                swal({
+                    text: '完修日起訖時間結束日期必須大於開始日期',
+                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            if (data['@(Html.IdFor(m => m.CloseDateGte))'] && data['@(Html.IdFor(m => m.CloseDateLte))']
+                && new Date(data['@(Html.IdFor(m => m.CloseDateGte))']) > new Date(data['@(Html.IdFor(m => m.CloseDateLte))'])) {
+                swal({
+                    text: '結案日結束日期必須大於開始日期',
+                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                    icon: 'warning'
+                });
+                return;
+            }
+
+            context['@(mapData.Grid.Id)'].reload();
+        });
+
+        $('#btnExportExcel').on('click', function (e) {
+            let data = {};
+            $.extend(data, $('#@(mapData.FormSearch.Id)').serializeObject(), context['@(mapData.Grid.Id)'].filter);
+            console.log(data);
+
+            postSubmitJson('@(mapData.UrlExportExcel?.ToHtmlString())', data);
+        });
     </script>
     <script>
         function initGrid(cookiePageIndex, cookiePageSize) {
@@ -453,6 +505,7 @@
                 pageLoading: true,
                 pagerContainer: '#@(mapData.Grid.IdPagers)',
                 autoload: true,
+                sorting:true,
                 rowDoubleClick: function (e) {
                     // [/pool/query.aspx]gridView_RowDataBound()
                     let formNo = e.item['@(nameof(OnsitePrintVO.FormNo))'];
@@ -461,7 +514,9 @@
                 controller: {
                     loadData: function (filter) {
                         var d = $.Deferred();
+                        ctxGrid.filter = { ...filter };
                         filter.vm = {};
+                         $.extend(filter.vm, $('#@(mapData.FormSearch.Id)').serializeObject());
 
                         //分頁頁數紀錄相關 紀錄查詢時將查詢條件、頁數 start
                         var cookieobj = {
@@ -513,7 +568,8 @@
                                 'title': '列印維修單',
                             })
                                 .on('click', () => {
-
+                                    let formNo = item['@(nameof(QueryGridVO.FormNo))'];
+                                    printWp([formNo]);
                                 });
 
                             var result = $('<div>');
@@ -522,12 +578,12 @@
                             return result;
                         }
                     },
-                    { name: '@(nameof(QueryGridVO.FormNo))', title: '工單號碼', type: 'text', width: 100, align: 'center' },
-                    { name: '@(nameof(QueryGridVO.TtCategory))', title: '報修型態', type: 'text', width: 100, align: 'center' },
+                    { name: '@(nameof(QueryGridVO.FormNo))', title: '工單號碼', type: 'text', width: 120, align: 'center' },
+                    { name: '@(nameof(QueryGridVO.TtCategory))', title: '報修型態', type: 'text', width: 120, align: 'center' },
                     { name: '@(nameof(QueryGridVO.Ciname))', title: '報修類別', type: 'text', width: 150, align: 'center' },
                     { name: '@(nameof(QueryGridVO.CreateTimeText))', title: '報修日期', type: 'text', width: 180, align: 'center' },
                     { name: '@(nameof(QueryGridVO.ShopName))', title: '報修門市', type: 'text', width: 120, align: 'center' },
-                    { name: '@(nameof(QueryGridVO.StatusName))', title: '工單狀態', type: 'text', width: 100, align: 'center' },
+                    { name: '@(nameof(QueryGridVO.StatusName))', title: '工單狀態', type: 'text', width: 120, align: 'center' },
                     { name: '@(nameof(QueryGridVO.DispatchTimeText))', title: '派單日期', type: 'text', width: 180, align: 'center' },
                     { name: '@(nameof(QueryGridVO.Vender))', title: '負責廠商', type: 'text', width: 150, align: 'center' },
                     { name: '@(nameof(QueryGridVO.Descr))', title: '報修說明', type: 'text', width: 200, align: 'center' },

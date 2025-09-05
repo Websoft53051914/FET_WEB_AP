@@ -45,7 +45,18 @@ namespace Core.Utility.Helper.DB
         /// <returns></returns>
         PageResult<T> FindPageList<T>(string _SQLScript, string _countSQL, int currentPage, Dictionary<string, object> paras = null);
 
-
+        /// <summary>
+        /// 依條件查詢多筆資料,分頁筆數預設10筆
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="qrySQL"></param>
+        /// <param name="countSQL"></param>
+        /// <param name="currentPage"></param>
+        /// <param name="pageDataSize"></param>
+        /// <param name="paras"></param>
+        /// <param name="orderColumn"></param>
+        /// <returns></returns>
+        PageResult<T> FindPageList<T>(string qrySQL, string countSQL, int currentPage, int pageDataSize, Dictionary<string, object> paras, string orderColumn);
 
         /// <summary>
         /// 依條件查詢多筆資料,分頁筆數預設10筆
