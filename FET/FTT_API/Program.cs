@@ -91,6 +91,7 @@ builder.Services.AddHangfireServer();
 builder.Services.AddScoped<SendMailHandler>();
 
 // 註冊 CORS
+#if DEBUG
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost7234",
@@ -102,6 +103,32 @@ builder.Services.AddCors(options =>
                   .AllowCredentials();
         });
 });
+#else
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost7234",
+        policy =>
+        {
+            policy.WithOrigins("http://192.168.1.107:8002") // 允許的來源
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        });
+});
+
+#endif
+
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowLocalhost7234", policy =>
+//    {
+//        policy
+//            .AllowAnyOrigin()
+//            .AllowAnyHeader()
+//            .AllowAnyMethod();
+//    });
+//});
 
 var app = builder.Build();
 
@@ -131,8 +158,9 @@ app.UseStaticFiles();
 app.UseRequestLocalization(localizationoptions);
 #endregion
 
-app.UseRouting();
 app.UseHangfireDashboard();
+
+app.UseRouting();
 
 // 使用 CORS
 app.UseCors("AllowLocalhost7234");
@@ -149,13 +177,13 @@ app.MapControllerRoute(
     pattern: "swagger/index.html");
 //pattern: "triptest/{controller=Home}/{action=Index}/{id?}");
 
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "PublicStaticFile")
-    ),
-    RequestPath = "/download"
-});
+//app.UseStaticFiles(new StaticFileOptions
+//{
+//    FileProvider = new PhysicalFileProvider(
+//        Path.Combine(builder.Environment.ContentRootPath, "PublicStaticFile")
+//    ),
+//    RequestPath = "/download"
+//});
 
 //// 專案啟動時載入
 //var container = new Unity.UnityContainer();

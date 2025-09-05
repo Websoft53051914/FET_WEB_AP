@@ -114,13 +114,13 @@ app.MapControllerRoute(
     pattern: "{controller=login}/{action=Index}/{id?}");
 //pattern: "triptest/{controller=Home}/{action=Index}/{id?}");
 
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "PublicStaticFile")
-    ),
-    RequestPath = "/download"
-});
+//app.UseStaticFiles(new StaticFileOptions
+//{
+//    FileProvider = new PhysicalFileProvider(
+//        Path.Combine(builder.Environment.ContentRootPath, "PublicStaticFile")
+//    ),
+//    RequestPath = "/download"
+//});
 
 //// 專案啟動時載入
 //var container = new Unity.UnityContainer();
