@@ -2,11 +2,16 @@
 
   "Message": {
     "zh-tw": {
-   
+      "BeforeDeleteMsg": "確定刪除?",
       // filepond
       "labelMaxFileSizeExceeded": "檔案過大，不可超過{0}",
       "labelFileTypeNotAllowed": "不支援此類型檔案",
       // 共用
+      "BtnConfirm": "確認",
+      "BtnCancel": "取消",
+      "BtnSave": "確認送出",
+      "BtnCreate": "新增",
+      "BtnEdit": "編輯",
       "PagerFormat": "{first} {prev} {pages} {next} {last}    第 {pageIndex} 頁 共 {pageCount} 頁",
       "PagePrevText": "上一頁",
       "PageNextText": "下一頁",
