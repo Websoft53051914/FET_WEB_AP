@@ -205,6 +205,10 @@
         /// </summary>
         public string? confirmtime_text { get; set; }
         /// <summary>
+        /// 報修日期
+        /// </summary>
+        public string? updatetime_text { get; set; }
+        /// <summary>
         /// 處理者
         /// </summary>
         public string? processer { get; set; }

@@ -61,7 +61,7 @@ namespace Const
             },
             ["廠商派工管理"] = new List<MenuModel>
             {
-                new MenuModel { FuncId=FuncID.Dispatching_View, FuncName="派工中", Url="/" },
+                new MenuModel { FuncId=FuncID.Dispatching_View, FuncName="派工中", Url="/Dispatching" },
                 new MenuModel { FuncId=FuncID.Dispatched_View, FuncName="已派工", Url="/" },
             },
             ["後端管理"] = new List<MenuModel>

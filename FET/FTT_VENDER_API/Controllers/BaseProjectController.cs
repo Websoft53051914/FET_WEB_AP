@@ -1,16 +1,18 @@
-﻿
-
-using Core.Utility.Helper.Message;
+﻿using Core.Utility.Helper.Message;
 using Core.Utility.Web.Base;
-using Microsoft.AspNetCore.Mvc;
 using FTT_VENDER_API.Common;
 using FTT_VENDER_API.Models;
-using static Const.Enums;
+using Microsoft.AspNetCore.Mvc;
+using System.Diagnostics;
 
 namespace FTT_VENDER_API.Controllers
 {
     public class BaseProjectController : BaseController
     {
+        /// <summary>
+        /// 登入資訊
+        /// </summary>
+        public SessionVO _sessionVO = new();
 
         #region -- Instance --
 
@@ -62,6 +64,18 @@ namespace FTT_VENDER_API.Controllers
             }
 
             return RedirectToAction("Redirection", "AlertMsg", paras);
+        }
+
+        /// <summary>
+        /// 紀錄例外
+        /// </summary>
+        /// <param name="ex"></param>
+        [ApiExplorerSettings(IgnoreApi = true)]
+        protected void LogError(Exception ex)
+        {
+            Trace.Write("<font color=red>Source:" + ex.Source + "</font>");
+            Trace.Write("<font color=red>Msg:" + ex.Message + "</font>");
+            Trace.Write(ex.ToString());
         }
 
 
