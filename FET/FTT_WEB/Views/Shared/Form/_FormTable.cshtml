@@ -632,7 +632,7 @@
                     if (data.Success == true) {
                         alert(data.Data);
                     } else {
-                        alert(data.Data);
+                        alert(data.Message);
                     }
                 },
                 error: function (msg) {
@@ -984,7 +984,7 @@
 
                     hideLoader();
                 } else {
-                    alert(data.Data);
+                    alert(data.Message);
                     hideLoader();
 
                 }

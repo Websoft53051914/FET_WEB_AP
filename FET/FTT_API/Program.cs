@@ -100,7 +100,8 @@ builder.Services.AddCors(options =>
             policy.WithOrigins("https://localhost:7234") // 允許的來源
                   .AllowAnyHeader()
                   .AllowAnyMethod()
-                  .AllowCredentials();
+                  .AllowCredentials()
+              .WithExposedHeaders("Content-Disposition"); // <- 重要;
         });
 });
 #else
