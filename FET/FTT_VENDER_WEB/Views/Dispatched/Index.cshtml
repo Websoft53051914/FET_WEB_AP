@@ -1,0 +1,173 @@
+﻿@{
+    var mapData = new
+    {
+        Grid = new
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            IdPageSelect = Guid.NewGuid().ToString("N"),
+            IdPagers = Guid.NewGuid().ToString("N"),
+            UrlGetPageList = $"{config.GetBackendUrl()}/Dispatched/GetPageList",
+        },
+        UrlDetail = Url.Action("Detail", "Pending", new { formNo = "tempId" }),
+    };
+}
+<style>
+    tr.flag1 {
+        color: red;
+    }
+
+        tr.flag1 td.jsgrid-cell {
+            background-color: salmon;
+        }
+</style>
+
+<div class="container-fluid">
+    <div class="page-header" style="padding-bottom:20px">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>已派工</h3>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Home" data-bs-original-title="" title="">首頁</a></li>
+                    <li class="breadcrumb-item">功能</li>
+                    <li class="breadcrumb-item active"><a href="" data-bs-original-title="" title="">已派工</a></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <div class="card">
+        <div class="card-body">
+            <h5>待處理案件清單</h5>
+            <div id="@(mapData.Grid.Id)"></div>
+            <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
+                <div id="pageResizer" class="jsgrid-pager-page">
+                    <span>每頁筆數:</span>
+                    <select id="@(mapData.Grid.IdPageSelect)">
+                    </select>
+                </div>
+                <div id="@(mapData.Grid.IdPagers)">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section scripts
+{
+    <script>
+        var context = {
+
+        };
+        var cookieName = 'DispatchedGridInfo';
+
+        $(function () {
+            let pageIndex = 1;
+            let pageSize = pageDataSource[0].id;
+            if (Cookies.get(cookieName)) {
+                var cookieObj = JSON.parse(Cookies.get(cookieName));
+                if (cookieObj && cookieObj.FromEdit == true) {
+                    if (cookieObj.PageIndex) {
+                        pageIndex = parseInt(cookieObj.PageIndex);
+                    }
+
+                    if (cookieObj.PageSize) {
+                        pageSize = parseInt(cookieObj.PageSize);
+                    }
+
+                    Cookies.remove(cookieName);
+                }
+            }
+            initGrid(pageIndex, pageSize);
+        });
+    </script>
+    <script>
+        function initGrid(cookiePageIndex, cookiePageSize) {
+            context['@(mapData.Grid.Id)'] = {};
+            var ctx = context['@(mapData.Grid.Id)'];
+            ctx.$Grid = $('#@(mapData.Grid.Id)');
+            ctx.$Grid.jsGrid({
+                pageIndex: cookiePageIndex,
+                paging: true,
+                pageSize: cookiePageSize,
+                pageLoading: true,
+                autoload: true,
+                sorting:true,
+                pagerContainer: '#@(mapData.Grid.IdPagers)',
+                rowDoubleClick: function (e) {
+                    // [/pool/WP.aspx]gridView_RowDataBound()
+                    let formNo = e.item['@(nameof(DispatchedGridVO.FormNo))'];
+                    window.open('@(mapData.UrlDetail)'.replace("tempId", formNo), '_blank');
+                },
+                rowClass: function (item, itemIndex) {
+                    // 設定行class
+                    return item['@(nameof(DispatchedGridVO.Flag1))'] == 1 ? 'flag1' : '';
+                },
+                controller: {
+                    loadData: function (filter) {
+                        var d = $.Deferred();
+                        filter.vm = {};
+
+                        //分頁頁數紀錄相關 紀錄查詢時將查詢條件、頁數 start
+                        var cookieobj = {
+                            PageIndex: filter.pageIndex,
+                            PageSize: filter.pageSize,
+                            ...filter.vm
+                        };
+                        Cookies.set(cookieName, JSON.stringify(cookieobj), { expires: 1 });
+
+                        $.ajax({
+                            type: 'POST',
+                            url: '@(mapData.Grid.UrlGetPageList?.ToHtmlString())',
+                            data: filter,
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.Success === false) {
+                                    swal({
+                                        text: res.Message,
+                                        button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                                        icon: 'error'
+                                    });
+                                    d.reject();
+                                    return;
+                                }
+                                var da = {
+                                    data: res.Data,
+                                    itemsCount: res.Total
+                                }
+                                d.resolve(da);
+                            }
+                        });
+
+                        return d.promise();
+                    }
+                },
+                fields: [
+                    { name: '@(nameof(DispatchedGridVO.FormNo))', title: '工單號碼', type: 'text', width: 120, align: 'center' },
+                    { name: '@(nameof(DispatchedGridVO.ShopName))', title: '門市', type: 'text', width: 120, align: 'center' },
+                    { name: '@(nameof(DispatchedGridVO.TtCategory))', title: '報修型態', type: 'text', width: 120, align: 'center' },
+                    { name: '@(nameof(DispatchedGridVO.CiName))', title: '報修品項', type: 'text', width: 200, align: 'center' },
+                    { name: '@(nameof(DispatchedGridVO.CreateTimeText))', title: '報修日期', type: 'text', width: 200, align: 'center' },
+                    { name: '@(nameof(DispatchedGridVO.Vender))', title: '廠商', type: 'text', width: 150, align: 'center' },
+                    { name: '@(nameof(DispatchedGridVO.StatusName))', title: '工單狀態', type: 'text', width: 120, align: 'center' },
+                    { width: 'auto' }
+                ],
+            });
+
+            //分頁頁數紀錄相關
+            ctx.$Grid.jsGrid('_setPage', cookiePageIndex);//jsgrid bug 不會自動將頁碼設定成pageindex
+            $('#@(mapData.Grid.IdPageSelect)').select2({
+                minimumResultsForSearch: -1,
+                data: pageDataSource
+            });
+            $('#@(mapData.Grid.IdPageSelect)').data('select2').$container.addClass('w-auto');
+            $('#@(mapData.Grid.IdPageSelect)').on('change', (e) => {
+                onPageLenghtSelect(e.currentTarget.value, ctx.$Grid);
+            });
+            ctx.reload = function () {
+                ctx.$Grid.jsGrid('search');
+            };
+        }
+    </script>
+}

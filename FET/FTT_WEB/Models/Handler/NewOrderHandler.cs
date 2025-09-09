@@ -43,16 +43,14 @@ LIMIT 1
                 {"IFWARRANT", ifWarrant },
             };
 
+            //            string sql = $@"
+            //SELECT *
+            //FROM TABLE(form_dispatch_get(@IVRCODE, @CISID, @IFWARRANT));
+            //";
             string sql = $@"
-SELECT *
-FROM TABLE(form_dispatch_get(@IVRCODE, @CISID, @IFWARRANT));
-";
-#if DEBUG
-            sql = $@"
 SELECT *
 FROM form_dispatch_get(@IVRCODE, @CISID, @IFWARRANT);
 ";
-#endif
 
             return GetDBHelper().FindList<FormDispatchGetDTO>(sql, paras);
         }

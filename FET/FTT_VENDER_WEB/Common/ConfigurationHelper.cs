@@ -23,5 +23,10 @@ namespace FTT_VENDER_WEB.Common.ConfigurationHelper
             return _configuration[$"Message:{LocaleConst.ZH_TW}:{key}"] ?? defaultVal;
         }
 
+        public string GetBackendUrl()
+        {
+            var url = _configuration.GetValue<string?>("BackendURL") ?? "";
+            return url;
+        }
     }
 }

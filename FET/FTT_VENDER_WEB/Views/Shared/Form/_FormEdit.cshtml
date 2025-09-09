@@ -1,14 +1,15 @@
-﻿@model FormEditVM
+﻿@model FormTableVM
 @{
+    var form_no = ViewData["FORM_NO"];
 }
 <ul class="nav nav-tabs nav-primary fs-6 mt-2" id="LockerTab" role="tablist">
     <li class="nav-item">
-        <a class="nav-link active" id="" data-bs-toggle="tab" href="#FormEditTab1"><span class="fw-bold">申請單號[@Model.FormNo.ToHtmlString()]</span></a>
+        <a class="nav-link active" id="" data-bs-toggle="tab" href="#FormEditTab1"><span class="fw-bold">申請單號[@form_no]</span></a>
     </li>
     <li class="nav-item">
         <a class="nav-link " id="" data-bs-toggle="tab" href="#FormEditTab2"><span class="fw-bold">異動紀錄</span></a>
     </li>
-    <li class="nav-item">
+    <li class="nav-item" id="FormEditNavItem3" style="display:none;">
         <a class="nav-link " id="" data-bs-toggle="tab" href="#FormEditTab3"><span class="fw-bold">表單修改</span></a>
     </li>
 </ul>
@@ -16,22 +17,42 @@
 <div class="tab-content mt-4">
 
     <div class="tab-pane fade active show " id="FormEditTab1">
-        @await Html.PartialAsync("Form/_FormTable")
+        @await Html.PartialAsync("Form/_FormTable", Model)
     </div>
 
     <div class="tab-pane fade  " id="FormEditTab2">
-        @await Html.PartialAsync("Form/_FormLog")
+        @await Html.PartialAsync("Form/_FormLog", new FormEditVM())
+    </div>
+    <div class="tab-pane fade  " id="FormEditTab3" style="display:none;">
+        @await Html.PartialAsync("Form/_FormMaintain", new FormEditVM())
     </div>
 
-    <div class="tab-pane fade  " id="FormEditTab3">
-        @await Html.PartialAsync("Form/_FormMaintain")
-    </div>
+@*     <div class="tab-pane fade" id="FormEditTab3">
+        <!-- 這裡不要一開始就載入，留空容器 -->
+        <div id="FormEditTab3Content" class="p-3 text-center text-muted">
+            載入中...
+        </div>
+    </div> *@
 </div>
 
 <script>
     $(document).ready(function () {
         initFormTable({
-            Type :3
+            Type: 3
         });
+    });
+</script>
+<script>
+    $(document).ready(function () {
+        // var tab3Loaded = false;
+
+        // $('a[data-bs-toggle="tab"]').on('shown.bs.tab', function (e) {
+        //     var target = $(e.target).attr("href"); // #FormEditTab3
+
+        //     if (target === "#FormEditTab3" && !tab3Loaded) {
+        //         $("#FormEditTab3Content").load("/FormEdit/LoadFormMaintain?formNo=@form_no");
+        //         tab3Loaded = true; // 只載入一次
+        //     }
+        // });
     });
 </script>

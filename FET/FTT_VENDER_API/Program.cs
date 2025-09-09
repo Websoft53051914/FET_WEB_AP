@@ -80,15 +80,34 @@ builder.Configuration.AddJsonFile("message.json", optional: true, reloadOnChange
 
 builder.Services.AddSingleton<ConfigurationHelper>();
 
+// 註冊 CORS
+#if DEBUG
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost7234",
+        policy =>
+        {
+            policy.WithOrigins("https://localhost:7236") // 允許的來源
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        });
+});
+#else
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowLocalhost7234",
+        policy =>
+        {
+            policy.WithOrigins("http://192.168.1.107:8004") // 允許的來源
+                  .AllowAnyHeader()
+                  .AllowAnyMethod()
+                  .AllowCredentials();
+        });
+});
 
-
-
-
-
-
-
-
+#endif
 
 var app = builder.Build();
 
@@ -120,10 +139,8 @@ app.UseRequestLocalization(localizationoptions);
 
 app.UseRouting();
 
-
-
-//app.UseCors();
-
+// 使用 CORS
+app.UseCors("AllowLocalhost7234");
 
 app.UseAuthorization();
 

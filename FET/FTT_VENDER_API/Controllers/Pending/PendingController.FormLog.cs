@@ -1,0 +1,78 @@
+﻿using Core.Utility.Helper.DB.Entity;
+using Core.Utility.Web.EX;
+using FTT_VENDER_API.Common;
+using FTT_VENDER_API.Common.OriginClass.EntiityClass;
+using FTT_VENDER_API.Models.Handler;
+using Microsoft.AspNetCore.Mvc;
+
+namespace FTT_VENDER_API.Controllers.Pending
+{
+    public partial class PendingController : BaseProjectController
+    {
+        [HttpPost("[action]")]
+        public async Task<IActionResult> GetPageList_Log(DataSourceRequest request, v_ftt_form2DTO vm)
+        {
+            try
+            {
+                PageEntity pageEntity = base.GetPageEntity(request);
+
+                PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
+
+                vm.USERROLE = LoginSession.Current.userrole;
+                vm.IVRCODE = LoginSession.Current.ivrcode;
+                vm.EMPNO = LoginSession.Current.empno;
+
+                var list = _PenddingHanlder.GetPageList_Log(pageEntity, vm);
+
+                for (int i = 0; i < list.Results.Count; i++)
+                {
+                    var item = list.Results[i];
+                    item.No = (request.pageIndex - 1) * request.pageSize + i + 1;
+                }
+
+                return Json(new DataSourceResult
+                {
+                    Data = list.Results,
+                    Total = list.DataCount
+                });
+            }
+            catch (Exception ex)
+            {
+                return JsonValidFail("系統錯誤");
+            }
+        }
+
+        [HttpPost("[action]")]
+        public async Task<IActionResult> GetPageList_Desc(DataSourceRequest request, v_ftt_form2DTO vm)
+        {
+            try
+            {
+                PageEntity pageEntity = base.GetPageEntity(request);
+
+                PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
+
+                vm.USERROLE = LoginSession.Current.userrole;
+                vm.IVRCODE = LoginSession.Current.ivrcode;
+                vm.EMPNO = LoginSession.Current.empno;
+
+                var list = _PenddingHanlder.GetPageList_Desc(pageEntity, vm);
+
+                for (int i = 0; i < list.Results.Count; i++)
+                {
+                    var item = list.Results[i];
+                    item.No = (request.pageIndex - 1) * request.pageSize + i + 1;
+                }
+
+                return Json(new DataSourceResult
+                {
+                    Data = list.Results,
+                    Total = list.DataCount
+                });
+            }
+            catch (Exception ex)
+            {
+                return JsonValidFail("系統錯誤");
+            }
+        }
+    }
+}

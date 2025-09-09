@@ -234,7 +234,7 @@ namespace FTT_WEB.Controllers.NewOrder
             catch (Exception ex)
             {
                 LogError(ex);
-                return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
+                return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg") + ex.ToString());
             }
         }
 

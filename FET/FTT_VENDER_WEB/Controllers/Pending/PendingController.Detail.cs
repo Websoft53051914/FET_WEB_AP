@@ -4,9 +4,11 @@ namespace FTT_VENDER_WEB.Controllers.Pending
 {
     public partial class PendingController : BaseProjectController
     {
-        public IActionResult Edit(int Id)
+        public IActionResult Detail(string formNo)
         {
-            return View("~/Views/FormEdit/Index.cshtml");
+            ViewData["form_no"] = formNo; ;
+
+            return View();
         }
     }
 }
