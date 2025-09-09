@@ -6,21 +6,30 @@
             Id = Guid.NewGuid().ToString("N"),
             IdPageSelect = Guid.NewGuid().ToString("N"),
             IdPagers = Guid.NewGuid().ToString("N"),
-            UrlGetPageList = $"{config.GetBackendUrl()}/Dispatching/GetPageList",
+            UrlGetPageList = $"{config.GetBackendUrl()}/Dispatched/GetPageList",
         },
         UrlDetail = Url.Action("Detail", "Pending", new { formNo = "tempId" }),
     };
 }
+<style>
+    tr.flag1 {
+        color: red;
+    }
+
+        tr.flag1 td.jsgrid-cell {
+            background-color: salmon;
+        }
+</style>
 
 <div class="container-fluid">
     <div class="page-header" style="padding-bottom:20px">
         <div class="row">
             <div class="col-sm-6">
-                <h3>派工中</h3>
+                <h3>已派工</h3>
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="/Home" data-bs-original-title="" title="">首頁</a></li>
                     <li class="breadcrumb-item">功能</li>
-                    <li class="breadcrumb-item active"><a href="" data-bs-original-title="" title="">派工中</a></li>
+                    <li class="breadcrumb-item active"><a href="" data-bs-original-title="" title="">已派工</a></li>
                 </ol>
             </div>
         </div>
@@ -51,7 +60,7 @@
         var context = {
 
         };
-        var cookieName = 'DispatchingGridInfo';
+        var cookieName = 'DispatchedGridInfo';
 
         $(function () {
             let pageIndex = 1;
@@ -84,12 +93,16 @@
                 pageSize: cookiePageSize,
                 pageLoading: true,
                 autoload: true,
-                sorting: true,
+                sorting:true,
                 pagerContainer: '#@(mapData.Grid.IdPagers)',
                 rowDoubleClick: function (e) {
                     // [/pool/WP.aspx]gridView_RowDataBound()
-                    let formNo = e.item['@(nameof(DispatchingGridVO.FormNo))'];
+                    let formNo = e.item['@(nameof(DispatchedGridVO.FormNo))'];
                     window.open('@(mapData.UrlDetail)'.replace("tempId", formNo), '_blank');
+                },
+                rowClass: function (item, itemIndex) {
+                    // 設定行class
+                    return item['@(nameof(DispatchedGridVO.Flag1))'] == 1 ? 'flag1' : '';
                 },
                 controller: {
                     loadData: function (filter) {
@@ -131,32 +144,13 @@
                     }
                 },
                 fields: [
-                    { name: '@(nameof(DispatchingGridVO.FormNo))', title: '工單號碼', type: 'text', width: 120, align: 'center' },
-                    { name: '@(nameof(DispatchingGridVO.TtCategory))', title: '報修型態', type: 'text', width: 120, align: 'center' },
-                    { name: '@(nameof(DispatchingGridVO.L2Desc))', title: '報修類別', type: 'text', width: 120, align: 'center' },
-                    { name: '@(nameof(DispatchingGridVO.CiName))', title: '報修品項', type: 'text', width: 200, align: 'center' },
-                    { name: '@(nameof(DispatchingGridVO.CreateTimeText))', title: '報修日期', type: 'text', width: 200, align: 'center' },
-                    { name: '@(nameof(DispatchingGridVO.StatusName))', title: '工單狀態', type: 'text', width: 120, align: 'center' },
-                    {
-                        name: '@(nameof(DispatchingGridVO.UpdateTimeText))', title: '更新日期', type: 'text', width: 200, align: 'center',
-                        itemTemplate: (value, item) => {
-                            let isOverKpi = false;
-                            if (value) {
-                                let dateUpdateTime = moment(value, 'YYYY/MM/DD');
-                                let dateOverKpiDate = moment().subtract(3, 'd');
-
-                                if (dateUpdateTime.isBefore(dateOverKpiDate)) {
-                                    isOverKpi = true;
-                                }
-                            }
-
-                            let $content = $('<div>', {
-                                class: isOverKpi ? 'text-danger' : ''
-                            }).text(value);
-
-                            return $content;
-                        },
-                    },
+                    { name: '@(nameof(DispatchedGridVO.FormNo))', title: '工單號碼', type: 'text', width: 120, align: 'center' },
+                    { name: '@(nameof(DispatchedGridVO.ShopName))', title: '門市', type: 'text', width: 120, align: 'center' },
+                    { name: '@(nameof(DispatchedGridVO.TtCategory))', title: '報修型態', type: 'text', width: 120, align: 'center' },
+                    { name: '@(nameof(DispatchedGridVO.CiName))', title: '報修品項', type: 'text', width: 200, align: 'center' },
+                    { name: '@(nameof(DispatchedGridVO.CreateTimeText))', title: '報修日期', type: 'text', width: 200, align: 'center' },
+                    { name: '@(nameof(DispatchedGridVO.Vender))', title: '廠商', type: 'text', width: 150, align: 'center' },
+                    { name: '@(nameof(DispatchedGridVO.StatusName))', title: '工單狀態', type: 'text', width: 120, align: 'center' },
                     { width: 'auto' }
                 ],
             });

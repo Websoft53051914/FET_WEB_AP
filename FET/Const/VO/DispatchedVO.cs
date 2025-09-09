@@ -3,12 +3,7 @@ using Core.Utility.Web.EX;
 
 namespace Const.VO
 {
-    public class DispatchingIndexVO
-    {
-
-    }
-
-    public class DispatchingGridVO
+    public class DispatchedGridVO
     {
         /// <summary>
         /// 工單號碼
@@ -16,15 +11,15 @@ namespace Const.VO
         [SortColumn(nameof(VFttForm2DTO.form_no))]
         public int? FormNo { get; set; }
         /// <summary>
+        /// 報修門市
+        /// </summary>
+        [SortColumn(nameof(VFttForm2DTO.shop_name))]
+        public string? ShopName { get; set; }
+        /// <summary>
         /// 報修型態
         /// </summary>
         [SortColumn(nameof(VFttForm2DTO.tt_category))]
         public string? TtCategory { get; set; }
-        /// <summary>
-        /// 報修類別
-        /// </summary>
-        [SortColumn(nameof(VFttForm2DTO.l2_desc))]
-        public string? L2Desc { get; set; }
         /// <summary>
         /// 報修品項
         /// </summary>
@@ -36,6 +31,11 @@ namespace Const.VO
         [SortColumn(nameof(VFttForm2DTO.createtime_text))]
         public string? CreateTimeText { get; set; }
         /// <summary>
+        /// 廠商
+        /// </summary>
+        [SortColumn(nameof(VFttForm2DTO.vender))]
+        public string? Vender { get; set; }
+        /// <summary>
         /// 工單狀態
         /// </summary>
         [SortColumn(nameof(VFttForm2DTO.statusname))]
@@ -44,6 +44,10 @@ namespace Const.VO
         /// 更新時間
         /// </summary>
         [SortColumn(nameof(VFttForm2DTO.updatetime), DefaultSortOrder = "DESC", IsDefault = true)]
-        public string? UpdateTimeText { get; set; }
+        public DateTime? UpdateTime { get; set; }
+        /// <summary>
+        /// 控制參數
+        /// </summary>
+        public int Flag1 { get; set; } = 0;
     }
 }

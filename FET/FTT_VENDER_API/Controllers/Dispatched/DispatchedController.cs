@@ -6,18 +6,18 @@ using FTT_VENDER_API.Common.ConfigurationHelper;
 using FTT_VENDER_API.Models.Handler;
 using Microsoft.AspNetCore.Mvc;
 
-namespace FTT_VENDER_API.Controllers.Dispatching
+namespace FTT_VENDER_API.Controllers.Dispatched
 {
     /// <summary>
-    /// 派工中 API
+    /// 已派工 API
     /// </summary>
     [Route("[controller]")]
-    public partial class DispatchingController : BaseProjectController
+    public partial class DispatchedController : BaseProjectController
     {
         /// <summary>
         /// Constructor
         /// </summary>
-        public DispatchingController(ConfigurationHelper configHelper)
+        public DispatchedController(ConfigurationHelper configHelper)
         {
             _configHelper = configHelper;
         }
@@ -25,7 +25,7 @@ namespace FTT_VENDER_API.Controllers.Dispatching
         private ConfigurationHelper _configHelper;
     }
 
-    public partial class DispatchingController
+    public partial class DispatchedController
     {
         /// <summary>
         /// 取得分頁資料
@@ -37,25 +37,26 @@ namespace FTT_VENDER_API.Controllers.Dispatching
         {
             try
             {
-                DispatchingHandler dispatchingHandler = new(_configHelper);
-                dispatchingHandler.SessionVO = _sessionVO;
+                DispatchedHandler dispatchedHandler = new(_configHelper);
+                dispatchedHandler.SessionVO = _sessionVO;
                 // 取得資料(應該只有自行尋商開單的單據會顯示(vender_id 為當前門市的 ivrcode))
-                PageResult<VFttForm2DTO> pageList = dispatchingHandler.GetPageList(GetPageEntity<DispatchingGridVO>(request));
+                PageResult<VFttForm2DTO> pageList = dispatchedHandler.GetPageList(GetPageEntity<DispatchedGridVO>(request));
                 // 轉成 ViewModel
-                List<DispatchingGridVO> dataList = [];
+                List<DispatchedGridVO> dataList = [];
                 for (int i = 0; i < pageList.Results.Count; i++)
                 {
                     VFttForm2DTO data = pageList.Results[i];
 
-                    DispatchingGridVO item = new()
+                    DispatchedGridVO item = new()
                     {
                         CiName = data.ciname,
                         CreateTimeText = data.createtime_text,
                         FormNo = data.form_no,
-                        L2Desc = data.l2_desc,
                         StatusName = data.statusname,
                         TtCategory = data.tt_category,
-                        UpdateTimeText = data.updatetime_text,
+                        ShopName = data.shop_name,
+                        Vender = data.vender,
+                        Flag1 = data.flag1,
                     };
 
                     dataList.Add(item);

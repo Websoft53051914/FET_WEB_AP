@@ -7,14 +7,14 @@ using System.Text;
 namespace FTT_VENDER_API.Models.Handler
 {
     /// <summary>
-    /// 派工中
+    /// 已派工
     /// </summary>
-    public class DispatchingHandler : BaseDBHandler
+    public class DispatchedHandler : BaseDBHandler
     {
         /// <summary>
         /// Constructor
         /// </summary>
-        public DispatchingHandler(ConfigurationHelper confighelper)
+        public DispatchedHandler(ConfigurationHelper confighelper)
         {
             _configHelper = confighelper;
         }
@@ -34,8 +34,6 @@ namespace FTT_VENDER_API.Models.Handler
             Dictionary<string, object> paras = new()
             {
                 { "ivr_code", SessionVO?.ivrcode ?? string.Empty },
-                { "user_type", SessionVO?.usertype ?? string.Empty },
-                { "empno", SessionVO?.empno ?? string.Empty },
             };
             if (string.IsNullOrWhiteSpace(pageEntity.Sort))
             {
@@ -44,23 +42,31 @@ namespace FTT_VENDER_API.Models.Handler
             }
 
             string sql = $@"
-SELECT DISTINCT form_no                                        
-                , tt_category                                  
-                , l2_desc                                      
-                , ciname                                       
-                , TO_CHAR(createtime, 'yyyy/mm/dd hh24:mi:ss') AS createtime_text
-                , shop_name                                    
-                , statusname 
+SELECT DISTINCT form_no
+                , GET_USER_NAME('SUBMITTER', ivrcode)         AS shop_name
+                , tt_category
+                , l2_desc
+                , ciname
+                , TO_CHAR(createtime, 'yyyy/mm/dd')           AS createtime_text
+                , vender
+                , statusname
                 , updatetime
-                , TO_CHAR(updatetime, 'yyyy/mm/dd hh24:mi:ss') AS updatetime_text
+                , TO_CHAR(vendor_arrive_date, 'yyyy/mm/dd')   AS vendor_arrive_date_text
+                , TO_CHAR(SYSDATE - 5, 'yyyy/mm/dd')          AS limit_date_text
+                , (SELECT TO_CHAR(MIN(updatetime), 'yyyy/mm/dd')
+                   FROM   ftt_form_log
+                   WHERE  form_no = v_ftt_form2.form_no
+                          AND newvalue = 'ASSIGN')            AS assign_date_text
+                , EXISTS(SELECT 1
+                         FROM   ftt_form_log ffl
+                         WHERE  ffl.form_no = v_ftt_form2.form_no
+                                AND ffl.oldvalue = 'CONFIRM'
+                                AND ffl.newvalue = 'PRWP')    AS flag1
 FROM   v_ftt_form2
 WHERE  form_no IN (SELECT form_no
                    FROM   access_role
-                   WHERE  action = 'Y'
-                          AND deptcode = @ivr_code
-                          AND user_type = @user_type
-                          AND @empno IS NOT NULL)
-       AND statusname = '派工中'
+                   WHERE  deptcode = @ivr_code)
+       AND statusname IN( '已派工', '待料中' )
 ";
             string sqlCount = $@"
 SELECT

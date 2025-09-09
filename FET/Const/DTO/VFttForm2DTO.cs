@@ -80,6 +80,10 @@
         /// </summary>
         public DateTime? createtime { get; set; }
         /// <summary>
+        /// 報修日期
+        /// </summary>
+        public DateTime? updatetime { get; set; }
+        /// <summary>
         /// 完修日
         /// </summary>
         public DateTime? completetime { get; set; }
@@ -212,6 +216,10 @@
         /// 處理者
         /// </summary>
         public string? processer { get; set; }
+        /// <summary>
+        /// 控制參數
+        /// </summary>
+        public int flag1 { get; set; } = 0;
 
         /// <summary>
         /// 報修日
