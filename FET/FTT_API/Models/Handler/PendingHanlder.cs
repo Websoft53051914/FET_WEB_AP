@@ -65,7 +65,7 @@ namespace FTT_API.Models.Handler
                 { "NEWVALUE", newValue },
             };
 
-            string tableName = " STORE_PROFILE ";
+            string tableName = " FTT_FORM_LOG ";
             string strWhere = " FORM_NO=@FORM_NO AND FIELDNAME=@FIELDNAME AND OLDVALUE=@OLDVALUE AND NEWVALUE=@NEWVALUE ";
 
             return CheckDataExist(tableName, strWhere, paras);

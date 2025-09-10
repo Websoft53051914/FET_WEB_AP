@@ -431,7 +431,7 @@
             $("#rmTable_Header1").html("");
             $("#rmTable_Header1").append("門市資訊")
 
-            let statusSpan = $("<span class='text-success' style='float:right;background-color: cornsilk;'></span").html("*目前表單狀態: 審單中")
+            let statusSpan = $("<span id='APPROVE_FORM_STATUS_DESC' class='text-success' style='float:right;background-color: cornsilk;'></span").html("*目前表單狀態: 審單中")
             $("#rmTable_Header1").append(statusSpan);
         }
     }
@@ -742,14 +742,15 @@
                     $('#ApprovalDate').text(data.Data.ApprovalDate);
                     $('#WarrantyTime').text(data.Data.WarrantyTime);
 
+                    $('#APPROVE_FORM_STATUS_DESC').text(data.Data.Status_Desc);
                     $('#User_Type').val(data.Data.User_Type);
-                    $('#STATUS_DESC').val(data.Data.STATUS_DESC);
+                    $('#STATUS_DESC').val(data.Data.Status_Desc);
                     $('#FORM').val(data.Data.Form_Type);
                     $('#FORM_TYPE').val(data.Data.Form_Type);
                     $('#STATUS').val(data.Data.Status);
-                    $('#ACTION_NAME').val(data.Data.ACTION_NAME);
-                    $('#STORE_TYPE').val(data.Data.Store_profileDTO.STORE_TYPE);
-                    $('#IVRCODE').val(data.Data.Store_profileDTO.IVR_CODE);
+                    $('#ACTION_NAME').val(data.Data.ActionName);
+                    $('#STORE_TYPE').val(data.Data.Store_profileDTO.StoreType);
+                    $('#IVRCODE').val(data.Data.Store_profileDTO.IVRCode);
 
                     var RequireField = data.Data.RequireField;
                     var accesscontrol = RequireField.split(/,/);
@@ -769,7 +770,7 @@
                         alert(data.Data.FranchiseMsg);
                     }
 
-                    if (data.Data.tt_category == "緊急(新開單)") {
+                    if (data.Data.Ftt_formDTO.tt_category == "緊急(新開單)") {
 
                         var option = new Option('緊急(新開單)', '緊急(新開單)', true, true);
                         $('#TT_CATEGORY').append(option).trigger('change');
@@ -784,7 +785,7 @@
                         $('[name="Repair"][value="N"]').prop('checked', true);
                     }
 
-                    if (data.Data.Ftt_formDTO.Resupply == 'Y') {
+                    if (data.Data.Ftt_formDTO.resupply == 'Y') {
                         $('[name="Resupply"][value="Y"]').prop('checked', true);
                     } else {
                         $('[name="Resupply"][value="N"]').prop('checked', true);
