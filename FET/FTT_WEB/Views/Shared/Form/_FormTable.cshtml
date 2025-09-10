@@ -393,7 +393,7 @@
                             <button id="SubmitForm" onsubmit="CheckFormInTicket(event)" style="display:none;">送  出</button>
 
                             <span id=submitbutton>
-                                <input id="btnSubmit" type="submit" value="" class="btn btn-primary" />
+                                <input id="btnSubmit" type="submit" value="" class="btn btn-primary" style="display:none;" />
                                 @* @(Html.Raw(SubmitButton)) *@
                             </span>
                             <button type="button" onclick="parent.window.close();" class="btn btn-primary">關閉視窗</button>
@@ -742,7 +742,7 @@
                     $('#ApprovalDate').text(data.Data.ApprovalDate);
                     $('#WarrantyTime').text(data.Data.WarrantyTime);
 
-                    $('#APPROVE_FORM_STATUS_DESC').text(data.Data.Status_Desc);
+                    $('#APPROVE_FORM_STATUS_DESC').text('*目前表單狀態: ' + data.Data.Status_Desc);
                     $('#User_Type').val(data.Data.User_Type);
                     $('#STATUS_DESC').val(data.Data.Status_Desc);
                     $('#FORM').val(data.Data.Form_Type);
@@ -940,8 +940,8 @@
                         if (vm.ShowAmountPanel) {
                             $('#AMOUNT_PANEL').show();
 
-                            for (var i = 0; i < data.Data.ftt_form_amountDTOs.length; i++) {
-                                var item = data.Data.ftt_form_amountDTOs[i];
+                            for (var i = 0; i < data.Data.Ftt_form_amountDTOs.length; i++) {
+                                var item = data.Data.Ftt_form_amountDTOs[i];
                                 addItemRow(item, data.Data.HideAmountDel);
 
                             }

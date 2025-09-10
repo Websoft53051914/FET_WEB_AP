@@ -82,6 +82,12 @@ namespace FTT_API.Controllers.Pending
                 vm.ApproveForm = APPROVE_FORM;
                 string[] UserAuth = Approve_Auth.Form_Auth(vm, APPROVE_FORM, form_no, approve_FormDTO.status, APPROVE_FORM + "_PRIOR_STATUS", LoginSession.Current.ivrcode);
                 vm.ShowSubmitButton = true;
+
+                if (string.IsNullOrEmpty(UserAuth[0]))
+                {
+                    vm.ShowSubmitButton = false;
+                }
+
                 //string SubmitButton += UserAuth[0];
                 vm.User_Type += UserAuth[1];
                 //string Role += UserAuth[1];

@@ -20,7 +20,7 @@ namespace Const
             FuncID.Dispatching_View,
             FuncID.Dispatched_View
         };
-        public static List<FuncID> Admin = new List<FuncID>
+        public static List<FuncID> AdminMax = new List<FuncID>
         {
             FuncID.Home_View,
             FuncID.NewOrder_View,
@@ -41,6 +41,29 @@ namespace Const
             FuncID.MailServerSetting_View,
         };
 
+
+        public static List<FuncID> ADMIN = new List<FuncID> {
+            FuncID.Home_View,
+            FuncID.Pending_View,
+            FuncID.InProcess_View,
+            FuncID.CaseClosed_View,
+            FuncID.Query_View,
+            FuncID.QuoteMgt_View,
+            FuncID.StoreMgt_View,
+            FuncID.SupplierMgt_View,
+            FuncID.CIMgt_View,
+            FuncID.DispatchRuleMgt_View,
+            FuncID.CIConfig_View,
+            FuncID.SecurityMgt_View,
+            FuncID.FTTGroupMgt_View,
+
+        };
+        public static List<FuncID> ASSETER = new List<FuncID> { FuncID.Home_View, FuncID.Pending_View, FuncID.InProcess_View, FuncID.CaseClosed_View, FuncID.Query_View, };
+        public static List<FuncID> SECURITY = new List<FuncID> { FuncID.Home_View, FuncID.Pending_View, FuncID.InProcess_View, FuncID.CaseClosed_View, FuncID.Query_View, FuncID.CIMgt_View, FuncID.SecurityMgt_View };
+        public static List<FuncID> ASSISTANT = new List<FuncID> { FuncID.Home_View, FuncID.Query_View, FuncID.StoreMgt_View, FuncID.SupplierMgt_View, };
+        public static List<FuncID> MANAGER = new List<FuncID> { FuncID.Home_View, FuncID.Pending_View, FuncID.InProcess_View, FuncID.CaseClosed_View, FuncID.Query_View, };
+        public static List<FuncID> VENDOR = new List<FuncID> { FuncID.Home_View, FuncID.Pending_View, FuncID.InProcess_View, FuncID.CaseClosed_View, FuncID.Query_View, };
+        public static List<FuncID> EMPLOYEE = new List<FuncID> { FuncID.Home_View, FuncID.Pending_View, FuncID.InProcess_View, FuncID.CaseClosed_View, FuncID.Query_View, };
 
         // 全部功能的定義
         public static Dictionary<string, List<MenuModel>> allTreeData = new Dictionary<string, List<MenuModel>>
