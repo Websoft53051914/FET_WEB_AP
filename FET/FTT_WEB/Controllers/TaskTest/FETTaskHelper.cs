@@ -93,7 +93,7 @@ namespace FTT_WEB.Controllers.InProcess
         {
             BaseDBHandler baseHandler = new BaseDBHandler();
             var paras = new Dictionary<string, object>();
-            paras.Add("formNo", formNo);
+            paras.Add("formNo", int.Parse(formNo));
 
             string sql = @"INSERT INTO ftt_form_desc 
                        (form_no,user_type,action_name,description,prior_status,status) 

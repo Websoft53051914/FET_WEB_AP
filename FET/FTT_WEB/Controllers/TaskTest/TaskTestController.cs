@@ -7,10 +7,9 @@ namespace FTT_WEB.Controllers.InProcess
         public IActionResult Index()
         {
             string logPath = $@".\logs\Dispatch_TT_{DateTime.Now:yyyyMMdd}.log";
-            var db = new FETTaskHelper(logPath);
-            //db.Open();
-            db.Send_TT_No_RootCause("");
-
+            var _FETTaskHelper = new FETTaskHelper(logPath);
+            _FETTaskHelper.Send_TT_No_RootCause("");
+            _FETTaskHelper.Close();
             return View();
         }
     }
