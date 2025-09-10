@@ -23,7 +23,7 @@
             <h5>報修項目報價維護</h5>
         </div>
         <div class="card-body py-3 card-body-reduction">
-            <input class="form-control" type="file" style="max-width:500px" />
+            <input class="form-control" id="excelFile" type="file" accept=".xls,.xlsx" style="max-width:500px" />
             <div class="text-warningv2 mt-2" role="alert">
                 <p class="mb-1">若要刪除資料[更新註記]請填'D'</p>
                 <p class="mb-1">新增資料[更新註記]請填'A'</p>
@@ -40,7 +40,7 @@
             <h5>門市自行尋商維護</h5>
         </div>
         <div class="card-body py-3 card-body-reduction">
-            <input class="form-control" id="excelFile" type="file" accept=".xls,.xlsx" style="max-width:500px" />
+            <input class="form-control" id="excelFileStore" type="file" accept=".xls,.xlsx" style="max-width:500px" />
             <div class="text-warningv2 mt-2" role="alert">
                 <p class="mb-1">門市可自行尋商請填'Y'或'N'</p>
             </div>
@@ -152,7 +152,7 @@
         });
 
         $("#btnImportStore").click(function () {
-            var file = $("#excelFile")[0].files[0];
+            var file = $("#excelFileStore")[0].files[0];
             if (!file) {
                 alert("請選擇檔案");
                 return;
@@ -188,5 +188,75 @@
         });
 
 
+        $('#btnExport').on("click", function (e) {
+            showLoader();
+
+            $.ajax({
+                url: '@(config.GetBackendUrl() + Url.Action("Export", "QuoteMgt"))',
+                method: 'GET',
+                xhrFields: { responseType: 'blob' },  // 讓回傳是二進位資料
+                success: function (data, status, xhr) {
+                    // 從 Content-Disposition 取得檔名
+                    var disposition = xhr.getResponseHeader('Content-Disposition');
+                    var fileName = "download.xlsx";
+                    if (disposition && disposition.indexOf('filename=') !== -1) {
+                        var matches = /filename[^;=\n]*=((['"]).*?\2|[^;\n]*)/.exec(disposition);
+                        if (matches != null && matches[1]) {
+                            fileName = decodeURIComponent(matches[1].replace(/['"]/g, ''));
+                        }
+                    }
+
+                    // 建立 Blob 並觸發下載
+                    var blob = new Blob([data], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+                    var url = window.URL.createObjectURL(blob);
+
+                    var a = document.createElement("a");
+                    a.href = url;
+                    a.download = fileName;
+                    document.body.appendChild(a);
+                    a.click();
+                    a.remove();
+
+                    window.URL.revokeObjectURL(url);
+                    hideLoader();
+                }
+            });
+        });
+
+        $("#btnImport").click(function () {
+            var file = $("#excelFile")[0].files[0];
+            if (!file) {
+                alert("請選擇檔案");
+                return;
+            }
+
+            var fileName = file.name.toLowerCase();
+            if (!(fileName.endsWith(".xls") || fileName.endsWith(".xlsx"))) {
+                alert("只能上傳 Excel 檔 (.xls / .xlsx)");
+                return;
+            }
+
+            showLoader();
+
+            // 通過才上傳
+            var formData = new FormData();
+            formData.append("file", file);
+
+            $.ajax({
+                url: '@(config.GetBackendUrl() + Url.Action("Import", "QuoteMgt"))',
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    hideLoader();
+                    if (data.Success) {
+                        alert(data.Data);
+                    } else {
+                        alert(data.Message);
+                    }
+                }
+            });
+        });
     })
 </script>
