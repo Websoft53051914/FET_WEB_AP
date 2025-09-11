@@ -1,0 +1,22 @@
+﻿<script>
+    var MyApp = MyApp || {};
+
+    MyApp.Alert = {
+        alert: function (message, icon) {
+            return swal({
+                text: message,
+                button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                icon: icon,
+            });
+        },
+        error: function (message) {
+            return MyApp.Alert.alert(message, 'error');
+        },
+        warning: function (message) {
+            return MyApp.Alert.alert(message, 'warning');
+        },
+        success: function (message) {
+            return MyApp.Alert.alert(message, 'success');
+        },
+    };
+</script>

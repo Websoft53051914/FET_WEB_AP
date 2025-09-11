@@ -1,4 +1,5 @@
-﻿using Core.Utility.Helper.DB.Entity;
+﻿using Const.DTO;
+using Core.Utility.Helper.DB.Entity;
 using FTT_VENDER_API.Common.ConfigurationHelper;
 using FTT_VENDER_API.Common.OriginClass.EntiityClass;
 
@@ -51,7 +52,7 @@ namespace FTT_VENDER_API.Models.Handler
                 { "NEWVALUE", newValue },
             };
 
-            string tableName = " STORE_PROFILE ";
+            string tableName = " FTT_FORM_LOG ";
             string strWhere = " FORM_NO=@FORM_NO AND FIELDNAME=@FIELDNAME AND OLDVALUE=@OLDVALUE AND NEWVALUE=@NEWVALUE ";
 
             return CheckDataExist(tableName, strWhere, paras);
@@ -148,6 +149,7 @@ GROUP BY FORM_TYPE
 
             string sql = @" 
 SELECT b.cp_name,b.cp_tel,b.merchant_name,a.*,(SELECT CINAME FROM CI_RELATIONS WHERE CI_RELATIONS.CISID=a.CATEGORY_ID AND ROWNUM=1) as CIDesc 
+    , extract(day from b.kpi_days) AS kpi_days
 FROM FTT_FORM a
 left outer join store_vender_profile b on a.vender_id=b.order_id
 WHERE FORM_NO=@FORM_NO 
@@ -168,8 +170,10 @@ WHERE FORM_NO=@FORM_NO
                 {"FORM_NO", form_no },
             };
 
-            string sql = @" 
-                
+            string sql = @"
+SELECT FORM_NO, EXPENSE_TYPE, EXPENSE_DESC, QTY, PRICE, SUBTOTAL, ORDERID, UNIT, FAULT_REASON, REPAIR_ACTION, ENABLE 
+FROM FTT_FORM_AMOUNT 
+WHERE FORM_NO=@FORM_NO
                 ";
 
             return GetDBHelper().FindList<Ftt_form_amountDTO>(sql, paras);
@@ -227,19 +231,16 @@ WHERE FORM_NO=@FORM_NO
                 {"category_id", category_id },
             };
 
-            string sql = @" 
-SELECT '' as EXPENSE_TYPE
-FROM DUAL
-UNION
+            string sql = @"
 SELECT DISTINCT EXPENSE_TYPE as EXPENSE_TYPE
 FROM AMOUNT_SELECT
-WHERE ENABLE = 'Y' AND CHK_CI_LIST(@category_id,category_id::text)= 'Y'"";
+WHERE ENABLE = 'Y' AND CHK_CI_LIST(@category_id,category_id::text)= 'Y'
                 ";
 
             return GetDBHelper().FindList<amount_selectDTO>(sql, paras);
         }
 
-        internal void InsertFttFormAmount(string form_no, string expense_type, string expense_desc, string qty, string price, string subtotal, decimal? orderid, string unit, string fault_reason, string repair_action)
+        internal void InsertFttFormAmount(int form_no, string expense_type, string expense_desc, string qty, string price, string subtotal, decimal? orderid, string unit, string fault_reason, string repair_action)
         {
             Dictionary<string, object> paras = new()
             {
@@ -282,8 +283,6 @@ DELETE FROM Ftt_form_amount WHERE FORM_NO = @FORM_NO
 ";
 
             GetDBHelper().Execute(strSQL, paras);
-
-            throw new NotImplementedException();
         }
 
         internal PageResult<ftt_form_descDTO> GetPageList_Desc(PageEntity pageEntity, v_ftt_form2DTO dto)
@@ -625,6 +624,27 @@ AND ID=@id
                 ";
 
             return GetDBHelper().FindList<amount_selectDTO>(sql, paras);
+        }
+
+        /// <summary>
+        /// 取得延遲原因資料
+        /// </summary>
+        /// <returns></returns>
+        public List<ColumnSelectionDTO> GetListDelayReason()
+        {
+            //StringBuilder condition = new();
+            Dictionary<string, object> paras = [];
+
+            string sql = $@"
+SELECT selectitem
+       , selectvalue
+       , selectindex
+FROM   column_selection
+WHERE  columnname = 'DELAY_REASON'
+ORDER  BY selectindex    
+";
+
+            return GetDBHelper().FindList<ColumnSelectionDTO>(sql, paras);
         }
     }
 }

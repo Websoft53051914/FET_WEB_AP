@@ -1,4 +1,5 @@
-﻿using FTT_VENDER_API.Common;
+﻿using Core.Utility.Utility;
+using FTT_VENDER_API.Common;
 using FTT_VENDER_API.Common.OriginClass;
 using FTT_VENDER_API.Common.OriginClass.EntiityClass;
 using FTT_VENDER_API.Models;
@@ -43,7 +44,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         protected void HandleForm_Load(FormTableVM vm, string form_no)
         {
             PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
-
+            
             var mIVRCode = _PenddingHanlder.GetIVRCode(form_no);
 
             var _StoreClass = GetStoreInfo(vm, form_no);
@@ -54,6 +55,7 @@ namespace FTT_VENDER_API.Controllers.Pending
 
             string APPROVE_FORM = "";
             var ftt_Form = _PenddingHanlder.GetFttFormInfo(form_no);
+            vm.KpiDays = ftt_Form.kpi_days ?? 0;
 
             var approve_FormDTO = _PenddingHanlder.GetApproveFormInfo(form_no);
 
@@ -77,6 +79,10 @@ namespace FTT_VENDER_API.Controllers.Pending
                 vm.ApproveForm = APPROVE_FORM;
                 string[] UserAuth = Approve_Auth.Form_Auth(vm, APPROVE_FORM, form_no, approve_FormDTO.status, APPROVE_FORM + "_PRIOR_STATUS", LoginSession.Current.ivrcode);
                 vm.ShowSubmitButton = true;
+                if (string.IsNullOrEmpty(UserAuth[0]))
+                {
+                    vm.ShowSubmitButton = false;
+                }
                 //string SubmitButton += UserAuth[0];
                 vm.User_Type += UserAuth[1];
                 //string Role += UserAuth[1];
@@ -105,6 +111,10 @@ namespace FTT_VENDER_API.Controllers.Pending
                     //SubmitForm.Attributes["onClick"] = @"event.returnValue = CheckFormInTicket();";
                 }
             }
+
+            vm.SelectListDelayReason = _PenddingHanlder.GetListDelayReason()
+                .Select(x => new SelectListItem(x.selectitem, x.selectindex?.ToString()))
+                .ToList();
         }
 
         private void GetTicketInfo(FormTableVM vm, string formNo, string mTTType, string tempStatus, string ticket_info)
@@ -138,8 +148,8 @@ namespace FTT_VENDER_API.Controllers.Pending
                     }
                 }
 
-                //string FormType = _PenddingHanlder.GetFormTypeByFormNo(formNo); //db.GetFieldData("FORM_TYPE", "APPROVE_FORM", "FORM_NO=" + formNo + " GROUP BY FORM_TYPE");
-                //if (FormType == "SECURITY_FORM")
+                string FormType = _PenddingHanlder.GetFormTypeByFormNo(formNo); //db.GetFieldData("FORM_TYPE", "APPROVE_FORM", "FORM_NO=" + formNo + " GROUP BY FORM_TYPE");
+                if (FormType == "SECURITY_FORM")
                 {
                     vm.UpdateSELECTSTATUSOption2 = true;
                     //mRunScript += "document.all.SELECTSTATUS.options[2].text='故障排除';";
@@ -176,7 +186,30 @@ namespace FTT_VENDER_API.Controllers.Pending
                         }
                     }
                 }
+                else
+                {
+                    // [/Form/AmountForm.aspx.cs]Page_Load()
+                    var totalPrice = _PenddingHanlder.GetTotalPrice(formNo);
 
+                    // 如果不是已派單，則顯示資料！
+                    string total = totalPrice;
+                    vm.Total = total;
+                    vm.HideAmountDel = true;
+                    vm.HideNewData = true;
+                    //NewData.Visible = false;
+                    // 2025/09/02 查看 沒有用到
+                    //// 2008 12 28 Add - 廠商保固期內完修及拒絕不應填寫金額
+                    //if (Request.QueryString["ifwarrant"] != null)
+                    //{  // 是否有過保固
+                    //    if (Request.QueryString["ifwarrant"] == "Y")
+                    //    {   // 保固內，不應填金額
+                    //        mRunScript += "needToCheck=false;";
+                    //    }
+                    //}
+                }
+                // [/Form/AmountForm.aspx.cs]Init_Bind()
+                GetAmountInfo(vm, formNo);
+                // [/Form/TicketInfo.ascx]GetStoreInfo()
                 if (ticket_info != "")
                 {
                     //mRunScript += "document.all." + ticket_info + "_PANEL.style.display = \"\";\r\n";
@@ -215,35 +248,6 @@ namespace FTT_VENDER_API.Controllers.Pending
                     if (_PenddingHanlder.CheckDataExist_Ftt_form_amount(formNo) == true)
                     {  // 判斷是否已有顯示
                         vm.ShowAmountPanel = true;
-
-                        if (!string.IsNullOrEmpty(tempStatus))
-                        {   // 判斷狀態是否有傳入
-                            string TTStatus = tempStatus;
-
-                            if (TTStatus != "TICKET")
-                            {
-                                var totalPrice = _PenddingHanlder.GetTotalPrice(formNo);
-
-                                // 如果不是已派單，則顯示資料！
-                                string total = totalPrice;
-                                vm.Total = total;
-                                vm.HideAmountDel = true;
-                                vm.HideNewData = true;
-                                //NewData.Visible = false;
-                            }
-
-                            // 2025/09/02 查看 沒有用到
-                            //// 2008 12 28 Add - 廠商保固期內完修及拒絕不應填寫金額
-                            //if (Request.QueryString["ifwarrant"] != null)
-                            //{  // 是否有過保固
-                            //    if (Request.QueryString["ifwarrant"] == "Y")
-                            //    {   // 保固內，不應填金額
-                            //        mRunScript += "needToCheck=false;";
-                            //    }
-                            //}
-                        }
-
-                        GetAmountInfo(vm, formNo);
                     }
 
                 }
@@ -268,13 +272,13 @@ namespace FTT_VENDER_API.Controllers.Pending
                 vm.Amount_Cost = "0";
             }
 
-            vm.Ftt_form_amountDTOs = _PenddingHanlder.GetList_FttFormAmount(formNo);
+            vm.Ftt_form_amountDTOs = _PenddingHanlder.GetList_FttFormAmount(formNo) ?? [];
 
             if (_PenddingHanlder.CheckDataExist_AMOUNT_SELECT(fttFormDto.category_id) == true)
             {
                 vm.UpdateAmount_Config = true;
                 vm.Amount_Config = "Y";
-                vm.Amount_SelectList = _PenddingHanlder.GetListAMOUNT_SELECT(fttFormDto.category_id).Select(s => new SelectListItem() { Text = s.expense_type }).ToList();
+                vm.Amount_SelectList = _PenddingHanlder.GetListAMOUNT_SELECT(fttFormDto.category_id).Select(s => new SelectListItem() { Text = s.expense_type, Value = s.expense_type }).ToList();
 
                 //mRunScript += @"$('.input_class').hide();";
             }
@@ -296,8 +300,8 @@ namespace FTT_VENDER_API.Controllers.Pending
                 var create_time = _PenddingHanlder.GetCreateTime(form_No);
 
                 var mIVRCode = _PenddingHanlder.GetIVRCode(form_No);
-                var mSTOREName = _PenddingHanlder.GetShopName(mIVRCode);
-                LoginSession.Current.shop_name = mSTOREName;
+                //var mSTOREName = _PenddingHanlder.GetShopName(mIVRCode);
+                //LoginSession.Current.shop_name = mSTOREName;
 
                 mStoreData = new StoreClass(mIVRCode);
                 if (mStoreData.hasData() == true)
@@ -379,16 +383,16 @@ namespace FTT_VENDER_API.Controllers.Pending
                     }
 
                     //mRunScript += "setCATEGORY_LABEL(\"" + _Ftt_formDTO.category_id + "\"); \r\n";
-
-                    if (_Ftt_formDTO.selfconfig == "N")
-                    {
-                        //mRunScript += "showVenderInfo(\"" + _Ftt_formDTO.order_id + "\",\"" + _Ftt_formDTO.merchant_name + "\",\"" + _Ftt_formDTO.cp_name + "\",\"" + _Ftt_formDTO.cp_tel + "\");\r\n";
-                    }
-                    else
-                    {
-                        var storeName = _PenddingHanlder.GetShopName(_Ftt_formDTO.ivrcode);
-                        vm.storename = storeName;
-                    }
+                    // 廠商無顯示「門市自行尋商」(一律為 "N")
+                    //if (_Ftt_formDTO.selfconfig == "N")
+                    //{
+                    //    //mRunScript += "showVenderInfo(\"" + _Ftt_formDTO.order_id + "\",\"" + _Ftt_formDTO.merchant_name + "\",\"" + _Ftt_formDTO.cp_name + "\",\"" + _Ftt_formDTO.cp_tel + "\");\r\n";
+                    //}
+                    //else
+                    //{
+                    //    var storeName = _PenddingHanlder.GetShopName(_Ftt_formDTO.ivrcode);
+                    //    vm.storename = storeName;
+                    //}
                 }
             }
 
@@ -411,7 +415,7 @@ namespace FTT_VENDER_API.Controllers.Pending
                         _PenddingHanlder.DeleteFttFormAmount(vm.form_no);
                         foreach (var item in vm.vms)
                         {
-                            _PenddingHanlder.InsertFttFormAmount(vm.form_no, item.expense_type, item.expense_desc, item.qty, item.price, item.subtotal, item.orderid, item.unit, item.fault_reason, item.repair_action);
+                            _PenddingHanlder.InsertFttFormAmount(int.Parse(vm.form_no), item.expense_type, item.expense_desc, item.qty, item.price, item.subtotal, item.orderid, item.unit, item.fault_reason, item.repair_action);
                         }
 
                         _PenddingHanlder.Commit();
@@ -443,6 +447,7 @@ namespace FTT_VENDER_API.Controllers.Pending
                 var ttt = vm.form_no;
 
                 BaseDBHandler baseHandler = new BaseDBHandler();
+                CommonHandler commonHandler = new CommonHandler(_config, baseHandler.GetDBHelper());
 
                 string updateSQL = "  ";
 
@@ -495,15 +500,9 @@ DESCRIPTION=@DESCRIPTION
 where 
 form_no=@form_no
 ", dic2);
-                baseHandler.GetDBHelper().Commit();
 
-                string SELFCONFIG = baseHandler.GetDBHelper().FindScalar<string>("select SELFCONFIG from FTT_FORM where FORM_NO=" + vm.form_no, null);
-                if (SELFCONFIG == "Y" && vm.STATUS == "DISPATCH")
-                    baseHandler.GetDBHelper().ExecStoredProcedureWithTransation("SET_STATUS('" + vm.FORM_TYPE + "', '" + vm.form_no + "', 'TICKET', '" + LoginSession.Current.empno + "', '', '')");
-                //db.ExecuteNonQuery(tran, CommandType.StoredProcedure, "SET_STATUS('" + vm.FORM_TYPE + "','" + vm.form_no + "','TICKET','" + LoginSession.Current.empno + "','','')");
-                else
-                    baseHandler.GetDBHelper().ExecStoredProcedureWithTransation("SET_STATUS('" + vm.FORM_TYPE + "','" + vm.form_no + "','" + vm.STATUS + "','" + LoginSession.Current.empno + "','','')");
-                //db.ExecuteNonQuery(tran, CommandType.StoredProcedure, "SET_STATUS('" + vm.FORM_TYPE+ "','" + vm.form_no+ "','" + vm.STATUS + "','" + LoginSession.Current.empno + "','','')");
+                commonHandler.ExecSetStatus(vm.FORM_TYPE, int.Parse(vm.form_no), vm.STATUS, _sessionVO.empno);
+                baseHandler.GetDBHelper().Commit();
 
                 ////TODO 不知道甚麼時候未有 APPROVE="Y" 的參數
                 //if (Request.QueryString["APPROVE"] == "Y")

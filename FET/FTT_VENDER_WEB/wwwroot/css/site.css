@@ -104,3 +104,7 @@ a._tb_button {
 .txt-cnt {
     color: red;
 }
+
+.w-200p {
+    width: 200px !important;
+}

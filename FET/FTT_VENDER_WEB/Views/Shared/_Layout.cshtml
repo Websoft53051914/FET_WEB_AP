@@ -257,7 +257,7 @@
             // select2 預設設定
             $.fn.select2.defaults.set('language', 'zh-TW');
             $.fn.select2.defaults.set('width', '100%');
-            $.fn.select2.defaults.set('placeholder', { id: '', text: '請選擇', selected: 'selected' });
+            $.fn.select2.defaults.set('placeholder', '請選擇');
 
             $.extend(FormSerializer.patterns, {
                 validate: /^[a-z][a-z0-9_]*(?:\.[a-z0-9_]+)*(?:\[\])?$/i
@@ -281,26 +281,26 @@
                 return dataIds;
             };
 
-            $.fn.Getid = function(){
+            $.fn.Getid = function () {
                 var dataIds = [];
                 this.find('[data-id]').each(function () {
                     dataIds.push($(this).data('id'));
                 });
-                if(dataIds.length==1){
+                if (dataIds.length == 1) {
                     return dataIds[0];
                 }
                 return null;
             }
 
-            $.fn.Enable = function(){
-                $(this).removeClass('disabledPartialDisplayPool').addClass('partialDisplayPool').attr('data-bs-toggle','modal');
+            $.fn.Enable = function () {
+                $(this).removeClass('disabledPartialDisplayPool').addClass('partialDisplayPool').attr('data-bs-toggle', 'modal');
             }
 
             $.fn.Disable = function () {
                 $(this).removeClass('partialDisplayPool').addClass('disabledPartialDisplayPool').removeAttr('data-bs-toggle');
             }
 
-            $.fn.SetTreeDisplayBlock = function(displayList){
+            $.fn.SetTreeDisplayBlock = function (displayList) {
                 if (!Array.isArray(displayList)) {
                     return;
                 }
@@ -333,14 +333,14 @@
             </div>
             <!-- footer start-->
             @*<footer class="footer">
-            <div class="container-fluid">
-            <div class="row">
-            <div class="col-md-6 footer-copyright">
-            <p class="mb-0">Copyright 2021-22 © viho All rights reserved.</p>
-            </div>
-            </div>
-            </div>
-            </footer>*@
+                <div class="container-fluid">
+                <div class="row">
+                <div class="col-md-6 footer-copyright">
+                <p class="mb-0">Copyright 2021-22 © viho All rights reserved.</p>
+                </div>
+                </div>
+                </div>
+                </footer>*@
         </div>
     </div>
     <script>
@@ -440,9 +440,10 @@
     <script src="~/js/site.js?20250122"></script>
     <script src="~/js/handlebars.min-v4.7.7.js"></script>
     <script src="~/js/common.js?20250218"></script>
-@*     <script src="~/lib/draw/draw.js?20250122"></script> *@
-    <partial name="_Loader">
-    <partial name="_ValidationScriptsPartial">
+    @*     <script src="~/lib/draw/draw.js?20250122"></script> *@
+    <partial name="_Loader" />
+    <partial name="_ValidationScriptsPartial" />
+    <partial name="_MyApp" />
     @RenderSection("scripts", false)
 </body>
 </html>

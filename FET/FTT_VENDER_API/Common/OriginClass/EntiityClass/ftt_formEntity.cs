@@ -44,6 +44,10 @@
 
         public string CIDesc { get; set; }
         public int No { get; set; }
+        /// <summary>
+        /// store_vender_profile.kpi_days
+        /// </summary>
+        public int? kpi_days { get; set; }
     }
 
 

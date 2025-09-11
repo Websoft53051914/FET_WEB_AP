@@ -45,12 +45,20 @@ namespace FTT_VENDER_API.Models
         public bool ShowOriginSubmitForm { get; set; }
 
         public bool ShowAmount { get; set; }
+        /// <summary>
+        /// 表單狀態的「待料」選項是否更改文字為「故障排除」
+        /// </summary>
         public bool UpdateSELECTSTATUSOption2 { get; set; }
         public string ApproveForm { get; set; }
-
+        /// <summary>
+        /// 表單狀態的「報價」選項是否刪除
+        /// </summary>
         public bool DeleteSELECTSTATUSOption3 { get; set; }
 
         public string TempStatus { get; set; }
+        /// <summary>
+        /// 表單狀態的選項僅保留「完修」和「不需到場處理」(此選項如果 DeleteSELECTSTATUSOption3 = true 則亦會刪除)
+        /// </summary>
         public bool DeleteSELECTSTATUS2ThreeTimes { get; set; }
 
         public bool ShowAmountPanel { get; set; }
@@ -68,11 +76,19 @@ namespace FTT_VENDER_API.Models
         public bool UpdateAmount_Config { get; set; }
 
 
-        public List<SelectListItem> Amount_SelectList { get; set; }
+        public List<SelectListItem> Amount_SelectList { get; set; } = [];
 
         public StoreClass Store_profileDTO { get; set; }
         public Ftt_formDTO Ftt_formDTO { get; set; }
-        public List<Ftt_form_amountDTO> Ftt_form_amountDTOs { get; set; }
+        public List<Ftt_form_amountDTO> Ftt_form_amountDTOs { get; set; } = [];
+        /// <summary>
+        /// 
+        /// </summary>
+        public int KpiDays { get; set; } = 0;
 
+        /// <summary>
+        /// 延遲原因選項清單
+        /// </summary>
+        public List<SelectListItem> SelectListDelayReason { get; set; } = [];
     }
 }
