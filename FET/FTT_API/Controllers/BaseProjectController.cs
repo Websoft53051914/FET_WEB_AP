@@ -9,7 +9,10 @@ using FTT_API.Models.Handler;
 using FTT_API.Models.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using Microsoft.Graph.Models;
 using System.Diagnostics;
+using static Const.Enums;
+using static FTT_API.Models.Handler.ControlLogHandler;
 
 namespace FTT_API.Controllers
 {
@@ -287,41 +290,48 @@ namespace FTT_API.Controllers
         /// </summary>
         /// <param name="exception"></param>
         /// <returns>ControlLog.Id</returns>
-        //protected long LogError(string exception)
-        //{
-        //    var blLog = BLFactory.GetInstance<LogBL>();
+        protected void LogError(string exception)
+        {
+            var entity = new controllogEntity()
+            {
+                IP = Method.GetClientIPAddress(),
+                Status = ((int)LogStatusEnum.Failed).ToString(),
+                ControllerName = ControllerContext.ActionDescriptor?.ControllerName ?? string.Empty,
+                ActionName = ControllerContext.ActionDescriptor?.ActionName ?? string.Empty,
+                Exception = exception
+            };
 
-        //    var logDM = new ControlLogDM()
-        //    {
-        //        IP = LoginSession.Current.IP ?? Method.GetClientIPAddress(),
-        //        Status = ((int)LogStatusEnum.Failed).ToString(),
-        //        ControllerName = ControllerContext.ActionDescriptor?.ControllerName ?? string.Empty,
-        //        ActionName = ControllerContext.ActionDescriptor?.ActionName ?? string.Empty,
-        //        Exception = exception
-        //    };
-
-        //    return blLog.InsertLog(logDM);
-        //}
+            InsertLog(entity);
+        }
 
         /// <summary>
         /// 紀錄成功訊息於資料庫
         /// </summary>
         /// <param name="description"></param>
-        //protected void LogSuccess(string description = null)
-        //{
-        //    var blLog = BLFactory.GetInstance<LogBL>();
+        protected void LogSuccess(string description = null)
+        {
+            var entity = new controllogEntity()
+            {
+                IP = Method.GetClientIPAddress(),
+                Status = ((int)LogStatusEnum.Success).ToString(),
+                ControllerName = ControllerContext.ActionDescriptor?.ControllerName ?? string.Empty,
+                ActionName = ControllerContext.ActionDescriptor?.ActionName ?? string.Empty,
+                Exception = description,
+                Account = LoginSession.Current?.username?? "",
+                Name = LoginSession.Current?.empname ?? "",
+                LogTime = DateTime.Now
+            };
 
-        //    var logDM = new ControlLogDM()
-        //    {
-        //        IP = LoginSession.Current.IP ?? Method.GetClientIPAddress(),
-        //        Status = ((int)LogStatusEnum.Success).ToString(),
-        //        ControllerName = ControllerContext.ActionDescriptor?.ControllerName ?? string.Empty,
-        //        ActionName = ControllerContext.ActionDescriptor?.ActionName ?? string.Empty,
-        //        Exception = description,
-        //    };
+            InsertLog(entity);
+        }
 
-        //    blLog.InsertLog(logDM);
-        //}
+        protected void InsertLog(controllogEntity entity)
+        {
+            ControlLogHandler _BaseDBHandler = new ControlLogHandler();
+            _BaseDBHandler.Insert(entity);
+        }
+
+
 
     }
 

@@ -79,5 +79,20 @@ namespace Const
             [Description("錯誤")]
             Error = 2,
         }
+
+        public enum LogStatusEnum
+        {
+            /// <summary>
+            /// 失敗
+            /// </summary>
+            [Description("失敗")]
+            Failed = 0,
+
+            /// <summary>
+            /// 成功
+            /// </summary>
+            [Description("成功")]
+            Success = 1,
+        }
     }
 }

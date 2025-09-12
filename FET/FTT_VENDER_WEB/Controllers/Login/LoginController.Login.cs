@@ -21,6 +21,7 @@ namespace FTT_VENDER_WEB.Controllers.Login
         }
         public IActionResult Index(string goalURL = "")
         {
+            
 
             var LoginHanlder = new LoginHanlder(_configHelper, HttpContext);
 
