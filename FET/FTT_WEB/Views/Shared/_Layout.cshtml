@@ -1,4 +1,11 @@
-﻿
+﻿@{
+    string acc = ViewData["acc"] as string;
+    string userrole = ViewData["userrole"] as string;
+    string ivrCode = ViewData["ivrCode"] as string;
+    string usertype = ViewData["usertype"] as string;
+
+
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -294,26 +301,26 @@
                 return dataIds;
             };
 
-            $.fn.Getid = function(){
+            $.fn.Getid = function () {
                 var dataIds = [];
                 this.find('[data-id]').each(function () {
                     dataIds.push($(this).data('id'));
                 });
-                if(dataIds.length==1){
+                if (dataIds.length == 1) {
                     return dataIds[0];
                 }
                 return null;
             }
 
-            $.fn.Enable = function(){
-                $(this).removeClass('disabledPartialDisplayPool').addClass('partialDisplayPool').attr('data-bs-toggle','modal');
+            $.fn.Enable = function () {
+                $(this).removeClass('disabledPartialDisplayPool').addClass('partialDisplayPool').attr('data-bs-toggle', 'modal');
             }
 
             $.fn.Disable = function () {
                 $(this).removeClass('partialDisplayPool').addClass('disabledPartialDisplayPool').removeAttr('data-bs-toggle');
             }
 
-            $.fn.SetTreeDisplayBlock = function(displayList){
+            $.fn.SetTreeDisplayBlock = function (displayList) {
                 if (!Array.isArray(displayList)) {
                     return;
                 }
@@ -381,12 +388,12 @@
                         }
                     }
                     else {
-                        $(this).find('.invalid-feedback').css('display','block')
+                        $(this).find('.invalid-feedback').css('display', 'block')
                     }
                 })
             })
 
-            $('.required-cb').on('change',function(){
+            $('.required-cb').on('change', function () {
                 if ($('form[id="submitForm"]').hasClass('was-validated')) {
                     let cbGroup = $(this).closest('.required-cb-group');
                     let cbList = cbGroup.find('.required-cb')
@@ -413,6 +420,13 @@
     <script>
         $(document)
         $.ajaxSetup({
+            headers: {
+                "Authorization": "Bearer xxxxxxx",   // JWT 或其他 token
+                "X-Custom-Header_acc": "@acc",
+                "X-Custom-Header_userrole": "@userrole",
+                "X-Custom-Header_ivrCode": "@ivrCode",
+                "X-Custom-Header_usertype": "@usertype",
+            },
             complete: function (x, e) {
                 if (x.status === 440) {
                     alert('已登出，請重新登入');
@@ -453,9 +467,9 @@
     <script src="~/js/site.js?20250122"></script>
     <script src="~/js/handlebars.min-v4.7.7.js"></script>
     <script src="~/js/common.js?20250218"></script>
-@*     <script src="~/lib/draw/draw.js?20250122"></script> *@
+    @*     <script src="~/lib/draw/draw.js?20250122"></script> *@
     <partial name="_Loader">
-    <partial name="_ValidationScriptsPartial">
-    @RenderSection("scripts", false)
+        <partial name="_ValidationScriptsPartial">
+            @RenderSection("scripts", false)
 </body>
 </html>

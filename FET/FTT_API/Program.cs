@@ -78,6 +78,11 @@ builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnC
 builder.Configuration.AddJsonFile("message.json", optional: true, reloadOnChange: true);
 
 
+//JOB
+builder.Services.AddSingleton<DeviceAccessIndoorService>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<DeviceAccessIndoorService>());
+
+
 builder.Services.AddSingleton<ConfigurationHelper>();
 
 builder.Services.AddHangfire(config =>

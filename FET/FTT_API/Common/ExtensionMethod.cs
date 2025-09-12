@@ -7,6 +7,11 @@ namespace FTT_API.Common.ExtensionMethod
     {
 
 
+        public static bool IsNullOrEmpty(this string value)
+        {
+            return string.IsNullOrEmpty(value);
+        }
+
         /// <summary>
         ///  ex: 2024/12/2 下午 04:43:42
         /// </summary>

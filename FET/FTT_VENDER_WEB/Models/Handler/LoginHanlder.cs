@@ -18,7 +18,7 @@ namespace FTT_VENDER_WEB.Models.Handler
     {
         private readonly ConfigurationHelper _configHelper;
         private readonly Microsoft.AspNetCore.Http.HttpContext _httpContext;
-        public LoginHanlder(ConfigurationHelper confighelper  , Microsoft.AspNetCore.Http.HttpContext httpContext) 
+        public LoginHanlder(ConfigurationHelper confighelper, Microsoft.AspNetCore.Http.HttpContext httpContext)
         {
             _configHelper = confighelper;
             _httpContext = httpContext;
@@ -33,7 +33,7 @@ namespace FTT_VENDER_WEB.Models.Handler
         {
             bool logLoginStatus = false;
             bool boolIsAuthenticated = false;
-            string logAccount = vm.AC; 
+            string logAccount = vm.AC;
             string logFromIP = _httpContext.Connection.RemoteIpAddress?.ToString();
             string logUserType = vm.Role;
             bool checkUserAuthenticated = _configHelper.Config.GetValue<bool>("CheckUserAuthenticated", true);
@@ -57,15 +57,15 @@ namespace FTT_VENDER_WEB.Models.Handler
                             { "MERCHANT_LOGIN", vm.AC },
                         };
                         string Locked = base.dbHelper.Find<string>("SELECT LOCKED FROM STORE_VENDER_PROFILE WHERE MERCHANT_LOGIN = @MERCHANT_LOGIN", paras);
-                        if( Locked == "N")
+                        if (Locked == "N")
                         {
                             isLocked = false;
                         }
 
                         if (isLocked == false)
                         {
-                            StoreVenderProfileVM storeVenderProfileVM  = GetStoreVenderProfile(vm.AC, vm.PD);
-                            if(storeVenderProfileVM != null)
+                            StoreVenderProfileVM storeVenderProfileVM = GetStoreVenderProfile(vm.AC, vm.PD, false);
+                            if (storeVenderProfileVM != null)
                             {
                                 boolIsAuthenticated = true;
                                 logLoginStatus = true;
@@ -105,6 +105,27 @@ namespace FTT_VENDER_WEB.Models.Handler
                 {
                     boolIsAuthenticated = true;
                 }
+
+                if (boolIsAuthenticated)
+                {
+                    StoreVenderProfileVM storeVenderProfileVM = GetStoreVenderProfile(vm.AC, vm.PD, true);
+                    if (storeVenderProfileVM != null)
+                    {
+                        logLoginStatus = true;
+
+                        sessionVO = new SessionVO
+                        {
+                            empno = vm.AC,
+                            empname = storeVenderProfileVM.merchant_name,
+                            engname = storeVenderProfileVM.merchant_name,
+                            ext = storeVenderProfileVM.cp_tel,
+                            username = storeVenderProfileVM.merchant_login,
+                            deptcode = storeVenderProfileVM.merchant_name,
+                            usertype = vm.Role,
+                            ivrcode = storeVenderProfileVM.order_id?.ToString(),
+                        };
+                    }
+                }
             }
 
             if (sessionVO != null)
@@ -112,7 +133,6 @@ namespace FTT_VENDER_WEB.Models.Handler
                 sessionVO.Functions.AddRange(RoleFunc.Vender);
                 Method.SetToSession(sessionVO);
             }
-
 
             // 將登入資訊寫入Log Table，以利事後分析是否有不正常登入
             try
@@ -153,8 +173,8 @@ namespace FTT_VENDER_WEB.Models.Handler
             }
             return errorMsg;
         }
-       
-        public StoreVenderProfileVM GetStoreVenderProfile(string AC , string PD)
+
+        public StoreVenderProfileVM GetStoreVenderProfile(string AC, string PD, bool isPassPWD)
         {
             string sql = @"SELECT * FROM STORE_VENDER_PROFILE WHERE MERCHANT_LOGIN= @AC AND MERCHANT_PASSWORD= @PD";
             Dictionary<string, object> parameters = new Dictionary<string, object>
@@ -162,6 +182,12 @@ namespace FTT_VENDER_WEB.Models.Handler
                 { "AC", AC },
                 { "PD", PD }
             };
+
+            if (isPassPWD == true)
+            {
+                sql = @"SELECT * FROM STORE_VENDER_PROFILE WHERE MERCHANT_LOGIN= @AC ";
+            }
+
             StoreVenderProfileVM? result = base.dbHelper.Find<StoreVenderProfileVM>(sql, parameters);
             return result;
         }

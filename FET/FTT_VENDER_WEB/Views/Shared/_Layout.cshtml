@@ -1,4 +1,12 @@
-﻿
+﻿@{
+
+    string acc = ViewData["acc"] as string;
+    string userrole = ViewData["userrole"] as string;
+    string ivrCode = ViewData["ivrCode"] as string;
+    string usertype = ViewData["usertype"] as string;
+
+
+}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -400,6 +408,13 @@
     <script>
         $(document)
         $.ajaxSetup({
+            headers: {
+                "Authorization": "Bearer xxxxxxx",   // JWT 或其他 token
+                "X-Custom-Header_acc": "@acc",
+                "X-Custom-Header_userrole": "@userrole",
+                "X-Custom-Header_ivrCode": "@ivrCode",
+                "X-Custom-Header_usertype": "@usertype",
+            },
             complete: function (x, e) {
                 if (x.status === 440) {
                     alert('已登出，請重新登入');

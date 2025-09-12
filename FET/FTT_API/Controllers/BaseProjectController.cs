@@ -1,14 +1,197 @@
 ﻿using Core.Utility.Helper.Message;
 using Core.Utility.Web.Base;
 using FTT_API.Common;
+using FTT_API.Common.ExtensionMethod;
+using FTT_API.Common.OriginClass;
+using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models;
+using FTT_API.Models.Handler;
+using FTT_API.Models.ViewModel;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Filters;
 using System.Diagnostics;
 
 namespace FTT_API.Controllers
 {
     public class BaseProjectController : BaseController
     {
+        public override void OnActionExecuting(ActionExecutingContext context)
+        {
+            var headers = context.HttpContext.Request.Headers;
+            if (headers.TryGetValue("X-Custom-Header_acc", out var headerValue_acc))
+            {
+                headers.TryGetValue("X-Custom-Header_userrole", out var headerValue_userrole);
+                headers.TryGetValue("X-Custom-Header_ivrCode", out var headerValue_ivrCode);
+                headers.TryGetValue("X-Custom-Header_usertype", out var headerValue_usertype);
+
+                var logAccount = "";
+                string acc = headerValue_acc.ToString();
+                string role = headerValue_userrole.ToString();
+                string ivrCode = headerValue_ivrCode.ToString();
+                string usertype = headerValue_usertype.ToString();
+                // 可以存入 context.HttpContext.Items 給後續使用
+                //context.HttpContext.Items["CustomHeader"] = value;
+
+                bool logLoginStatus = false;
+                bool boolIsAuthenticated = false;
+                string errorMsg = string.Empty;
+                SessionVO? sessionVO = null;
+                bool checkUserAuthenticated = false;
+
+                if (usertype == "RETAIL" || usertype == "EMPLOYEE")
+                {
+                    if (checkUserAuthenticated == true)
+                    {
+                        try
+                        {
+                            //if (true == adAuth.IsAuthenticated(adDomain, vm.AC, vm.PD))
+                            //{
+                            //    boolIsAuthenticated = true;
+                            //}
+                            //else
+                            //{
+                            //    errorMsg = "帳號或密碼輸入錯誤，請重新輸入！";
+                            //}
+
+                            //if (!IVR_Code.IsNullOrEmpty())
+                            //{
+                            //    Dictionary<string, object> condition = new Dictionary<string, object>()
+                            //{
+                            //    { "IVR_Code", IVR_Code },
+                            //};
+                            //    if (!base.CheckDataExist("STORE_PROFILE", condition))
+                            //    {
+                            //        errorMsg = "IVRCode輸入錯誤，請重新輸入！";
+                            //        boolIsAuthenticated = false;
+                            //    }
+                            //}
+                        }
+                        catch (Exception ex)
+                        {
+                            //errorMsg = "Error authenticating. [" + adDomain + "]  : " + ex.Message;
+                        }
+                    }
+                    else
+                    {
+                        boolIsAuthenticated = true;
+                    }
+                    //logAccount = vm.AC;
+
+                    if (boolIsAuthenticated)
+                    {
+                        Employee emp = new Employee(checkUserAuthenticated, acc, "TEST", "FET", false, "FTT");
+                        if (emp.hasData())
+                        {
+                            logLoginStatus = true;
+                            sessionVO = new SessionVO
+                            {
+                                empno = emp.EmpNO,
+                                empname = emp.EmployeeName,
+                                engname = emp.EnglishName,
+                                ext = emp.Mobile + "(" + emp.Ext + ")",
+                                username = acc,
+                                deptcode = emp.DeptCode,
+                                usertype = role,
+                                ivrcode = ivrCode.IsNullOrEmpty() ? "NULL" : ivrCode,
+                                userrole = SystemModelClass.GetUserRole(emp.EmpNO)
+                            };
+                        }
+                        else
+                        {
+                            errorMsg = $"該帳號[{acc}]不存在、人員已離職，或無權限使用";
+                        }
+                    }
+                }
+                else if (role == "VASS")
+                {
+                    BaseDBHandler _BaseDBHandler = new BaseDBHandler();
+                    if (checkUserAuthenticated == true)
+                    {
+                        try
+                        {
+                            Dictionary<string, object> condition = new Dictionary<string, object>()
+                            {
+                                { "IVR_CODE", ivrCode },
+                                { "SHOP_PASSWORD", "TEST" }
+                            };
+
+                            if (_BaseDBHandler.CheckDataExist("STORE_PROFILE", condition))
+                            {
+                                boolIsAuthenticated = true;
+                            }
+                            else
+                            {
+                                errorMsg = "帳號或密碼輸入錯誤，請重新輸入！";
+                            }
+
+                        }
+                        catch (Exception ex)
+                        {
+                            errorMsg = $"Error authenticating. [{ivrCode}] : " + ex.Message;
+                        }
+                    }
+                    else
+                    {
+                        boolIsAuthenticated = true;
+                    }
+
+                    logAccount = ivrCode;
+                    if (true == boolIsAuthenticated)
+                    {
+                        var info = GetStoreInfo(ivrCode, "TEST");
+                        if (info != null)
+                        {
+                            logLoginStatus = true;
+                            sessionVO = new SessionVO
+                            {
+                                empno = info.ivr_code,
+                                empname = info.shop_name,
+                                engname = info.shop_name,
+                                ext = info.urgent_tel + "(" + info.owner_tel + ")",
+                                username = ivrCode,
+                                deptcode = info.area,
+                                usertype = role,
+                                ivrcode = ivrCode,
+                                userrole = SystemModelClass.GetUserRole(info.ivr_code)
+                            };
+                            Method.SetToSession(sessionVO);
+                        }
+                        else
+                        {
+                            //errorMsg = $"該IVRCode[{IVR_Code}]不存在或密碼錯誤";
+                        }
+                    }
+                }
+                else if (role == "VENDOR")
+                {
+
+                }
+
+                if (sessionVO != null)
+                {
+                    //sessionVO.Functions.Append(FuncID.Home_View);
+                    Method.SetToSession(sessionVO);
+                }
+            }
+
+            base.OnActionExecuting(context);
+        }
+
+        public StoreProfileVM GetStoreInfo(string ivr_code, string pd)
+        {
+            BaseDBHandler _BaseDBHandler = new BaseDBHandler();
+            string sql = @"SELECT*
+                           FROM STORE_PROFILE
+                           WHERE IVR_CODE = @IVR_CODE AND SHOP_PASSWORD = @SHOP_PASSWORD";
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "IVR_CODE", ivr_code },
+                { "SHOP_PASSWORD", pd }
+            };
+            StoreProfileVM? result = _BaseDBHandler.GetDBHelper().Find<StoreProfileVM>(sql, parameters);
+            return result;
+        }
+
         /// <summary>
         /// 登入資訊
         /// </summary>

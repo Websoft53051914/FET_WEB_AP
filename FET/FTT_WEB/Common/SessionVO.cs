@@ -17,7 +17,7 @@ namespace FTT_WEB.Common
         public string usertype { get; set; }
         public string ivrcode { get; set; }
 
-        public string userrole { get; set; } = "MANAGER";
+        public string userrole { get; set; }
 
 
         public IEnumerable<FuncID> Functions { get; set; } = Enumerable.Empty<FuncID>();
