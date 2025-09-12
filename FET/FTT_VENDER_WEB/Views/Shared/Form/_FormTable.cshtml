@@ -560,6 +560,7 @@
                         $('#PRICE').attr('required', '')
                         $('#QTY').attr('required', '')
                         $('#AMOUNT_PANEL').show();
+                        $('#PENDING_PANEL').show();
                         iFrameIsSubmit = false;
                         break;
 
@@ -1019,15 +1020,17 @@
                             $('#AMOUNT_PANEL').show();
 
                             $("#COMPLETETIME_Shell").datetimepicker('date', data.Data.Ftt_formDTO.completetime);
-                            $('VENDOR_ARRIVE_DATEShell').datetimepicker('date', data.Data.Ftt_formDTO.vendor_arrive_date);
+                            $('#VENDOR_ARRIVE_DATEShell').datetimepicker('date', data.Data.Ftt_formDTO.vendor_arrive_date);
+                            checkKPI($("#COMPLETETIME_Shell").datetimepicker('date'));
                         }
                         if (ticket_info == 'PENDING') {
                             $('#AMOUNT_PANEL').hide();
-
                             $("#PRECOMPLETETIME_Shell").datetimepicker('date', data.Data.Ftt_formDTO.precompletetime);
+                            checkKPI($("#PRECOMPLETETIME_Shell").datetimepicker('date'));
                         }
                         if (ticket_info == 'OFFER') {
                             $('#AMOUNT_PANEL').show();
+                            checkKPI($("#PRECOMPLETETIME_Shell").datetimepicker('date'));
                         }
                         if (data.Data.ShowAmountPanel) {
                             $('#AMOUNT_PANEL').show();
