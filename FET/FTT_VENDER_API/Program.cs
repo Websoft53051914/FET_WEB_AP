@@ -1,8 +1,7 @@
 
 using FTT_VENDER_API.Common.ConfigurationHelper;
 using Microsoft.Extensions.FileProviders;
-
-
+using FTT_VENDER_API.Models.Handler;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 
@@ -51,7 +50,7 @@ builder.Services.AddAuthentication(options =>
 
 builder.Services.AddSession(options =>
 {
-    options.Cookie.Name = ".FTT_VENDER_API.Session";
+    options.Cookie.Name = ".net.core.Session";
     options.IdleTimeout = TimeSpan.FromMinutes(15);
     //options.Cookie.IsEssential = true; //架設http 非 https 要註解
 
@@ -90,7 +89,8 @@ builder.Services.AddCors(options =>
             policy.WithOrigins("https://localhost:7236") // 允許的來源
                   .AllowAnyHeader()
                   .AllowAnyMethod()
-                  .AllowCredentials();
+                  .AllowCredentials()
+              .WithExposedHeaders("Content-Disposition"); // <- 重要;
         });
 });
 #else
@@ -108,6 +108,17 @@ builder.Services.AddCors(options =>
 });
 
 #endif
+
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy("AllowLocalhost7234", policy =>
+//    {
+//        policy
+//            .AllowAnyOrigin()
+//            .AllowAnyHeader()
+//            .AllowAnyMethod();
+//    });
+//});
 
 var app = builder.Build();
 
@@ -142,6 +153,7 @@ app.UseRouting();
 // 使用 CORS
 app.UseCors("AllowLocalhost7234");
 
+
 app.UseAuthorization();
 
 app.UseSession();
@@ -153,13 +165,13 @@ app.MapControllerRoute(
     pattern: "swagger/index.html");
 //pattern: "triptest/{controller=Home}/{action=Index}/{id?}");
 
-app.UseStaticFiles(new StaticFileOptions
-{
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(builder.Environment.ContentRootPath, "PublicStaticFile")
-    ),
-    RequestPath = "/download"
-});
+//app.UseStaticFiles(new StaticFileOptions
+//{
+//    FileProvider = new PhysicalFileProvider(
+//        Path.Combine(builder.Environment.ContentRootPath, "PublicStaticFile")
+//    ),
+//    RequestPath = "/download"
+//});
 
 //// 專案啟動時載入
 //var container = new Unity.UnityContainer();
