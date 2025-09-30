@@ -2,8 +2,6 @@
 using FTT_VENDER_WEB.Common;
 using FTT_VENDER_WEB.Common.Attribute;
 using FTT_VENDER_WEB.Common.ConfigurationHelper;
-using FTT_VENDER_WEB.Models.Handler;
-using FTT_VENDER_WEB.Models.ViewModel.Login;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static Const.Enums;
