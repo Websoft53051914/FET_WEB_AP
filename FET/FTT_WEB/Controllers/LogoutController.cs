@@ -12,6 +12,7 @@ namespace FTT_WEB.Controllers
             //清除所有的 session
             Common.HttpContext.Current.Session.Clear();
             Response.Cookies.Delete("__MySession__");
+            Response.Cookies.Delete("Token");
 
             return RedirectToAction("Index", "Login");
         }

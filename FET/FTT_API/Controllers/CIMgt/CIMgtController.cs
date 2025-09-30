@@ -1,12 +1,19 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using FTT_API.Common.ConfigurationHelper;
+using FTT_API.Models.Handler;
+using Microsoft.AspNetCore.Mvc;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace FTT_API.Controllers.CIMgt
 {
-    public class CIMgtController : BaseProjectController
+    [Route("[controller]")]
+    public partial class  CIMgtController : BaseProjectController
     {
-        public IActionResult Index()
+        private readonly ConfigurationHelper _config;
+        private readonly IWebHostEnvironment _hostingEnvironment;
+        public CIMgtController(ConfigurationHelper configuration, IWebHostEnvironment hostingEnvironment)
         {
-            return View();
+            _config = configuration;
+            _hostingEnvironment = hostingEnvironment;
         }
     }
 }

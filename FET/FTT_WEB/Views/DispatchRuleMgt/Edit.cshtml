@@ -1,20 +1,23 @@
-﻿@{
-    var funcId = ViewData["FuncId"];
-    var mapText = new
-    {
-        Btn_Create = $"{config.GetMessage("BtnCreate")}",
-        Btn_Edit = $"{config.GetMessage("BtnEdit")}",
-
-        Btn_Confirm = config.GetMessage("BtnConfirm"),
-        Btn_Cancel = "取消",
-    };
-
-    var mapAttr = new
-    {
-        IdCategory = Guid.NewGuid(),
-    };
+﻿@model DispatchRuleMgtVO
+@{
     var action = Html.ActionName().ToLower() == "create" ? "create" : "edit";
-    var actionName = action == "create" ? mapText.Btn_Create : mapText.Btn_Edit;
+    var actionName = action == "create" ? config.GetMessage("BtnCreate") : config.GetMessage("BtnEdit");
+    var mapData = new
+    {
+        UrlIndex = Url.Action("Index"),
+        UrlPost = $"{config.GetBackendUrl()}/DispatchRuleMgt/{action}",
+        UrlGetInitData = $"{config.GetBackendUrl()}/DispatchRuleMgt/GetInitEditData",
+        PartialITM = new ItemTreeMultiVO
+        {
+            Id = "z" + Guid.NewGuid().ToString("N"),
+            PropertyName = nameof(Model.CisIdList),
+        },
+    };
+    List<SelectListItem> SelectListYN = new()
+{
+        new SelectListItem("N","N"),
+        new SelectListItem("Y","Y"),
+    };
 }
 
 <div class="container-fluid">
@@ -25,8 +28,8 @@
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="/Home" data-bs-original-title="" title="">首頁</a></li>
                     <li class="breadcrumb-item">後端維護</li>
-                    <li class="breadcrumb-item active"><a href="" data-bs-original-title="" title="">派工規則維護</a></li>
-                    <li class="breadcrumb-item">編輯</li>
+                    <li class="breadcrumb-item active"><a href="@(mapData.UrlIndex?.ToHtmlString())" data-bs-original-title="" title="">派工規則維護</a></li>
+                    <li class="breadcrumb-item">@(actionName)</li>
                 </ol>
             </div>
         </div>
@@ -39,47 +42,31 @@
         </div>
         <div class="card-body card-body-edit">
             <form class="needs-validation" novalidate="" method="post" id="submitForm">
-                <div class="row gx-2 gy-1 mb-3">
-
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                        <label class="col-form-label websoft-form-label pt-2">廠商</label>
-                        <select class="form-control select2-Clear">
-                            <option></option>
-                            <option value="1">廠商A</option>
-                            <option value="2">廠商B</option>
-                            <option value="3">廠商C</option>
-                            <option value="4">廠商D</option>
-                            <option value="5">廠商E</option>
-                        </select>
-                    </div>
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                        <label class="col-form-label websoft-form-label pt-2">保固</label>
-                        <select class="form-control select2-Clear">
-                            <option></option>
-                            <option value="1">Y</option>
-                            <option value="2">N</option>
-                        </select>
-                    </div>
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                <input asp-for="Id" type="hidden" />
+                <div class="row gx-2 gy-1 mb-3 row-cols-xl-4 row-cols-lg-3 row-cols-md-2 row-cols-1">
+                    <div class="col">
                         <label class="col-form-label websoft-form-label pt-2">IVR CODE</label>
-                        <select class="form-control select2-Clear" multiple>
-                            <option value="1">2266 高雄草衙</option>
-                            <option value="2">N12  三重自強一加盟</option>
-                            <option value="3">N21  桃園大溪特約服務中心</option>
-                            <option value="3">1801373  新竹新埔加盟門市</option>
-
+                        <select id="@(Html.IdFor(m => m.IvrCodeList))" name="@(Html.NameFor(m => m.IvrCodeList))[]" multiple class="form-select initSelect2Clearable">
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">廠商名稱</label>
+                        <select id="@(Html.IdFor(m => m.VenderIdList))" name="@(Html.NameFor(m => m.VenderIdList))[]" multiple class="form-select initSelect2Clearable">
                         </select>
                     </div>
                     <div class="col-xl-3 col-lg-4 col-md-6 col-12">
                         <label class="col-form-label websoft-form-label pt-2">類別</label>
-                        @await Html.PartialAsync("Form/_ItemsTreeMuti", new CommonPartailVM() { ComponentId = mapAttr.IdCategory.ToString() })
+                        @await Html.PartialAsync("Form/_ItemsTreeMuti", mapData.PartialITM)
                     </div>
-
-
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">保固</label>
+                        <select asp-for="IfWarrant" asp-items="@(new SelectList(SelectListYN, nameof(SelectListItem.Value), nameof(SelectListItem.Text)))" class="form-select initSelect2Clearable">
+                            <option></option>
+                        </select>
+                    </div>
                 </div>
-
                 <button class="btn btn-primary" type="submit" form="submitForm">儲存</button>
-                <a class="btn btn-info" href="@Url.Action("Index", new { FuncId = funcId, className = ViewData["className"] })">返回</a>
+                <a id="btnBack" class="btn btn-info" href="@(mapData.UrlIndex?.ToHtmlString())">返回</a>
             </form>
         </div>
     </div>
@@ -88,17 +75,126 @@
 @section scripts
 {
     <script>
-        $('.initDatepicker').datetimepicker({
-            format: 'YYYY/MM/DD',
+        var context = context || {};
+
+        $(function () {
+            //分頁頁數紀錄相關 有進入頁面就紀錄
+            SetGridInfoCookieForEdit('DispatchRuleMgtGridInfo');
+
+            $('.initSelect2Clearable').select2({
+                allowClear: true
+            });
+
+            callGetInitData();
         });
 
-        $('.initTimepicker').datetimepicker({
-            format: 'HH:mm',
-        });
+        function callGetInitData() {
+            let data = {
+                id: '@(Model.Id)',
+            };
+            showLoader();
+            $.ajax({
+                url: '@(mapData.UrlGetInitData?.ToHtmlString())',
+                dataType: 'json',
+                type: 'POST',
+                data: data,
+                cache: false
+            })
+                .done((response) => {
+                    if (response.Success && response.Data) {
+                        let data = response.Data;
+                        let editData = data['@(nameof(DispatchRuleMgtEditVO.Data))'];
 
-        $(".select2-Clear").select2({
-            placeholder: "請選擇",
-            allowClear: true,
+                        if (data['@(nameof(DispatchRuleMgtEditVO.SelectListIvrCode))']) {
+                            let $control = $('#@(Html.IdFor(m => m.IvrCodeList))');
+                            let dataSource = $.map(data['@(nameof(DispatchRuleMgtEditVO.SelectListIvrCode))'], (val, idx) => {
+                                $.extend(val, {
+                                    id: val['@(nameof(SelectListItem.Value))'],
+                                    text: val['@(nameof(SelectListItem.Text))'],
+                                });
+
+                                return val;
+                            });
+                            $control.empty();
+                            $control.select2({
+                                allowClear: true,
+                                data: dataSource,
+                                closeOnSelect: false,
+                            });
+                        }
+
+                        if (data['@(nameof(DispatchRuleMgtEditVO.SelectListVender))']) {
+                            let $control = $('#@(Html.IdFor(m => m.VenderIdList))');
+                            let dataSource = $.map(data['@(nameof(DispatchRuleMgtEditVO.SelectListVender))'], (val, idx) => {
+                                $.extend(val, {
+                                    id: val['@(nameof(SelectListItem.Value))'],
+                                    text: val['@(nameof(SelectListItem.Text))'],
+                                });
+
+                                return val;
+                            });
+                            $control.empty();
+                            $control.select2({
+                                allowClear: true,
+                                data: dataSource,
+                                closeOnSelect: false,
+                            });
+                        }
+
+                        context['@(mapData.PartialITM.Id)'].setValue(editData['@(nameof(DispatchRuleMgtEditVO.Data.CisIdList))'] || []);
+                        $('#@(Html.IdFor(m => m.IvrCodeList))').val(editData['@(nameof(DispatchRuleMgtEditVO.Data.IvrCodeList))']).trigger('change');
+                        $('#@(Html.IdFor(m => m.VenderIdList))').val(editData['@(nameof(DispatchRuleMgtEditVO.Data.VenderIdList))']).trigger('change');
+                        $('#@(Html.IdFor(m => m.IfWarrant))').val(editData['@(nameof(DispatchRuleMgtEditVO.Data.IfWarrant))']).trigger('change');
+                    }
+                    else {
+                        MyApp.Alert.error('初始化失敗' + response['Message']);
+                    }
+                })
+                .fail((err) => {
+                    console.log(err);
+                    MyApp.Alert.error('初始化失敗');
+                })
+                .always(() => {
+                    hideLoader();
+                });
+        }
+
+        $('form').on('submit', function (e) {
+            var $this = $(this);
+            e.preventDefault();
+
+            if (!this.checkValidity()) {
+                return;
+            }
+
+            var data = {};
+            $.extend(data, $this.serializeObject());
+
+            showLoader();
+            $.ajax({
+                url: '@(mapData.UrlPost?.ToHtmlString())',
+                dataType: 'json',
+                type: 'POST',
+                data: data,
+                cache: false
+            })
+                .done((response) => {
+                    if (response.Success) {
+                        MyApp.Alert.success('@(actionName?.ToHtmlString())資料成功')
+                            .then(() => {
+                                $('#btnBack')[0].click();
+                            });
+                    }
+                    else {
+                        MyApp.Alert.error(response.Message);
+                    }
+                })
+                .fail((err) => {
+                    console.log(err);
+                })
+                .always(() => {
+                    hideLoader();
+                });
         });
     </script>
 }

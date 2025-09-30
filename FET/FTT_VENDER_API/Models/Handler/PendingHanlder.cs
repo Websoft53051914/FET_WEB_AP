@@ -171,10 +171,20 @@ WHERE FORM_NO=@FORM_NO
             };
 
             string sql = @"
-SELECT FORM_NO, EXPENSE_TYPE, EXPENSE_DESC, QTY, PRICE, SUBTOTAL, ORDERID, UNIT, FAULT_REASON, REPAIR_ACTION, ENABLE 
-FROM FTT_FORM_AMOUNT 
-WHERE FORM_NO=@FORM_NO
-                ";
+SELECT form_no
+       , expense_type
+       , expense_desc
+       , qty
+       , price
+       , subtotal
+       , orderid
+       , unit
+       , fault_reason
+       , repair_action
+       , enable
+FROM   ftt_form_amount
+WHERE  form_no = @form_no
+";
 
             return GetDBHelper().FindList<Ftt_form_amountDTO>(sql, paras);
         }
@@ -235,7 +245,7 @@ WHERE FORM_NO=@FORM_NO
 SELECT DISTINCT EXPENSE_TYPE as EXPENSE_TYPE
 FROM AMOUNT_SELECT
 WHERE ENABLE = 'Y' AND CHK_CI_LIST(@category_id,category_id::text)= 'Y'
-                ";
+";
 
             return GetDBHelper().FindList<amount_selectDTO>(sql, paras);
         }
@@ -292,7 +302,7 @@ DELETE FROM Ftt_form_amount WHERE FORM_NO = @FORM_NO
 
             string originSQL = @"
 SELECT ROWNUM                                          AS ROWCOUNT,
-       create_date,
+       to_char(create_date,'yyyy/mm/dd hh24:mi:ss') as create_date,
        Substr(User_Type, 1, Instr(User_Type, ',') - 1) AS User_Type,
        action_name,
        description,
@@ -309,7 +319,7 @@ WHERE  ( ROWNUM = 0 )
                     case "VENDOR":
                         originSQL = @"
 SELECT ROWNUM                                          AS ROWCOUNT,
-       create_date,
+       to_char(create_date,'yyyy/mm/dd hh24:mi:ss') as create_date,
        Substr(user_type, 1, Instr(user_type, ',') - 1) AS USER_TYPE,
        action_name,
        description,
@@ -324,7 +334,7 @@ ORDER  BY create_date
                     default:
                         originSQL = @"
 SELECT ROWNUM                                          AS ROWCOUNT,
-       create_date,
+       to_char(create_date,'yyyy/mm/dd hh24:mi:ss') as create_date,
        Substr(user_type, 1, Instr(user_type, ',') - 1) AS USER_TYPE,
        action_name,
        description,

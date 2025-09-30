@@ -108,3 +108,8 @@ a._tb_button {
 .even .jsgrid-cell {
     background-color: white;
 }
+
+/* jsTree ÁôÂÃ checkbox */
+.no-checkbox > i.jstree-checkbox {
+    display: none
+}

@@ -38,6 +38,10 @@ namespace FTT_API.Common.OriginClass.EntiityClass
     public class store_vender_profileDTO : store_vender_profileEntity
     {
         public int No { get; set; }
+
+        public string USERROLE { get; set; }
+        public string EMPNO { get; set; }
+        public string IVRCODE { get; set; }
     }
 
 

@@ -9,6 +9,12 @@ using System.Text;
 using System.Text.RegularExpressions;
 using FTT_VENDER_API.Models.ViewModel;
 using static Const.Enums;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using Const.VO;
+using FEE_VENDER_API.Common;
+using Const;
 
 namespace FTT_VENDER_API.Common
 {
@@ -507,6 +513,158 @@ namespace FTT_VENDER_API.Common
             var growthRate = ((decimal)current - previous) / previous * 100;
             Positive = growthRate > 0;
             return $"{Math.Round(growthRate, 2)}%";
+        }
+
+        /// <summary>
+        /// 產生JWT Token
+        /// </summary>
+        /// <param name="vo">Session資料</param>
+        /// <param name="jwtConfigVO">JWT設定</param>
+        /// <returns></returns>
+        public static TokenInfoVO GenerateJwtToken(SessionVO vo, JwtConfigVO jwtConfigVO)
+        {
+            TokenInfoVO tokenInoVO = new();
+            #region 建立JWT Token
+            //宣告JwtSecurityTokenHandler，用來建立token
+            JwtSecurityTokenHandler jwtTokenHandler = new JwtSecurityTokenHandler();
+
+            //appsettings中JwtConfig的Secret值
+            byte[] key = Encoding.ASCII.GetBytes(jwtConfigVO.Secret);
+            var jti = Guid.NewGuid().ToString();
+            //定義token描述
+            SecurityTokenDescriptor tokenDescriptor = new SecurityTokenDescriptor
+            {
+                //設定要加入到 JWT Token 中的聲明資訊(Claims)
+                Subject = new ClaimsIdentity(new[]
+                {
+        new Claim(nameof(SessionVO.userrole),vo.userrole),
+        new Claim(nameof(SessionVO.usertype),vo.usertype),
+                new Claim(nameof(SessionVO.ivrcode),vo.ivrcode),
+                new Claim(nameof(SessionVO.username),vo.username),
+                new Claim(JwtRegisteredClaimNames.Jti, jti), // 設定 JTI
+        }),
+
+                //設定Token的時效
+                Expires = DateTime.Now.AddSeconds(int.Parse(jwtConfigVO.ExpireTimeDuration)),
+
+                //設定加密方式，key(appsettings中JwtConfig的Secret值)與HMAC SHA512演算法
+                SigningCredentials = new SigningCredentials(new SymmetricSecurityKey(key), SecurityAlgorithms.HmacSha512Signature),
+
+                Issuer = jwtConfigVO.Issuer, //簽發者
+            };
+
+            //使用SecurityTokenDescriptor建立JWT securityToken
+            SecurityToken token = jwtTokenHandler.CreateToken(tokenDescriptor);
+
+            //token序列化為字串
+            string jwtToken = jwtTokenHandler.WriteToken(token);
+            #endregion
+
+            var readToken = jwtTokenHandler.ReadJwtToken(jwtToken);
+            var nbf = readToken.Claims.FirstOrDefault(c => c.Type == "nbf")?.Value;
+            var iat = readToken.Claims.FirstOrDefault(c => c.Type == "iat")?.Value;
+            var exp = readToken.Claims.FirstOrDefault(c => c.Type == "exp")?.Value;
+            DateTimeOffset nbfTime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(nbf));
+            DateTimeOffset nbfTimeLocal = nbfTime.ToLocalTime(); // 自動轉成本地時區
+            DateTimeOffset iatTime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(iat));
+            DateTimeOffset iatTimeLocal = iatTime.ToLocalTime(); // 自動轉成本地時區
+            DateTimeOffset expTime = DateTimeOffset.FromUnixTimeSeconds(long.Parse(exp));
+            DateTimeOffset expTimeLocal = expTime.ToLocalTime(); // 自動轉成本地時區
+            tokenInoVO.TokenId = jwtToken;
+            tokenInoVO.Iat = iatTimeLocal.DateTime;
+            tokenInoVO.Nbf = nbfTimeLocal.DateTime;
+            tokenInoVO.Exp = expTimeLocal.DateTime;
+            tokenInoVO.LogAccount = vo.username;
+            return tokenInoVO;
+        }
+
+        /// <summary>
+        /// 驗證JWT Token和過期後產生新Token
+        /// </summary>
+        /// <param name="token">JWT Token</param>
+        /// <param name="jwtConfigVO">JWT設定</param>
+        /// <returns></returns>
+        public static (VerifyTokenResultVO, SessionVO?) VerifyAndGenerateJwtToken(string token, JwtConfigVO jwtConfigVO)
+        {
+            VerifyTokenResultVO vo = new();
+            SessionVO? sessionVO = null;
+            //建立JwtSecurityTokenHandler
+            JwtSecurityTokenHandler jwtTokenHandler = new JwtSecurityTokenHandler();
+            try
+            {
+
+
+                //驗證參數的Token，回傳SecurityToken
+                var key = Encoding.ASCII.GetBytes(jwtConfigVO.Secret);
+                TokenValidationParameters tokenValidation = new TokenValidationParameters
+                {
+                    RequireExpirationTime = true,
+                    ValidateIssuer = true,
+                    ValidateAudience = false,
+                    ValidIssuer = jwtConfigVO.Issuer,
+
+                    //驗證IssuerSigningKey
+                    ValidateIssuerSigningKey = true,
+                    //以JwtConfig:Secret為Key，做為Jwt加密
+                    IssuerSigningKey = new SymmetricSecurityKey(key),
+
+                    //驗證時效
+                    ValidateLifetime = true,
+
+                    //設定token的過期時間可以以秒來計算，當token的過期時間低於五分鐘時使用。
+                    ClockSkew = TimeSpan.Zero
+                };
+                ClaimsPrincipal tokenInVerification = jwtTokenHandler.ValidateToken(token, tokenValidation, out SecurityToken validatedToken);
+
+
+
+                if (validatedToken is JwtSecurityToken jwtSecurityToken)
+                {
+                    //檢核Token的演算法
+                    var result = jwtSecurityToken.Header.Alg.Equals(SecurityAlgorithms.HmacSha512, StringComparison.InvariantCultureIgnoreCase);
+
+                    if (result == false)
+                    {
+                        vo.IsAvailable = false;
+                    }
+                    else
+                    {
+                        sessionVO = new SessionVO
+                        {
+                            userrole = tokenInVerification.Claims.First(x => x.Type == nameof(SessionVO.userrole)).Value,
+                            usertype = tokenInVerification.Claims.First(x => x.Type == nameof(SessionVO.usertype)).Value,
+                            ivrcode = tokenInVerification.Claims.First(x => x.Type == nameof(SessionVO.ivrcode)).Value,
+                            username = tokenInVerification.Claims.First(x => x.Type == nameof(SessionVO.username)).Value,
+                        };
+                    }
+                }
+                else
+                {
+                    vo.IsAvailable = false;
+                }
+                return (vo, sessionVO);
+            }
+            catch (Exception ex)
+            {
+                if (ex is SecurityTokenExpiredException)
+                {
+                    vo.IsExpired = true;
+                    vo.IsAvailable = true;
+                    var jwtToken = jwtTokenHandler.ReadJwtToken(token);
+                    sessionVO = new SessionVO
+                    {
+                        userrole = jwtToken.Claims.First(x => x.Type == nameof(SessionVO.userrole)).Value,
+                        usertype = jwtToken.Claims.First(x => x.Type == nameof(SessionVO.usertype)).Value,
+                        ivrcode = jwtToken.Claims.First(x => x.Type == nameof(SessionVO.ivrcode)).Value,
+                        username = jwtToken.Claims.First(x => x.Type == nameof(SessionVO.username)).Value,
+                    };
+                    var tokenVO = GenerateJwtToken(sessionVO, jwtConfigVO);
+                    vo.TokenInfoVO = tokenVO;
+                    return (vo, sessionVO);
+                }
+                vo.IsAvailable = false;
+                return (vo, null);
+            }
         }
 
     }

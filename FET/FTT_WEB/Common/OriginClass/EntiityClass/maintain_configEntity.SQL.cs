@@ -14,7 +14,7 @@ namespace FTT_WEB.Common.OriginClass.EntiityClass
             Dictionary<string, object> paras = new Dictionary<string, object>();
 
             string originSQL = @"
-select * from public.maintain_config 
+select * from maintain_config 
 where 1=1
 ";
 

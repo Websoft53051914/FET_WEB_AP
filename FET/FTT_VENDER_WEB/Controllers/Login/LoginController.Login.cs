@@ -21,10 +21,6 @@ namespace FTT_VENDER_WEB.Controllers.Login
         }
         public IActionResult Index(string goalURL = "")
         {
-            
-
-            var LoginHanlder = new LoginHanlder(_configHelper, HttpContext);
-
             if (LoginSession.Current != null && LoginSession.Current.empno != null)
             {
                 if (!string.IsNullOrEmpty(goalURL))
@@ -39,37 +35,6 @@ namespace FTT_VENDER_WEB.Controllers.Login
 
             return View();
         }
-
-
-        /// <summary>
-        /// 登入
-        /// </summary>
-        /// <param name="vm"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        [HttpPost]
-        [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Login(LoginVM vm)
-        {
-            try
-            {
-                var loginHanlder = new LoginHanlder(_configHelper, HttpContext);
-                string errorMsg = loginHanlder.Login(vm);
-
-                if (!string.IsNullOrEmpty(errorMsg))
-                {
-                    return JsonValidFail(errorMsg);
-                }
-
-                return JsonOK();
-            }
-            catch (Exception ex)
-            {
-                return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
-            }
-        }
-
-
 
         /// <summary>
         /// 畫出 圖形驗證碼

@@ -1,4 +1,11 @@
 ﻿@{
+    var mapData = new
+    {
+        IdModal = Guid.NewGuid(),
+        IdBtnOk = Guid.NewGuid(),
+        IdTree = Guid.NewGuid().ToString("N"),
+    };
+
     var mapAttr = new
     {
         IdTree = Guid.NewGuid(),
@@ -46,103 +53,225 @@
 <div class="container-fluid">
     <div class="card">
         <div class="card-header">
-            <button class="btn btn-info"><i class="fa fa-folder me-2" aria-hidden="true"></i>新增下層</button>
-            <button class="btn btn-danger"><i class="fa fa-folder me-2" aria-hidden="true"></i>刪除</button>
-            <button class="btn btn-info" style="float:right">儲存</button>
+            <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#AddModal"><i class="fa fa-folder me-2" aria-hidden="true"></i>新增下層</button>
+            <button class="btn btn-danger" id="btnDelete" style="display:none;"><i class="fa fa-folder me-2" aria-hidden="true"></i>刪除</button>
+            <button class="btn btn-info editshell" style="float:right;display:none;" form="editform">儲存</button>
         </div>
-        <div class="card-body">
-            <div class="row">
-                <div class="col-sm-12 col-md-6 col-lg-3  border shadow-md rounded-3 py-2" style="align-items:stretch;background-color: #fbfbfb;">
-                    <div id="@mapAttr.IdTree"></div>
-                </div>
-                <div class="col-sm-12 col-md-6 col-lg-4 ">
-                    <table class="table table-borderless  align-middle editTable">
-                        <tbody>
-                            <tr>
-                                <th class="text-end">CISID：</th>
-                                <td><input type="text" class="form-control" value="1303"></td>
-                            </tr>
-                            <tr>
-                                <th class="text-end">名稱類別：</th>
-                                <td><input type="text" class="form-control" value="保全卡"></td>
-                            </tr>
-                            <tr>
-                                <th class="text-end">隸屬於：</th>
-                                <td>
-                                    @await Html.PartialAsync("Form/_ItemsTree", new CommonPartailVM() { ComponentId = Guid.NewGuid().ToString() })
-                               </td>
-                            </tr>
+        <form class="needs-validation" novalidate="" method="post" id="createform">
+            <div class="modal fade" id="AddModal" tabindex="-1" role="dialog" aria-labelledby="AddModal" aria-hidden="true">
+                <div class="modal-dialog modal-lg" role="document" style="    max-width: 1100px;">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="AddModalLabel">新增下層</h5>
+                            <button type="submit" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="row">
+                                <div class="col-sm-12 col-md-6 col-lg-6 ">
+                                    <table class="table table-borderless  align-middle ">
+                                        <tbody>
+                                            <tr>
+                                                <th class="text-end">
+                                                    <label class="col-form-label websoft-form-label pt-2 required">名稱類別：</label>
+                                                </th>
+                                                <td><input type="text" class="form-control" value="" id="Add_ciname" required></td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-end">隸屬於：</th>
+                                                <td>
+                                                    <select class="form-control" id="Add_cicategory" readonly">
+                                                        <option value="1006" selected>報修品項類別</option>
+                                                    </select>
+                                                </td>
+                                            </tr>
 
-                            <tr>
-                                <th class="text-end">備註：</th>
-                                <td><input type="text" class="form-control" value="卡片損壞；卡片遺失"></td>
-                            </tr>
-                            <tr>
-                                <th class="text-end">故障情形描述：</th>
-                                <td>
-                                    <textarea type="text" class="form-control" value="" rows="2"></textarea>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th class="text-end">可報修店格：</th>
-                                <td>
-                                    <div class="form-group m-checkbox-inline">
-                                        @foreach (var item in storeStyle)
-                                        {
-                                            <div class="form-check checkbox checkbox-primary">
-                                                <input class="form-check-input" id="S@(item)" type="checkbox" value="@item" name="123456">
-                                                <label class="form-check-label checkbox_short_label" for="S@(item)">@item</label>
-                                            </div>
-                                        }
-                                    </div>
-                                </td>
-                            </tr>
-                            <tr>
-                                <th class="text-end">可報修店家類型：</th>
-                                <td>
-                                    <div class="form-group m-checkbox-inline">
-                                        @foreach (var item in storeType)
-                                        {
-                                            <div class="form-check checkbox checkbox-primary">
-                                                <input class="form-check-input" id="SS@(item)" type="checkbox" value="@item" name="erwre">
-                                                <label class="form-check-label checkbox_short_label" for="SS@(item)">@item</label>
-                                            </div>
-                                        }
-                                    </div>
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                                            <tr>
+                                                <th class="text-end">備註：</th>
+                                                <td><input type="text" class="form-control" value="" id="Add_remark"></td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-end">故障情形描述：</th>
+                                                <td>
+                                                    <textarea type="text" class="form-control" value="" rows="2" id="Add_descr"></textarea>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-end">報修品項檢查事項：</th>
+                                                <td>
+                                                    <textarea type="text" class="form-control" value="" rows="2" id="Add_notes"></textarea>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-end">圖片路徑：</th>
+                                                <td><input type="text" class="form-control" value="" id="Add_picture_path"></td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-end">
+                                                    <label class="col-form-label websoft-form-label pt-2 required">KPI：</label>
+                                                </th>
+                                                <td>
+                                                    <input type="text" class="form-control" value="1" id="Add_kpitime" pattern="\d*" required>
+                                                    <div class="invalid-feedback">只能輸入數字</div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-end">
+                                                    <label class="col-form-label websoft-form-label pt-2 required">門市可自行尋商(N/Y)：</label>
+                                                </th>
+                                                <td>
+                                                    <input type="text" class="form-control" value="N" id="Add_selfconfig" required maxlength="1" pattern="[NY]" title="只能輸入 N 或 Y">
+                                                    <div class="invalid-feedback">只能輸入 N 或 Y</div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                                <div class="col-sm-12 col-md-6 col-lg-6 ">
+                                    <table class="table table-borderless  align-middle ">
+                                        <tbody>
+                                            <tr>
+                                                <th class="text-end">可報修店格：</th>
+                                                <td>
+                                                    <div class="form-group m-checkbox-inline" id="Add_reqsrcShell" style="    max-width: 250px;">
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-end">可報修店家類型：</th>
+                                                <td>
+                                                    <div class="form-group m-checkbox-inline" id="Add_actypeShell">
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-footer">
+                            <button class="btn btn-primary" type="submit" id="btnAdd" form="createform">新增</button>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-sm-12 col-md-6 col-lg-4 ">
-                    <table class="table table-borderless  align-middle editTable">
-                        <tbody>
-                            <tr>
-                                <th class="text-end">圖片路徑：</th>
-                                <td><input type="text" class="form-control" value=""></td>
-                            </tr>
-                            <tr>
-                                <th class="text-end">KPI：</th>
-                                <td><input type="text" class="form-control" value="3"></td>
-                            </tr>
-                            <tr>
-                                <th class="text-end">門市可自行尋商：</th>
-                                <td><input type="text" class="form-control" value="N"></td>
-                            </tr>
-                            <tr>
-                                <th class="text-end">建立時間：</th>
-                                <td><input type="text" class="form-control" value="2008/11/9 下午 01:27:13" readonly></td>
-                            </tr>
-                            <tr>
-                                <th class="text-end">異動時間：</th>
-                                <td><input type="text" class="form-control" value="2008/11/9 下午 01:27:13" readonly></td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
-
             </div>
-        </div>
+        </form>
+
+        <form class="needs-validation" novalidate="" method="post" id="editform">
+            <div class="card-body" id="@mapData.IdModal">
+                <div class="row">
+                    <div class="col-sm-12 col-md-6 col-lg-3  border shadow-md rounded-3 py-2" style="align-items:stretch;background-color: #fbfbfb;">
+                        <div id="@mapAttr.IdTree"></div>
+                    </div>
+                    <div class="col-sm-12 col-md-6 col-lg-4 editshell" style="display:none;">
+                        <table class="table table-borderless  align-middle editTable">
+                            <tbody>
+                                <tr>
+                                    <th class="text-end">CISID：</th>
+                                    <td><input type="text" class="form-control" value="" id="cisid" readonly></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-end">
+                                        <label class="col-form-label websoft-form-label pt-2 required">名稱類別：</label>
+                                    </th>
+                                    <td><input type="text" class="form-control" value="" id="ciname" required></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-end">隸屬於：</th>
+                                    <td>
+                                        <select class="form-control" id="cicategory" readonly">
+                                            <option value="1006" selected>報修品項類別</option>
+                                        </select>
+                                        @* @await Html.PartialAsync("Form/_ItemsTree", new CommonPartailVM() { ComponentId = Guid.NewGuid().ToString() }) *@
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <th class="text-end">備註：</th>
+                                    <td><input type="text" class="form-control" value="" id="remark"></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-end">故障情形描述：</th>
+                                    <td>
+                                        <textarea type="text" class="form-control" value="" rows="2" id="descr"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="text-end">報修品項檢查事項：</th>
+                                    <td>
+                                        <textarea type="text" class="form-control" value="" rows="2" id="notes"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="text-end">圖片路徑：</th>
+                                    <td><input type="text" class="form-control" value="" id="picture_path"></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-end">
+                                        <label class="col-form-label websoft-form-label pt-2 required">KPI：</label>
+                                    </th>
+                                    <td>
+                                        <input type="text" class="form-control" value="" id="kpitime">
+                                        <div class="invalid-feedback">只能輸入數字</div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="text-end">
+                                        <label class="col-form-label websoft-form-label pt-2 required">門市可自行尋商：</label>
+                                    </th>
+                                    <td>
+                                        <input type="text" class="form-control" value="N" id="selfconfig" required maxlength="1" pattern="[NY]" title="只能輸入 N 或 Y">
+                                        <div class="invalid-feedback">只能輸入 N 或 Y</div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-sm-12 col-md-6 col-lg-4 editshell" style="display:none;">
+                        <table class="table table-borderless  align-middle editTable">
+                            <tbody>
+                                <tr>
+                                    <th class="text-end">可報修店格：</th>
+                                    <td>
+                                        <div class="form-group m-checkbox-inline" id="reqsrcShell">
+                                            @*                                         @foreach (var item in storeStyle)
+                                            {
+                                            <div class="form-check checkbox checkbox-primary">
+                                            <input class="form-check-input" id="S@(item)" type="checkbox" value="@item" name="reqsrc">
+                                            <label class="form-check-label checkbox_short_label" for="S@(item)">@item</label>
+                                            </div>
+                                            } *@
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="text-end">可報修店家類型：</th>
+                                    <td>
+                                        <div class="form-group m-checkbox-inline" id="actypeShell">
+                                            @*    @foreach (var item in storeType)
+                                            {
+                                            <div class="form-check checkbox checkbox-primary">
+                                            <input class="form-check-input" id="SS@(item)" type="checkbox" value="@item" name="actype">
+                                            <label class="form-check-label checkbox_short_label" for="SS@(item)">@item</label>
+                                            </div>
+                                            } *@
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th class="text-end">建立時間：</th>
+                                    <td><input type="text" class="form-control" value="2008/11/9 下午 01:27:13" readonly></td>
+                                </tr>
+                                <tr>
+                                    <th class="text-end">異動時間：</th>
+                                    <td><input type="text" class="form-control" value="2008/11/9 下午 01:27:13" readonly></td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </form>
+
     </div>
 </div>
 
@@ -150,95 +279,336 @@
 {
     <script src="~/lib/jsTree/jstree3.3.17.min.js"></script>
     <script>
-        const context = {
-            $Tree: $("#@mapAttr.IdTree"),
-        };
+        var currentID = 0;
+        var context = context || {};
+
         $(function () {
-            context.$Tree.jstree({
+
+            if (!context['@(mapData.IdModal)']) {
+                context['@(mapData.IdModal)'] = {};
+            }
+
+            var ctx = context['@(mapData.IdModal)'];
+            ctx.result = '';
+            ctx.selectedItem = null;
+            ctx.rootNode = {
+                id: "1006",
+                text: "報修品項",
+                children: true,     // 告訴 jsTree：此節點有子節點，展開時會觸發 AJAX
+                state: { opened: false }, // 一開始不打 API，等我們手動展開
+            };
+
+            $('#@(mapAttr.IdTree)').jstree({
                 core: {
-                    themes: {
-                        icons: true,
-                    },
-                    data: [
-                        {
-                            "id": "r",
-                            "parent": "#",
-                            "text": "報修品項",
-                            "state": { "opened": true }
-                        },
-                        {
-                            "id": "r1",
-                            "parent": "r",
-                            "text": "保全"
-                        },
-                        {
-                            "id": "r1-1",
-                            "parent": "r1",
-                            "text": "保全系統"
-                        },
-                        { "id": "r1-1-1", "parent": "r1-1", "text": "保全主機" },
-                        { "id": "r1-1-2", "parent": "r1-1", "text": "保全卡" },
-                        { "id": "r1-1-3", "parent": "r1-1", "text": "玻璃破碎感知器" },
-                        { "id": "r1-1-4", "parent": "r1-1", "text": "磁簧感知器" },
-                        { "id": "r1-1-5", "parent": "r1-1", "text": "空間感知器" },
-                        { "id": "r1-1-6", "parent": "r1-1", "text": "緊急押扣" },
-                        { "id": "r1-1-7", "parent": "r1-1", "text": "金庫感知器" },
-                        { "id": "r1-1-8", "parent": "r1-1", "text": "護欄周圍感知器" },
-
-                        { "id": "r1-2", "parent": "r1", "text": "商品保全" },
-                        { "id": "r1-3", "parent": "r1", "text": "監視系統" },
-                        { "id": "r1-4", "parent": "r1", "text": "系統測試" },
-
-                        { "id": "r2", "parent": "r", "text": "停車區域設備" },
-                        { "id": "r3", "parent": "r", "text": "傢俱設備" },
-                        { "id": "r4", "parent": "r", "text": "小型設備" },
-                        { "id": "r5", "parent": "r", "text": "影音設備" },
-                        { "id": "r6", "parent": "r", "text": "招牌設備" },
-                        { "id": "r7", "parent": "r", "text": "機電設備" },
-                        { "id": "r8", "parent": "r", "text": "直營取叫號機" },
-                        { "id": "r9", "parent": "r", "text": "空調設備" },
-                        { "id": "r10", "parent": "r", "text": "裝潢設備" },
-                        { "id": "r11", "parent": "r", "text": "門市多媒體設備" },
-                        { "id": "r11-1", "parent": "r11", "text": "測試" }
-                    ],
-                    multiple: false
-                },
-                plugins: ["themes", 'search'],
-                checkbox: {
-                    keep_selected_style: true,
-                    three_state: false,
-                },
-                search: {
-                    case_sensitive: false,
-                    show_only_matches: true
-                }
-            }).on('loaded.jstree', function (e, data) {
-
-                let jsonArr = context.$Tree.jstree(true).get_json("#", { flat: true });
-                let nodeIds = [];
-                let domParser = new DOMParser();
-                for (let i = 0; i < jsonArr.length; i++) {
-                    let node = data.instance.get_node(jsonArr[i].id);
-                    if (node.original.value) {
-                        const value = node.original.value;
-                        if (selectedItemVal == value) {
-                            nodeIds.push(node.id);
-                            let htm = `<span class="partialDisplayTag" data-id = '${value}' > ${node.text}</span>`;
-                            let cntNode = domParser.parseFromString(htm, "text/html").body.childNodes;
-                            $ProjDisplayPool[0].appendChild(cntNode[0]);
-                            selectedItem.push({ text: node.text, value: node.original.value, id: node.id })
+                    data: function (obj, cb) {
+                        // 第一次初始化時，obj.id 為 "#"
+                        if (obj.id === "#") {
+                            // 回傳 root
+                            cb([ctx.rootNode]);
+                            return;
                         }
-                    }
-                    else {
-                        node.a_attr['class'] = "no_checkbox";
+
+                        // 其餘情況：展開節點時 jsTree 會帶入該 node.id
+                        $.ajax({
+                            url: '@($"{config.GetBackendUrl()}/Api/GetListTreeChildrenCi")',
+                            data: { parentId: obj.id },
+                            type: 'POST',
+                            dataType: 'json'
+                        }).done(function (response) {
+                            if (response.Success) {
+                                cb(response.Data || []);
+                            }
+                            else {
+                                swal({
+                                    text: response['Message'],
+                                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                                    icon: 'error'
+                                });
+                                cb([]);
+                            }
+                        }).fail((err) => {
+                            console.log(err);
+                            cb([]);
+                        })
+                    },
+                    multiple: false,
+                    plugins: ['checkbox'],
+                    checkbox: {
+                        three_state: false,  // 不要自動勾選父節點
+                        cascade: ''           // 不連動子節點勾選
                     }
                 }
-                context.$Tree.jstree(true).settings.core.data = data;
-                context.$Tree.jstree(true).redraw(true);
-                context.$Tree.jstree('select_node', nodeIds);
             });
 
-        });
+            $('#@(mapAttr.IdTree)').on("ready.jstree", function (e, data) {
+                // 初始化完成後，預設展開第一階層
+                data.instance.open_node(ctx.rootNode.id);
+            });
 
+            $('#@(mapAttr.IdTree)').on("select_node.jstree", function (e, data) {
+                let instance = data.instance;
+                let node = data.node;
+                console.log("選取節點 ID:", data);
+                currentID = data.node.id;
+                if (data.node.id == '1006') {
+                    $('#btnDelete').hide();
+                    $('.editshell').hide();
+                }
+                else {
+                    $.ajax({
+                        url: '@(config.GetBackendUrl() + Url.Action("GetDetail", "CIMgt")?.ToHtmlString())',
+                        data: { cisid: data.node.id },
+                        type: 'Get',
+                        dataType: 'json'
+                    }).done(function (response) {
+                        $('[name="reqsrc"]').prop('checked', false);
+                        $('[name="actype"]').prop('checked', false);
+
+
+                        if (response.Success) {
+                            $('#cisid').val(response.Data.cisid);
+                            $('#ciname').val(response.Data.ciname);
+                            $('#remark').val(response.Data.remark);
+                            $('#descr').val(response.Data.descr);
+                            $('#notes').val(response.Data.notes);
+                            
+                            if (response.Data.reqsrc != null) {
+                                var reqsrcs = response.Data.reqsrc.split(',');
+                                for (var i = 0; i < reqsrcs.length; i++) {
+                                    var item = reqsrcs[i];
+                                    // if (item == 'ALL') {
+                                    //     $('[name="reqsrc"]').prop('checked', true);
+                                    // } else {
+                                    //     $('#S' + item).prop('checked', true);
+                                    // }
+
+                                    $('#S' + item).prop('checked', true);
+                                }
+                            }
+
+                            if (response.Data.actype != null) {
+                                var actypes = response.Data.actype.split(',');
+                                for (var i = 0; i < actypes.length; i++) {
+                                    var item = actypes[i];
+                                    // if (item == 'ALL') {
+                                    //     $('[name="actype"]').prop('checked', true);
+                                    // } else {
+                                    //     $('#SS' + item).prop('checked', true);
+                                    // }
+
+                                    $('#SS' + item).prop('checked', true);
+
+                                }
+                            }
+
+                            $('#picture_path').val(response.Data.picture_path);
+                            $('#kpitime').val(response.Data.kpitime);
+                            $('#selfconfig').val(response.Data.selfconfig);
+                        }
+                        else {
+
+                        }
+                    })
+
+                    $('#btnDelete').show();
+                    $('.editshell').show();
+                }
+                // if (!node.state.loaded || node.children.length) {
+                //     ctx.selectedItem = node;
+                //     // ctx.selectedItem = null;
+                //     // instance.deselect_node(node.id);
+                // }
+                // else {
+                //     ctx.selectedItem = node;
+                // }
+            });
+
+            $("#createform").submit(function (e) {
+                if (currentID == 0) {
+                    alert('請先選擇一個維修品項');
+                    return false;
+                }
+
+                e.preventDefault();
+                showLoader();
+
+                if ($(this).is(':invalid')) {
+                    hideLoader();
+                    alert('有必填欄位尚未輸入 或 輸入的格式不符合！');
+                }
+                else {
+                    var data = {};
+
+                    data.ciname = $('#Add_ciname').val();
+                    data.remark = $('#Add_remark').val();
+                    data.descr = $('#Add_descr').val();
+                    data.notes = $('#Add_notes').val();
+                    
+                    data.picture_path = $('#Add_picture_path').val();
+                    data.cicategory = $('#Add_cicategory').val();
+
+                    data.kpitime = $('#Add_kpitime').val();
+                    data.selfconfig = $('#Add_selfconfig').val();
+
+                    data.parentsid = currentID;
+
+                    data.reqsrc = "ALL," + $('input[name="Add_reqsrc"]:checked').map(function () {
+                        return this.value;
+                    }).get().join(',');
+
+                    data.actype = $('input[name="Add_actype"]:checked').map(function () {
+                        return this.value;
+                    }).get().join(',');
+
+                    $.ajax({
+                        url: '@(config.GetBackendUrl() + Url.Action("CreateDetail", "CIMgt")?.ToHtmlString())',
+                        data: { vm: data },
+                        type: 'Post',
+                        dataType: 'json'
+                    }).done(function (response) {
+                        hideLoader();
+
+                        if (response.Success) {
+                            $('#@(mapAttr.IdTree)').jstree(true).refresh();
+                            alert(response.Data);
+                            $('#AddModal').modal('hide');
+                            const form = document.querySelector('#createform');
+                            form.classList.remove('was-validated');
+                            form.reset();  // 清除值與 invalid 樣式
+                        }
+                        else {
+                            alert(response.Message);
+                        }
+                    })
+                }
+            });
+
+            $("#editform").submit(function (e) {
+                e.preventDefault();
+                showLoader();
+
+                if ($(this).is(':invalid')) {
+                    hideLoader();
+                    alert('有必填欄位尚未輸入 或 輸入的格式不符合！');
+                }
+                else {
+                    var data = {};
+
+                    data.cisid = $('#cisid').val();
+                    data.ciname = $('#ciname').val();
+                    data.remark = $('#remark').val();
+                    data.descr = $('#descr').val();
+                    data.notes = $('#notes').val();
+                    
+                    data.picture_path = $('#picture_path').val();
+
+                    data.kpitime = $('#kpitime').val();
+                    data.selfconfig = $('#selfconfig').val();
+
+                    data.reqsrc = $('input[name="reqsrc"]:checked').map(function () {
+                        return this.value;
+                    }).get().join(',');
+
+                    if (data.reqsrc.length > 0) {
+                        data.reqsrc = "ALL," + data.reqsrc;
+                    }
+
+                    data.actype = $('input[name="actype"]:checked').map(function () {
+                        return this.value;
+                    }).get().join(',');
+
+                    $.ajax({
+                        url: '@(config.GetBackendUrl() + Url.Action("EditDetail", "CIMgt")?.ToHtmlString())',
+                        data: { vm: data },
+                        type: 'Post',
+                        dataType: 'json'
+                    }).done(function (response) {
+                        hideLoader();
+                        if (response.Success) {
+                            alert(response.Data);
+                        }
+                        else {
+                            alert(response.Message);
+                        }
+                    })
+                }
+            });
+
+            $('#btnDelete').on('click', (e) => {
+                if (currentID == 0) {
+                    alert('請先選擇一個維修品項');
+                    return false;
+                }
+
+                showLoader();
+
+                $.ajax({
+                    url: '@(config.GetBackendUrl() + Url.Action("DeleteDetail", "CIMgt")?.ToHtmlString())',
+                    data: { cisid: currentID },
+                    type: 'Post',
+                    dataType: 'json'
+                }).done(function (response) {
+                    hideLoader();
+                    if (response.Success) {
+                        $('#@(mapAttr.IdTree)').jstree(true).refresh();
+                        alert(response.Data);
+                    }
+                    else {
+                        alert(response.Message);
+                    }
+                })
+            });
+
+            $.ajax({
+                url: '@(config.GetBackendUrl() + Url.Action("GetDefault", "CIMgt")?.ToHtmlString())',
+                // data: { cisid: data.node.id },
+                type: 'Get',
+                dataType: 'json'
+            }).done(function (data) {
+                if (data.Success) {
+                    if (data.Data != null) {
+                        if (data.Data.reqsrcs != null) {
+                            let html = data.Data.reqsrcs.map(item => `
+                                                                                  <div class="form-check checkbox checkbox-primary">
+                                                                                      <input class="form-check-input" id="S${item.Value}" type="checkbox" value="${item.Value}" name="reqsrc">
+                                                                                      <label class="form-check-label checkbox_short_label" for="S${item.Value}">${item.Value}</label>
+                                                                                  </div>
+                                                                              `).join('');
+                            $('#reqsrcShell').html(html);
+
+                            html = data.Data.reqsrcs.map(item => `
+                                                                                  <div class="form-check checkbox checkbox-primary">
+                                                                                      <input class="form-check-input" id="Add_S${item.Value}" type="checkbox" value="${item.Value}" name="Add_reqsrc">
+                                                                                              <label class="form-check-label checkbox_short_label" for="Add_S${item.Value}">${item.Value}</label>
+                                                                                  </div>
+                                                                              `).join('');
+                            $('#Add_reqsrcShell').html(html);
+                        }
+
+                        if (data.Data.actypes != null) {
+                            let html = data.Data.actypes.map(item => `
+                                                                              <div class="form-check checkbox checkbox-primary">
+                                                                                  <input class="form-check-input" id="SS${item.Value}" type="checkbox" value="${item.Value}" name="actype">
+                                                                                  <label class="form-check-label checkbox_short_label" for="SS${item.Value}">${item.Value}</label>
+                                                                              </div>
+                                                                                  `).join('');
+                            $('#actypeShell').html(html);
+
+                            html = data.Data.actypes.map(item => `
+                                                                             <div class="form-check checkbox checkbox-primary">
+                                                                                         <input class="form-check-input" id="Add_SS${item.Value}" type="checkbox" value="${item.Value}" name="Add_actype">
+                                                                                         <label class="form-check-label checkbox_short_label" for="Add_SS${item.Value}">${item.Value}</label>
+                                                                             </div>
+                                                                                 `).join('');
+
+                            $('#Add_actypeShell').html(html);
+                        }
+                    }
+                }
+                else {
+                    alert(response.Message);
+                }
+            })
+        });
     </script>
 }

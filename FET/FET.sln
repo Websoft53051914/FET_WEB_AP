@@ -17,8 +17,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FTT_VENDER_API", "FTT_VENDE
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FTT_API", "FTT_API\FTT_API.csproj", "{D692E149-22E9-46C8-ADAB-0104593ACFC2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FET_TASK", "FET_TASK\FET_TASK.csproj", "{D8B19EBD-EBF1-4A92-B58C-B2B36B1042B6}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -53,10 +51,6 @@ Global
 		{D692E149-22E9-46C8-ADAB-0104593ACFC2}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D692E149-22E9-46C8-ADAB-0104593ACFC2}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D692E149-22E9-46C8-ADAB-0104593ACFC2}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D8B19EBD-EBF1-4A92-B58C-B2B36B1042B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D8B19EBD-EBF1-4A92-B58C-B2B36B1042B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D8B19EBD-EBF1-4A92-B58C-B2B36B1042B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D8B19EBD-EBF1-4A92-B58C-B2B36B1042B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

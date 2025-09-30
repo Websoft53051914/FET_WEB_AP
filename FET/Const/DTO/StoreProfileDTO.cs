@@ -66,6 +66,38 @@
         /// 地址
         /// </summary>
         public string? address { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string? fax_tel { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string? business_hour_range1 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string? business_hour_range2 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string? business_hour_range3 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string? business_hour_range4 { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string? decoration_condition { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string? note { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public DateTime? approval_date { get; set; }
         #endregion -- 資料庫欄位 --
 
         /// <summary>

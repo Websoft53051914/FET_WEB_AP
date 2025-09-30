@@ -12,6 +12,14 @@
     var action = Html.ActionName().ToLower() == "create" ? "create" : "edit";
     var actionName = action == "create" ? mapText.Btn_Create : mapText.Btn_Edit;
 
+    var ivrcode = ViewData["ivrcode"] as string;
+
+    var mapAttr = new
+    {
+        IdGrid2 = Guid.NewGuid(),
+        IdBtnSearch = Guid.NewGuid(),
+        IdSearchForm = Guid.NewGuid(),
+    };
 }
 
 <div class="container-fluid">
@@ -35,98 +43,85 @@
             <h5>@(actionName.ToHtmlString())</h5>
         </div>
         <div class="card-body card-body-edit">
-            <form class="needs-validation" novalidate="" method="post" id="submitForm">
+            <form class="needs-validation" novalidate="" method="post" id="shopform">
                 <h4 class="mb-3">門市資料</h4>
                 <div class="card">
                     <div class="card-body">
                         <div class="row gx-2 gy-1 smb-5px">
                             <div class=" col-xl-3 col-lg-4 col-md-6 col-12">
-                                <label class="col-form-label websoft-form-label pt-2">公司別</label>
-                                <select class="form-control select2-Clear">
+                                <label class="col-form-label websoft-form-label pt-2 required">公司別</label>
+                                <select class="form-control select2-Clear" id="company_leaves" onchange="CheckUserType(this.options[this.selectedIndex].value,'');" required>
                                     <option></option>
-                                    <option value="1">FET</option>
+                                    @* <option value="1">FET</option> *@
                                 </select>
                             </div>
 
                             <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                                <label class="col-form-label websoft-form-label pt-2">區域</label>
-                                <select class="form-control select2-Clear">
+                                <label class="col-form-label websoft-form-label pt-2 required">區域</label>
+                                <select class="form-control select2-Clear" id="area" onchange="CheckUserType(this.options[this.selectedIndex].value,'區域');" required>
                                     <option></option>
-                                    <option>N1</option>
-                                    <option>N2</option>
+                                    @*        <option>N1</option>
+                                    <option>N2</option> *@
                                 </select>
                             </div>
 
                             <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                                <label class="col-form-label websoft-form-label pt-2">店格</label>
-                                <select class="form-control select2-Clear">
+                                <label class="col-form-label websoft-form-label pt-2 required">店格</label>
+                                <select class="form-control select2-Clear" id="store_type" onchange="CheckUserType(this.options[this.selectedIndex].value,'店格');" required>
                                     <option></option>
-                                    <option>RETAIL</option>
+                                    @*              <option>RETAIL</option>
                                     <option>FRANCHISE</option>
                                     <option>MINI FRANCHISE</option>
                                     <option>REGIONAL CENTER</option>
                                     <option>BOOTH</option>
                                     <option>G5</option>
-                                    <option>G5S</option>
+                                    <option>G5S</option> *@
                                 </select>
                             </div>
 
                             <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                                <label class="col-form-label websoft-form-label pt-2">店名</label>
-                                <input type="text" class="form-control" placeholder="">
+                                <label class="col-form-label websoft-form-label pt-2 required">店名</label>
+                                <input type="text" class="form-control" placeholder="" required id="shop_name">
                             </div>
 
                             <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                                <label class="col-form-label websoft-form-label pt-2">通路</label>
-                                <select class="form-control select2-Clear">
+                                <label class="col-form-label websoft-form-label pt-2 required">通路</label>
+                                <select class="form-control select2-Clear" id="channel" onchange="CheckUserType(this.options[this.selectedIndex].value,'通路');" required>
                                     <option></option>
-                                    <option value="1">RETAIL</option>
-                                    <option value="2">FRANCHISE</option>
+                                    @*         <option value="1">RETAIL</option>
+                                    <option value="2">FRANCHISE</option> *@
                                 </select>
                             </div>
 
                             <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                                <label class="col-form-label websoft-form-label pt-2">IVR Code</label>
-                                <input type="text" class="form-control" placeholder="">
+                                <label class="col-form-label websoft-form-label pt-2 required">IVR Code</label>
+                                <input type="text" class="form-control" id="ivr_code" placeholder="" required>
+                                <div class="invalid-feedback">IVRCODE 應為7碼</div>
                             </div>
 
 
                             <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                                <label class="col-form-label websoft-form-label pt-2">裝潢型態</label>
-                                <select class="form-control select2-Clear">
+                                <label class="col-form-label websoft-form-label pt-2 required">裝潢型態</label>
+                                <select class="form-control select2-Clear" id="decoration_condition" onchange="CheckUserType(this.options[this.selectedIndex].value,'裝潢型態');" required>
                                     <option></option>
-                                    <option value="1">Remodel</option>
+                                    @* <option value="1">Remodel</option> *@
                                 </select>
                             </div>
-
                             <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                                <label class="col-form-label websoft-form-label pt-2">驗收日</label>
-                                <input type="text" class="form-control" placeholder="">
+                                <label class="col-form-label websoft-form-label pt-2 required">驗收日</label>
+                                <div class="row align-items-center">
+                                    <div class="col-12">
+                                        <div class="input-group initDatepicker " id="approval_date" data-target-input="nearest">
+                                            <input class="form-control datetimepicker-input" type="text" data-target="#approval_date" required>
+                                            <div class="input-group-text" data-target="#approval_date" data-toggle="datetimepicker"><i class="fa fa-calendar-o"></i></div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
-
                             <div class="col-xl-3 col-lg-4 col-md-6 col-12">
                                 <label class="col-form-label websoft-form-label pt-2">備註</label>
-                                <textarea class="form-control" rows="3" placeholder=""></textarea>
+                                <textarea class="form-control" rows="3" placeholder="" id="note"></textarea>
                             </div>
-
-
-                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
-                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
-                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
-                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
-                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
-                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
-                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
-                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
-                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
-                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
-                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
-                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
-                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
-                            <div class="col-xl-3 col-lg-4 col-md-6 col-12"></div>
-
-
-
                         </div>
                     </div>
                 </div>
@@ -138,76 +133,81 @@
 
 
                             <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                                <label class="col-form-label websoft-form-label pt-2">店長/聯絡人(中文)</label>
-                                <input type="text" class="form-control" placeholder="">
+                                <label class="col-form-label websoft-form-label pt-2 required">店長/聯絡人(中文)</label>
+                                <input type="text" class="form-control" placeholder="" id="owner_cname" required>
+                                <input type="hidden" id="owner_empno" />
                             </div>
 
 
                             <div class="col-xl-3 col-lg-4 col-md-6 col-12">
                                 <label class="col-form-label websoft-form-label pt-2">店長/聯絡人(英文)</label>
-                                <input type="text" class="form-control" placeholder="">
+                                <input type="text" class="form-control" placeholder="" id="owner_ename">
                             </div>
 
 
                             <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                                <label class="col-form-label websoft-form-label pt-2">店長電話</label>
-                                <input type="text" class="form-control" placeholder="">
+                                <label class="col-form-label websoft-form-label pt-2 required">店長電話</label>
+                                <input type="text" pattern="^09\d{2}-?\d{3}-?\d{3}$" title="請輸入有效手機號碼（0912345678 或 0912-345-678）" class="form-control" placeholder="" id="owner_tel" required>
+                                <div class="invalid-feedback">請輸入有效手機號碼（0912345678 或 0912-345-678）</div>
                             </div>
 
 
                             <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                                <label class="col-form-label websoft-form-label pt-2">Email</label>
-                                <input type="email" class="form-control" placeholder="">
+                                <label class="col-form-label websoft-form-label pt-2 required">Email</label>
+                                <input type="email" class="form-control" placeholder="" id="email" required>
+                                <div class="invalid-feedback">請輸入有效手機號碼（0912345678 或 0912-345-678）</div>
                             </div>
 
                             <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                                <label class="col-form-label websoft-form-label pt-2">區經理/業務</label>
-                                <input type="email" class="form-control" placeholder="">
+                                <label class="col-form-label websoft-form-label pt-2 required">區經理/業務</label>
+                                <input type="text" class="form-control" placeholder="" id="as_cname" required>
+                                <input type="hidden" id="as_empno" />
                             </div>
 
                             <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                                <label class="col-form-label websoft-form-label pt-2">緊急電話</label>
-                                <input type="email" class="form-control" placeholder="">
+                                <label class="col-form-label websoft-form-label pt-2 required">緊急電話</label>
+                                <input type="text" class="form-control" placeholder="" id="urgent_tel" pattern="^\d{2,3}-\d{7,}$" title="請輸入市話號碼，例如 02-1234567 或 037-1234567" required>
+                                <div class="invalid-feedback">請輸入市話號碼，例如 02-1234567 或 037-1234567</div>
                             </div>
 
                             <div class="w-100"></div>
                             <div class="col-xl-6 col-lg-7 col-md-8 col-12">
-                                <label class="col-form-label websoft-form-label pt-2">地址</label>
-                                <input type="email" class="form-control" placeholder="">
+                                <label class="col-form-label websoft-form-label pt-2 required">地址</label>
+                                <input type="text" class="form-control" id="address" placeholder="" required>
                             </div>
 
                             <div class="w-100"></div>
                             <div class="col-xl-7 col-lg-8 col-md-10 col-12">
-                                <label class="col-form-label websoft-form-label pt-2">營業時間 (一~五)</label>
+                                <label class="col-form-label websoft-form-label pt-2 required">營業時間 (一~五)</label>@* business_hour_range1 *@
                                 <div class="row align-items-center">
                                     <div class="col-12 col-md-6 col-lg-6">
                                         <div class="input-group initTimepicker " id="r1" data-target-input="nearest">
-                                            <input class="form-control datetimepicker-input" type="text" data-target="#r1">
+                                            <input class="form-control datetimepicker-input" type="text" data-target="#r1" required>
                                             <div class="input-group-text" data-target="#r1" data-toggle="datetimepicker"><i class="fa fa-clock-o"></i></div>
                                             <label class="_custom_middle_label">~</label>
                                         </div>
                                     </div>
                                     <div class="col-12 col-md-6 col-lg-6">
                                         <div class="input-group initTimepicker " id="r2" data-target-input="nearest">
-                                            <input class="form-control datetimepicker-input" type="text" data-target="#r2">
+                                            <input class="form-control datetimepicker-input" type="text" data-target="#r2" required>
                                             <div class="input-group-text" data-target="#r2" data-toggle="datetimepicker"><i class="fa fa-clock-o"></i></div>
                                         </div>
                                     </div>
                                 </div>
                             </div>
                             <div class="col-xl-7 col-lg-8 col-md-10 col-12">
-                                <label class="col-form-label websoft-form-label pt-2">營業時間 (六)</label>
+                                <label class="col-form-label websoft-form-label pt-2 required">營業時間 (六)</label>
                                 <div class="row align-items-center">
                                     <div class="col-12 col-md-6 col-lg-6">
                                         <div class="input-group initTimepicker " id="r3" data-target-input="nearest">
-                                            <input class="form-control datetimepicker-input" type="text" data-target="#r3">
+                                            <input class="form-control datetimepicker-input" type="text" data-target="#r3" required>
                                             <div class="input-group-text" data-target="#r3" data-toggle="datetimepicker"><i class="fa fa-clock-o"></i></div>
                                             <label class="_custom_middle_label">~</label>
                                         </div>
                                     </div>
                                     <div class="col-12 col-md-6 col-lg-6">
                                         <div class="input-group initTimepicker " id="r4" data-target-input="nearest">
-                                            <input class="form-control datetimepicker-input" type="text" data-target="#r4">
+                                            <input class="form-control datetimepicker-input" type="text" data-target="#r4" required>
                                             <div class="input-group-text" data-target="#r4" data-toggle="datetimepicker"><i class="fa fa-clock-o"></i></div>
                                         </div>
                                     </div>
@@ -215,18 +215,18 @@
                             </div>
 
                             <div class="col-xl-7 col-lg-8 col-md-10 col-12">
-                                <label class="col-form-label websoft-form-label pt-2">營業時間 (日)</label>
+                                <label class="col-form-label websoft-form-label pt-2 required">營業時間 (日)</label>
                                 <div class="row align-items-center">
                                     <div class="col-12 col-md-6 col-lg-6">
                                         <div class="input-group initTimepicker " id="r5" data-target-input="nearest">
-                                            <input class="form-control datetimepicker-input" type="text" data-target="#r5">
+                                            <input class="form-control datetimepicker-input" type="text" data-target="#r5" required>
                                             <div class="input-group-text" data-target="#r5" data-toggle="datetimepicker"><i class="fa fa-clock-o"></i></div>
                                             <label class="_custom_middle_label">~</label>
                                         </div>
                                     </div>
                                     <div class="col-12 col-md-6 col-lg-6">
                                         <div class="input-group initTimepicker " id="r6" data-target-input="nearest">
-                                            <input class="form-control datetimepicker-input" type="text" data-target="#r6">
+                                            <input class="form-control datetimepicker-input" type="text" data-target="#r6" required>
                                             <div class="input-group-text" data-target="#r6" data-toggle="datetimepicker"><i class="fa fa-clock-o"></i></div>
                                         </div>
                                     </div>
@@ -234,18 +234,18 @@
                             </div>
 
                             <div class="col-xl-7 col-lg-8 col-md-10 col-12">
-                                <label class="col-form-label websoft-form-label pt-2">營業時間 (國定假日)</label>
+                                <label class="col-form-label websoft-form-label pt-2 required">營業時間 (國定假日)</label>
                                 <div class="row align-items-center">
                                     <div class="col-12 col-md-6 col-lg-6">
                                         <div class="input-group initTimepicker " id="r7" data-target-input="nearest">
-                                            <input class="form-control datetimepicker-input" type="text" data-target="#r7">
+                                            <input class="form-control datetimepicker-input" type="text" data-target="#r7" required>
                                             <div class="input-group-text" data-target="#r7" data-toggle="datetimepicker"><i class="fa fa-clock-o"></i></div>
                                             <label class="_custom_middle_label">~</label>
                                         </div>
                                     </div>
                                     <div class="col-12 col-md-6 col-lg-6">
                                         <div class="input-group initTimepicker " id="r8" data-target-input="nearest">
-                                            <input class="form-control datetimepicker-input" type="text" data-target="#r8">
+                                            <input class="form-control datetimepicker-input" type="text" data-target="#r8" required>
                                             <div class="input-group-text" data-target="#r8" data-toggle="datetimepicker"><i class="fa fa-clock-o"></i></div>
                                         </div>
                                     </div>
@@ -255,8 +255,56 @@
                     </div>
                 </div>
 
-                <button class="btn btn-primary" type="submit" form="submitForm">儲存</button>
+                <button class="btn btn-primary" type="submit" form="shopform">儲存</button>
                 <a class="btn btn-info" href="@Url.Action("Index", new { FuncId = funcId, className = ViewData["className"] })">返回</a>
+
+                <div class="modal fade" id="detailModal" tabindex="-1" role="dialog" aria-labelledby="detailModal" aria-hidden="true">
+                    <div class="modal-dialog modal-dialog-centered" role="document" style="    min-height: 900px;    max-width: 1080px;">
+                        <div class="modal-content" style="    min-height: 900px">
+                            <div class="modal-header">
+                                <h5 class="modal-title">查詢單位/員工(Search)</h5>
+                                <button class="btn-close" type="button" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="row gx-2 gy-1 smb-5px">
+                                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                                        <label class="col-form-label websoft-form-label pt-2 ">中文名</label>
+                                        <input type="text" class="form-control" placeholder="" id="select_empname">
+                                    </div>
+                                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                                        <label class="col-form-label websoft-form-label pt-2 ">英文名</label>
+                                        <input type="text" class="form-control" placeholder="" id="select_engname">
+                                    </div>
+                                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                                        <label class="col-form-label websoft-form-label pt-2 ">員工編號</label>
+                                        <input type="text" class="form-control" placeholder="" id="select_empno">
+                                    </div>
+                                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                                        <label class="col-form-label websoft-form-label pt-2 ">部門名稱</label>
+                                        <input type="text" class="form-control" placeholder="" id="select_deptname">
+                                    </div>
+                                    <div class=" col-xl-4 col-lg-6 col-md-12">
+                                        <button class="btn btn-secondary" type="button" id="@(mapAttr.IdBtnSearch)">查詢</button>
+                                    </div>
+                                </div>
+                                <div id="@(mapAttr.IdGrid2)"></div>
+                                <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
+                                    <div id="pageResizer" class="jsgrid-pager-page">
+                                        <span>每頁筆數:</span>
+                                        <select id="pageSelect2">
+                                        </select>
+                                    </div>
+                                    <div id="pagers2">
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button class="btn btn-secondary" type="button" data-bs-dismiss="modal">關閉</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </form>
         </div>
     </div>
@@ -265,6 +313,124 @@
 @section scripts
 {
     <script>
+        var dialogType = "";
+        var context = {
+            $SearchForm: null,
+
+            $Grid2: null,
+        }
+
+        function init() {
+            context.$SearchForm = $('#@(mapAttr.IdSearchForm)');
+            context.$Grid2 = $('#@(mapAttr.IdGrid2)');
+        }
+
+        function initGrid2() {
+            $("#@(mapAttr.IdGrid2)").jsGrid({
+                paging: true,
+                width: "100%",
+                pageSize: pageDataSource[0].id,
+                pageButtonCount: 5,
+                pagerFormat: "{first} {prev} {pages} {next} {last}    第 {pageIndex} 頁 共 {pageCount} 頁",
+                pagePrevText: "上一頁",
+                pageNextText: "下一頁",
+                pageFirstText: "第一頁",
+                pageLastText: "最後一頁",
+                pageLoading: true,
+                autoload: true,
+                changePageSize: function (pageSize) {
+                    var $this = this;
+                    $this.pageSize = pageSize;
+
+                    context.$Grid2.jsGrid("openPage", 1);
+                    context.$Grid2.jsGrid("loadData");
+                },
+                pagerContainer: "#pagers2",
+                controller: {
+                    loadData: function (filter) {
+                        var d = $.Deferred();
+                        var engname = $('#select_engname').val();
+                        var empname = $('#select_empname').val();
+                        var empno = $('#select_empno').val();
+                        var deptname = $('#select_deptname').val();
+
+                        filter.vm = {
+                            engname: engname,
+                            empname: empname,
+                            empno: empno,
+                            deptname: deptname,
+                        };
+                        $.ajax({
+                            type: "POST",
+                            url: '@(config.GetBackendUrl() + Url.Action("GetEmpList", "StoreMgt"))',
+                            data: filter,
+                            dataType: "json",
+                            success: function (res) {
+                                if (res.Success === false) {
+                                    swal({
+                                        text: res.Message,
+                                        icon: "error",
+                                        button: "@mapText.Btn_Confirm.ToHtmlString()"
+                                    });
+                                    d.reject();
+                                    return;
+                                }
+                                var da = {
+                                    data: res.Data,
+                                    itemsCount: res.Total
+                                }
+                                d.resolve(da);
+                            }
+                        })
+
+                        return d.promise();
+                    }
+
+                },
+                fields: [
+                    {
+                        type: 'control', align: "center",
+                        width: 130,
+                        editButton: false,
+                        headerTemplate: (value, item) => {
+                            return '操作';
+                        },
+                        itemTemplate: (value, item) => {
+                            $selectButton = $('<button>')
+                                .attr({
+                                    'class': 'btn btn-secondary',
+                                })
+                                .html('選擇')
+                                .on('click', () => {
+                                    switch (dialogType) {
+                                        case "AS":
+                                            $('#as_cname').val(item["empname"]);
+                                            $('#as_empno').val(item["empno"]);
+                                            break;
+                                        default:
+                                            $('#owner_empno').val(item["empno"]);
+                                            $('#owner_cname').val(item["empname"]);
+                                            $('#owner_ename').val(item["engname"]);
+                                            $('#owner_tel').val(item["mobile"]);
+
+                                            break;
+                                    }
+
+                                    $('[class="btn-close"]').click();
+                                });
+
+                            return $('<div>').append($selectButton);
+                        }
+                    },
+                    { name: "empno", type: "text", title: "員工編號", width: 130 },
+                    { name: "empname", type: "text", title: "員工姓名", width: 130 },
+                    { name: "ext", type: "text", title: "分機號碼", width: 130 },
+                    { name: "deptcode", type: "text", title: "部門代號", width: 130 },
+                    { name: "deptname", type: "text", title: "部門名稱", width: 130 },
+                ]
+            });
+        }
+
         $('.initDatepicker').datetimepicker({
             format: 'YYYY/MM/DD',
         });
@@ -275,7 +441,416 @@
 
         $(".select2-Clear").select2({
             placeholder: "請選擇",
-            allowClear: true,
+        });
+
+        $('#@(mapAttr.IdBtnSearch)').on('click', (e) => {
+
+            context.$Grid2.jsGrid('search');
+        });
+
+        $('#owner_cname').on('click', (e) => {
+            $("#detailModal").modal("show");
+            dialogType = "";
+        });
+
+        $('#as_cname').on('click', (e) => {
+            $("#detailModal").modal("show");
+            dialogType = "AS";
+        });
+
+        function GetSelectContent() {
+            showLoader();
+            // var data = { formNo: formNo };
+            $.ajax({
+                type: 'get',
+                url: '@(config.GetBackendUrl() + Url.Action("GetSelectContent", "StoreMgt"))',
+                // data: data,
+                dataType: 'json',
+                success: function (data) {
+                    if (data.Success == true) {
+                        hideLoader();
+                        var option;
+                        for (var i = 0; i < data.Data.company_leaves.length; i++) {
+                            var item = data.Data.company_leaves[i];
+                            if (i == 0)
+                                option = new Option(item.Text, item.Value, true, true);
+                            else
+                                option = new Option(item.Text, item.Value, false, false);
+                            $('#company_leaves').append(option);
+                        }
+                        for (var i = 0; i < data.Data.store_types.length; i++) {
+                            var item = data.Data.store_types[i];
+                            if (i == 0)
+                                option = new Option(item.Text, item.Value, true, true);
+                            else
+                                option = new Option(item.Text, item.Value, false, false);
+                            $('#store_type').append(option);
+                        }
+
+                        $('#store_type').trigger("change");
+
+                        for (var i = 0; i < data.Data.channels.length; i++) {
+                            var item = data.Data.channels[i];
+                            if (i == 0)
+                                option = new Option(item.Text, item.Value, true, true);
+                            else
+                                option = new Option(item.Text, item.Value, false, false);
+                            $('#channel').append(option);
+                        }
+                        for (var i = 0; i < data.Data.area.length; i++) {
+                            var item = data.Data.area[i];
+                            if (i == 0)
+                                option = new Option(item.Text, item.Value, true, true);
+                            else
+                                option = new Option(item.Text, item.Value, false, false);
+                            $('#area').append(option);
+                        }
+                        for (var i = 0; i < data.Data.decoration_conditions.length; i++) {
+                            var item = data.Data.decoration_conditions[i];
+                            if (i == 0)
+                                option = new Option(item.Text, item.Value, true, true);
+                            else
+                                option = new Option(item.Text, item.Value, false, false);
+                            $('#decoration_condition').append(option);
+                        }
+
+                        if ('@action' == 'edit') {
+                            GetDetail();
+                        }
+                    } else {
+                        alert(data.Message);
+                        hideLoader();
+                    }
+                },
+                error: function (msg) {
+                    hideLoader();
+                }
+            });
+        };
+        function GetDetail() {
+            showLoader();
+            // var data = { ivrcode: '@ivrcode'};
+            $.ajax({
+                type: 'get',
+                url: '@(config.GetBackendUrl() + Url.Action("GetDetail", "StoreMgt", new { ivrcode = ivrcode }))',
+                // data: data,
+                dataType: 'json',
+                success: function (data) {
+                    hideLoader();
+                    if (data.Success == true) {
+
+                        var item = data.Data;
+                        $('#company_leaves').val(item.company_leaves);
+                        $('#store_type').val(item.store_type);
+
+                        $("#store_type option").each(function () {
+                            if (item.store_type == 'RETAIL') {
+                                if ($(this).val() !== "RETAIL") {
+                                    $(this).remove();
+                                }
+                            }
+                            else {
+                                if ($(this).val() == "RETAIL") {
+                                    $(this).remove();
+                                }
+                            }
+                        })
+
+                        $("#store_type").trigger("change.select2");
+
+                        $('#channel').val(item.channel);
+                        $('#channel').trigger("change");
+
+                        if ($('#area').find("option[value='" + item.area + "']").length === 0) {
+                            $('#area').append(new Option(item.area, item.area, false, false));
+                        }
+
+                        $('#area').val(item.area);
+                        $('#area').trigger("change");
+
+                        $('#shop_name').val(item.shop_name);
+                        $('#ivr_code').val('@ivrcode');
+
+                        $('#ivr_code').prop('readonly', true);
+
+                        $('#email').val(item.email);
+                        $('#owner_empno').val(item.owner_empno);
+                        $('#owner_cname').val(item.owner_cname);
+                        $('#owner_ename').val(item.owner_ename);
+                        $('#as_empno').val(item.as_empno);
+                        $('#owner_tel').val(item.owner_tel);
+                        $('#urgent_tel').val(item.urgent_tel);
+                        $('#address').val(item.address);
+                        $('#decoration_condition').val(item.decoration_condition);
+                        // $('#approval_date').val(item.approval_date);
+                        $('#note').val(item.note);
+                        $('#note_owner').val(item.note_owner);
+                        $('#note_date').val(item.note_date);
+                        $('#business_hour_range1').val(item.business_hour_range1);
+                        $('#business_hour_range2').val(item.business_hour_range2);
+                        $('#business_hour_range3').val(item.business_hour_range3);
+                        $('#business_hour_range4').val(item.business_hour_range4);
+
+                        $('#as_cname').val(item.as_cname);
+
+                        let date = new Date(item.approval_date);
+                        let formatted = date.getFullYear() + "/" + 
+               String(date.getMonth() + 1).padStart(2, "0") + "/" + 
+               String(date.getDate()).padStart(2, "0");
+
+                        $("#approval_date").data().date = formatted;
+                        $("#approval_date input").val(formatted);
+
+                        var r12 = item.business_hour_range1.split("~");
+                        var r34 = item.business_hour_range2.split("~");
+                        var r56 = item.business_hour_range3.split("~");
+                        var r78 = item.business_hour_range4.split("~");
+
+                        $("#r1").data().date = r12[0];
+                        $("#r1 input").val(r12[0]);
+
+                        $("#r2").data().date = r12[1];
+                        $("#r2 input").val(r12[1]);
+
+                        $("#r3").data().date = r34[0];
+                        $("#r3 input").val(r34[0]);
+
+                        $("#r4").data().date = r34[1];
+                        $("#r4 input").val(r34[1]);
+
+                        $("#r5").data().date = r56[0];
+                        $("#r5 input").val(r56[0]);
+
+                        $("#r6").data().date = r56[1];
+                        $("#r6 input").val(r56[1]);
+
+                        $("#r7").data().date = r78[0];
+                        $("#r7 input").val(r78[0]);
+
+                        $("#r8").data().date = r78[1];
+                        $("#r8 input").val(r78[1]);
+
+                    } else {
+                        alert(data.Message);
+                    }
+                },
+                error: function (msg) {
+                    hideLoader();
+                }
+            });
+        }
+
+        function CheckUserType(objvalue, objtype) {
+            if (objvalue == "" && objtype != "Start") {
+                alert("請選擇" + objtype + "!");
+                return false;
+            }
+            switch (objtype) {
+                case "通路":
+                    var index = shopform.area.options.length;
+                    var area = document.getElementById("area").value;
+                    // var area = shopform.area.options.value;
+                    for (var i = index - 1; i >= 0; i--) {
+                        shopform.area.options.remove(i);
+                    }
+                    shopform.area.options.add(new Option('請選擇', ''));
+                    if (objvalue == "RETAIL" || objvalue == "FRANCHISE") {
+                        shopform.area.options.add(new Option('N1', 'N1'));
+                        shopform.area.options.add(new Option('N2', 'N2'));
+                        shopform.area.options.add(new Option('N3', 'N3'));
+                        shopform.area.options.add(new Option('C1', 'C1'));
+                        shopform.area.options.add(new Option('C2', 'C2'));
+                        shopform.area.options.add(new Option('S1', 'S1'));
+                        shopform.area.options.add(new Option('S2', 'S2'));
+                        if (area.length > 0) {
+                            switch (area) {
+                                case "N1": shopform.area.options[1].selected; break;
+                                case "N2": shopform.area.options[2].selected; break;
+                                case "N3": shopform.area.options[3].selected; break;
+                                case "C1": shopform.area.options[4].selected; break;
+                                case "C2": shopform.area.options[5].selected; break;
+                                case "S1": shopform.area.options[6].selected; break;
+                                case "S2": shopform.area.options[7].selected; break;
+                            }
+                        }
+                    }
+                    else {
+                        shopform.area.options.add(new Option('N', 'N'));
+                        shopform.area.options.add(new Option('C', 'C'));
+                        shopform.area.options.add(new Option('S', 'S'));
+                        if (area.length > 0) {
+                            switch (area) {
+                                case "N": shopform.area.selected = "selected"; break;
+                                case "C": shopform.area.selected = "selected"; break;
+                                case "S": shopform.area.selected = "selected"; break;
+                            }
+                        }
+                    }
+                    break;
+                case "Start":
+                    var area = shopform.area.options.value;
+                    alert(area);
+                    var cvalue = shopform.channel.value;
+                    alert(cvalue);
+                    if (cvalue != "") {
+                        cvalue = shopform.area.value;
+                        shopform.area.options[0].value = '';
+                        shopform.area.options[0].text = '請選擇';
+
+                        for (var i = index - 1; i >= 0; i--) {
+                            shopform.area.options.remove(i);
+                        }
+
+                        if (objvalue == "RETAIL" || objvalue == "FRANCHISE") {
+                            shopform.area.options.add(new Option('N1', 'N1'));
+                            shopform.area.options.add(new Option('N2', 'N2'));
+                            shopform.area.options.add(new Option('N3', 'N3'));
+                            shopform.area.options.add(new Option('C1', 'C1'));
+                            shopform.area.options.add(new Option('C2', 'C2'));
+                            shopform.area.options.add(new Option('S1', 'S1'));
+                            shopform.area.options.add(new Option('S2', 'S2'));
+
+                            switch (cvalue) {
+                                case "N1": shopform.area.selectedIndex = 1; break;
+                                case "N2": shopform.area.selectedIndex = 2; break;
+                                case "N3": shopform.area.selectedIndex = 3; break;
+                                case "C1": shopform.area.selectedIndex = 4; break;
+                                case "C2": shopform.area.selectedIndex = 5; break;
+                                case "S1": shopform.area.selectedIndex = 6; break;
+                                case "S2": shopform.area.selectedIndex = 7; break;
+                            }
+                            if (area.length > 0) {
+                                switch (area) {
+                                    case "N1": shopform.area.options[1].selected; break;
+                                    case "N2": shopform.area.options[2].selected; break;
+                                    case "N3": shopform.area.options[3].selected; break;
+                                    case "C1": shopform.area.options[4].selected; break;
+                                    case "C2": shopform.area.options[5].selected; break;
+                                    case "S1": shopform.area.options[6].selected; break;
+                                    case "S2": shopform.area.options[7].selected; break;
+                                }
+                            }
+                        }
+                        else {
+                            shopform.area.options.add(new Option('N', 'N'));
+                            shopform.area.options.add(new Option('C', 'C'));
+                            shopform.area.options.add(new Option('S', 'S'));
+                            switch (cvalue) {
+                                case "N": shopform.area.selectedIndex = 1; break;
+                                case "C": shopform.area.selectedIndex = 2; break;
+                                case "S": shopform.area.selectedIndex = 3; break;
+                            }
+                            if (area.length > 0) {
+                                switch (area) {
+                                    case "N": shopform.area.options[1].selected; break;
+                                    case "C": shopform.area.options[2].selected; break;
+                                    case "S": shopform.area.options[3].selected; break;
+                                }
+                            }
+                        }
+                    }
+                    break;
+                // case "IVR CODE":
+                //     var ivr = shopform.store_type.options[shopform.store_type.selectedIndex].value
+                //     if (ivr == "RETAIL") {
+                //         if (objvalue.length != 4) {
+                //             shopform.ivr_code.value = '';
+                //             alert("IVRCODE 應為4碼！！");
+                //             return false;
+                //         }
+                //     }
+                //     else {
+                //         if (objvalue.length != 7) {
+                //             shopform.ivr_code.value = '';
+                //             alert("IVRCODE 應為7碼！！");
+                //             return false;
+                //         }
+                //     }
+                //     break;
+                case "店格":
+                    // shopform.ivr_code.value = '';
+                    if (objvalue == "RETAIL") {
+                        $("#ivr_code").attr("pattern", "\\d{4}");
+                        $('#ivr_code_invalid').text("IVRCODE 應為4碼數字");
+                    } else {
+                        $("#ivr_code").attr("pattern", "\\d{7}");
+                        $('#ivr_code_invalid').text("IVRCODE 應為7碼數字");
+                    }
+                    break;
+            }
+        }
+
+        $(function () {
+            GetSelectContent();
+
+            $("#shopform").submit(function (e) {
+                e.preventDefault();
+                showLoader();
+
+                if ($(this).is(':invalid')) {
+                    hideLoader();
+                    alert('有必填欄位尚未輸入 或 輸入的格式不符合！');
+                }
+                else {
+                    var vm = {};
+                    vm.company_leaves = $('#company_leaves').val();
+                    vm.store_type = $('#store_type').val();
+                    vm.channel = $('#channel').val();
+                    vm.area = $('#area').val();
+                    vm.shop_name = $('#shop_name').val();
+                    vm.ivr_code = '@ivrcode';
+                    vm.email = $('#email').val();
+                    vm.owner_empno = $('#owner_empno').val();
+                    vm.owner_cname = $('#owner_cname').val();
+                    vm.owner_ename = $('#owner_ename').val();
+                    vm.as_empno = $('#as_empno').val();
+                    vm.owner_tel = $('#owner_tel').val();
+                    vm.urgent_tel = $('#urgent_tel').val();
+                    vm.address = $('#address').val();
+                    vm.decoration_condition = $('#decoration_condition').val();
+                    vm.approval_date = $('#approval_date').data('date');
+                    vm.note = $('#note').val();
+                    vm.business_hour_range1 = $('#r1').data('date') + '~' + $('#r2').data('date');
+                    vm.business_hour_range2 = $('#r3').data('date') + '~' + $('#r4').data('date');
+                    vm.business_hour_range3 = $('#r5').data('date') + '~' + $('#r6').data('date');
+                    vm.business_hour_range4 = $('#r7').data('date') + '~' + $('#r8').data('date');
+
+                    $.ajax({
+                        url: '@(config.GetBackendUrl() + Url.Action(action))',
+                        dataType: 'json',
+                        type: 'POST',
+                        data: { vm: vm },
+                        success: function (data) {
+                            hideLoader();
+
+                            if (data.Success == true) {
+                                alert(data.Data);
+                                window.location = "@(Url.Action("index"))";
+                            } else {
+                                alert(data.Message);
+                            }
+                        },
+                        error: function (msg) {
+                            alert("新增異常！");
+                        }
+                    });
+                }
+            });
+
+            $("#pageSelect2").on("change", function () {
+                const val = this.value;
+                onPageLenghtSelect(val, context.$Grid2);
+            })
+
+            $("#pageSelect2").select2({
+                minimumResultsForSearch: -1,
+                data: pageDataSource
+            });
+            $("#pageSelect2").data("select2").$container.addClass("w-auto");
+
+            init();
+            initGrid2();
+
         });
     </script>
 }

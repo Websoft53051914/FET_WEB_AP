@@ -1,7 +1,24 @@
 ﻿@{
+    var mapText = new
+    {
+        Btn_Search = "查詢",
+        Btn_Clear = "清除",
+        Btn_Create = "新增",
+        Btn_Confirm = "確認",
+        Btn_Cancel = "取消",
+    };
+
     var mapAttr = new
     {
         IdGrid = Guid.NewGuid(),
+        IdBtnSearch = Guid.NewGuid(),
+    };
+
+    var mapUrl = new
+    {
+        Delete = Url.Action("Delete"),
+        SendPWD = Url.Action("SendPWD"),
+
     };
 }
 
@@ -26,18 +43,18 @@
             <div class="row  mb-2">
 
                 <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
-                    <label class="col-form-label websoft-form-label pt-2">報修門市</label>
-                    <input type="text" class="form-control" placeholder="">
+                    <label class="col-form-label websoft-form-label pt-2">廠商名稱</label>
+                    <input type="text" class="form-control" placeholder="" id="merchant_name">
                 </div>
             </div>
-            <button class="btn btn-primary">送出查詢</button>
+            <button class="btn btn-primary" id="@(mapAttr.IdBtnSearch)">送出查詢</button>
         </div>
     </div>
 
     <div class="card">
         <div class="card-body">
             <div class="mb-2">
-                <a class="btn btn-primary" href="@(Url.Action("Edit"))">新增</a>
+                <a class="btn btn-primary" href="@(Url.Action("Create"))">新增</a>
             </div>
             <div id="@(mapAttr.IdGrid)"></div>
             <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
@@ -84,6 +101,10 @@
                 placeholder: "請選擇",
                 allowClear: true,
             });
+
+            $('#@(mapAttr.IdBtnSearch)').on('click', (e) => {
+                context.$Grid.jsGrid('search');
+            });
         });
 
         function initGrid(cookiePageIndex) {
@@ -98,8 +119,8 @@
                 pageNextText: "下一頁",
                 pageFirstText: "第一頁",
                 pageLastText: "最後一頁",
-                // pageLoading: true,
-                // autoload: true,
+                pageLoading: true,
+                autoload: true,
                 changePageSize: function (pageSize) {
                     var $this = this;
                     $this.pageSize = pageSize;
@@ -110,68 +131,41 @@
                 onDataLoaded: function () {
                     feather.replace();
                 },
-                data: [
-                    // Sample data for initial load
-                    {
-                        Id: 1,
-                        Order_Id: "001",
-                        Merchant_Name: "廠商A",
-                        CP_Name: "聯絡人A",
-                        CP_Tel: "0912345678",
-                        Email: "fsfsfdsf@@gmail.com.",
-                        Merchant_Login: "merchantA",
-                        Merchant_Password: "passwordA"
-                    },
-                    {
-                        Id: 2,
-                        Order_Id: "002",
-                        Merchant_Name: "廠商B",
-                        CP_Name: "聯絡人B",
-                        CP_Tel: "0987654321",
-                        Email: "fsfsfdsf@@gmail.com.",
-                        Merchant_Login: "merchantB",
-                        Merchant_Password: "passwordB"
-                    },
-                    {
-                        Id: 3,
-                        Order_Id: "003",
-                        Merchant_Name: "廠商C",
-                        CP_Name: "聯絡人C",
-                        CP_Tel: "0922333444",
-                        Email: "fsfsfdsf@@gmail.com.",
-                        Merchant_Login: "merchantC",
-                        Merchant_Password: "passwordC"
-                    }
-                ],
-                // controller: {
-                //     loadData: function (filter) {
-                //         var d = $.Deferred();
-                //         $.ajax({
-                //             type: "POST",
-                //             url: "@Url.Action("GetPageList")",
-                //             data: filter,
-                //             dataType: "json",
-                //             success: function (res) {
-                //                 if (res.Success === false) {
-                //                     swal({
-                //                         text: res.Message,
-                //                         icon: "error",
-                //                         button: "確認"
-                //                     });
-                //                     d.reject();
-                //                     return;
-                //                 }
-                //                 var da = {
-                //                     data: res.Data,
-                //                     itemsCount: res.Total
-                //                 }
-                //                 d.resolve(da);
-                //             }
-                //         })
+                controller: {
+                    loadData: function (filter) {
+                        var d = $.Deferred();
 
-                //         return d.promise();
-                //     }
-                // },
+                        var merchant_name = $('#merchant_name').val(); 
+                        filter.vm = {
+                            merchant_name: merchant_name, 
+                        };
+
+                        $.ajax({
+                            type: "POST",
+                            url: "@(config.GetBackendUrl() + Url.Action("GetPageList"))",
+                            data: filter,
+                            dataType: "json",
+                            success: function (res) {
+                                if (res.Success === false) {
+                                    swal({
+                                        text: res.Message,
+                                        icon: "error",
+                                        button: "確認"
+                                    });
+                                    d.reject();
+                                    return;
+                                }
+                                var da = {
+                                    data: res.Data,
+                                    itemsCount: res.Total
+                                }
+                                d.resolve(da);
+                            }
+                        })
+
+                        return d.promise();
+                    }
+                },
                 fields: [
                     { name: "Id", visible: false },
                     {
@@ -189,18 +183,96 @@
                             $editButton = $('<a>')
                                 .attr({
                                     'class': 'jsgrid-button jsgrid-edit-button d-inline-block',
-                                    'href': "",
                                 })
+                                .on('click', () => {
+                                    var newTab = window.open('@(Url.Action("Edit", new { order_id = "tempid" }))'.replace("tempid", item['order_id']), '_blank');
+                                });
 
                             $deleteButton = $('<button>')
                                 .attr({
-                                    'class': 'd-inline-block exclick jsgrid-button jsgrid-delete-button',
+                                    'class': 'exclick jsgrid-button jsgrid-delete-button',
                                 })
+                                .on('click', () => {
+                                    const callDelete = () => {
+                                        var data = {
+                                            order_id: item['order_id']
+                                        };
+
+                                        $.ajax({
+                                            url: '@(config.GetBackendUrl() + mapUrl.Delete.ToHtmlString())',
+                                            dataType: 'json',
+                                            type: 'POST',
+                                            data: data
+                                        })
+                                            .done((response) => {
+                                                var msg = response.Success ? response.Data : response.Message;
+                                                var alertType = response.Success ? "success" : "error";
+
+                                                swal({
+                                                    text: msg,
+                                                    button: '@(mapText.Btn_Confirm.ToHtmlString())',
+                                                    icon: alertType
+                                                }).then((result) => {
+                                                    if (result) {
+                                                        context.$Grid.jsGrid('search');
+                                                    }
+                                                });
+                                            });
+                                    }
+
+                                    swal({
+                                        text: `@config.GetMessage("BeforeDeleteMsg").ToHtmlString()`,
+                                        buttons: ['@(mapText.Btn_Cancel.ToHtmlString())', '@(mapText.Btn_Confirm.ToHtmlString())'],
+                                        icon: "info"
+                                    }).then((result) => {
+                                        console.log(result);
+                                        if (result) {
+                                            callDelete();
+                                        }
+                                    });
+                                });
 
                             $sendEmail = $('<button>').attr({
-                                    'class': 'jsgrid-button  d-inline-block',
-                                    'title': '送出密碼郵件'
-                                }).append('<i class="fa fa-envelope" aria-hidden="true"></i>').css({ 'background': 'none' , 'font-size':'17px','color': 'cadetblue'})
+                                'class': 'jsgrid-button  d-inline-block',
+                                'title': '送出密碼郵件'
+                            }).append('<i class="fa fa-envelope" aria-hidden="true"></i>').css({ 'background': 'none', 'font-size': '17px', 'color': 'cadetblue' })
+                                .on('click', () => {
+                                    const callSend = () => {
+                                        var data = {
+                                            order_id: item['order_id']
+                                        };
+
+                                        $.ajax({
+                                            url: '@(config.GetBackendUrl() + mapUrl.SendPWD.ToHtmlString())',
+                                            dataType: 'json',
+                                            type: 'POST',
+                                            data: data
+                                        })
+                                            .done((response) => {
+                                                var msg = response.Success ? response.Data : response.Message;
+                                                var alertType = response.Success ? "success" : "error";
+
+                                                swal({
+                                                    text: msg,
+                                                    button: '@(mapText.Btn_Confirm.ToHtmlString())',
+                                                    icon: alertType
+                                                }).then((result) => {
+                                               
+                                                });
+                                            });
+                                    }
+
+                                    swal({
+                                        text: `確定要發送密碼郵件？`,
+                                        buttons: ['@(mapText.Btn_Cancel.ToHtmlString())', '@(mapText.Btn_Confirm.ToHtmlString())'],
+                                        icon: "info"
+                                    }).then((result) => {
+                                        console.log(result);
+                                        if (result) {
+                                            callSend();
+                                        }
+                                    });
+                                });
 
                             var result = $div.append($editButton);
                             result.append($deleteButton);
@@ -210,17 +282,17 @@
                         }
                     },
                     // 1. 編號 Order_Id  2.廠商名稱 merchant_name 3.聯絡人姓名 CP_Name 4.聯絡人電話 CP_Tel  5.Email 6.登入帳號Merchant_Login 7.登入密碼Merchant_Password
-                    {name: "Order_Id", title: "編號", type: "text", width: 150, align: "center"},
-                    {name: "Merchant_Name", title: "廠商名稱", type: "text", width: 150, align: "center"},
-                    {name: "CP_Name", title: "聯絡人姓名", type: "text", width: 150, align: "center"},
-                    {name: "CP_Tel", title: "聯絡人電話", type: "text", width: 150, align: "center"},
-                    {name: "Email", title: "Email", type: "text", width: 150, align: "center"},
-                    {name: "Merchant_Login", title: "登入帳號", type: "text", width: 150, align: "center"},
-                    {name: "Merchant_Password", title: "登入密碼", type: "text", width: 150, align: "center"},
+                    { name: "order_id", title: "編號", type: "text", width: 150, align: "center" },
+                    { name: "merchant_name", title: "廠商名稱", type: "text", width: 150, align: "center" },
+                    { name: "cp_name", title: "聯絡人姓名", type: "text", width: 150, align: "center" },
+                    { name: "cp_tel", title: "聯絡人電話", type: "text", width: 150, align: "center" },
+                    { name: "email", title: "Email", type: "text", width: 150, align: "center" },
+                    { name: "merchant_login", title: "登入帳號", type: "text", width: 150, align: "center" },
+                    { name: "merchant_password", title: "登入密碼", type: "text", width: 150, align: "center" },
 
                 ],
 
-        });
+            });
 
             //分頁頁數紀錄相關
             context.$Grid.jsGrid('_setPage', cookiePageIndex);//jsgrid bug 不會自動將頁碼設定成pageindex

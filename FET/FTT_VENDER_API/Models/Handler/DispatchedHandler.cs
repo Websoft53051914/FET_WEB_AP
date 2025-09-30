@@ -19,10 +19,6 @@ namespace FTT_VENDER_API.Models.Handler
             _configHelper = confighelper;
         }
         private readonly ConfigurationHelper _configHelper;
-        /// <summary>
-        /// 登入資訊
-        /// </summary>
-        public SessionVO? SessionVO { get; set; } = null;
 
         /// <summary>
         /// 取得分頁資料

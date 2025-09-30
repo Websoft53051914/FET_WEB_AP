@@ -1,12 +1,14 @@
 ﻿using Const.DTO;
 using Const.VO;
 using Core.Utility.Helper.DB.Entity;
+using Core.Utility.Utility;
 using Core.Utility.Web.EX;
 using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models.Handler;
 using FTT_API.Models.ViewModel;
 using Microsoft.AspNetCore.Mvc;
+using System.Linq;
 
 namespace FTT_API.Controllers
 {
@@ -35,7 +37,7 @@ namespace FTT_API.Controllers
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("[action]")]
         public IActionResult GetCiDataSelfVendorPageList(DataSourceRequest request)
         {
             try
@@ -51,16 +53,16 @@ namespace FTT_API.Controllers
 
                     CiDataVM item = new()
                     {
-                        CATEGORY_ID = data.CISID,
-                        CATEGORY_NAME = data.ACINAME,
-                        CATEGORY_NAME_TMP = data.CINAME,
-                        TT_CATEGORY_NOTE = data.NOTES,
-                        TT_CATEGORY_DESC = data.DESCR,
+                        CATEGORY_ID = data.cisid,
+                        CATEGORY_NAME = data.aciname,
+                        CATEGORY_NAME_TMP = data.ciname,
+                        TT_CATEGORY_NOTE = data.notes,
+                        TT_CATEGORY_DESC = data.descr,
                     };
 
-                    if (!string.IsNullOrWhiteSpace(data.CINAME))
+                    if (!string.IsNullOrWhiteSpace(data.ciname))
                     {
-                        string filePath = $"images/Item/{data.CINAME.Trim()}.jpg";
+                        string filePath = $"Item/{data.ciname.Trim()}.jpg";
                         string path = Path.Combine(_env.WebRootPath, filePath);
                         if (System.IO.File.Exists(path))
                         {
@@ -71,6 +73,7 @@ namespace FTT_API.Controllers
                     dataList.Add(item);
                 }
 
+                this.LogSuccess();
                 return JsonPage(new DataSourceResult
                 {
                     Data = dataList,
@@ -79,7 +82,7 @@ namespace FTT_API.Controllers
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
@@ -87,40 +90,39 @@ namespace FTT_API.Controllers
         /// <summary>
         /// 取得維修品項指定 parentId 下的子項目資料
         /// </summary>
-        /// <param name="parentId"></param>
         /// <returns></returns>
-        [HttpPost]
-        public IActionResult GetTreeListTest(int? parentId)
+        [HttpPost("[action]")]
+        public IActionResult GetListTreeChildrenCi(int? parentId, string reqSrc = "ALL", string acType = "")
         {
             try
             {
                 ArgumentNullException.ThrowIfNull(parentId);
 
                 CommonHandler commonHandler = new(_configHelper);
-                List<CIRelationsDTO> dtoList = commonHandler.GetListCIRelations(parentId.Value, "ALL");
+                List<CIRelationsDTO> dtoList = commonHandler.GetListCIRelations(parentId.Value, reqSrc, acType);
                 List<TreeJsFlatModel> result = [];
 
                 foreach (CIRelationsDTO dto in dtoList)
                 {
                     TreeJsFlatModel item = new()
                     {
-                        Id = dto.CISID.ToString(),
-                        Text = dto.CINAME ?? string.Empty,
+                        Id = dto.cisid.ToString(),
+                        Text = dto.ciname ?? string.Empty,
                         Parent = parentId.Value.ToString(),
                         Children = dto.HasChildren,
                         OtherAttr = new Dictionary<string, string>
                         {
-                            { "CATEGORY_ID", dto.CISID.ToString() },
-                            { "CATEGORY_NAME_TMP", dto.CINAME ?? string.Empty },
-                            { "CATEGORY_NAME", dto.FULLNAME ?? string.Empty },
-                            { "TT_CATEGORY_NOTE", dto.NOTES ?? string.Empty },
-                            { "TT_CATEGORY_DESC", dto.DESCR ?? string.Empty },
+                            { "CATEGORY_ID", dto.cisid.ToString() },
+                            { "CATEGORY_NAME_TMP", dto.ciname ?? string.Empty },
+                            { "CATEGORY_NAME", dto.fullname ?? string.Empty },
+                            { "TT_CATEGORY_NOTE", dto.notes ?? string.Empty },
+                            { "TT_CATEGORY_DESC", dto.descr ?? string.Empty },
                         },
                     };
 
-                    if (!dto.HasChildren && !string.IsNullOrWhiteSpace(dto.CINAME))
+                    if (!dto.HasChildren && !string.IsNullOrWhiteSpace(dto.ciname))
                     {
-                        string filePath = $"images/Item/{dto.CINAME.Trim()}.jpg";
+                        string filePath = $"Item/{dto.ciname.Trim()}.jpg";
                         string path = Path.Combine(_env.WebRootPath, filePath);
                         if (System.IO.File.Exists(path))
                         {
@@ -131,11 +133,68 @@ namespace FTT_API.Controllers
                     result.Add(item);
                 }
 
+                this.LogSuccess();
                 return JsonSuccess(result);
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                LogError(ex.ToString());
+                return JsonValidFail("取得報修品項資料發生錯誤：" + _configHelper.GetMessage("SystemErrorMsg"));
+            }
+        }
+
+        /// <summary>
+        /// 取得維修品項指定 id 下的項目資料與其階層資料
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("[action]")]
+        public IActionResult GetListTreeItemCi(List<int> idList, string reqSrc = "ALL", string acType = "")
+        {
+            try
+            {
+                ArgumentNullException.ThrowIfNull(idList);
+
+                CommonHandler commonHandler = new(_configHelper);
+                List<CIRelationsDTO> dtoList = commonHandler.GetListCIRelations(idList, reqSrc, acType);
+                List<TreeJsFlatModel> result = [];
+                foreach (CIRelationsDTO dto in dtoList)
+                {
+                    TreeJsFlatModel item = new()
+                    {
+                        Id = dto.cisid.ToString(),
+                        Text = dto.ciname ?? string.Empty,
+                        Parent = dto.parentsid?.ToString() ?? string.Empty,
+                        Children = dto.HasChildren,
+                        OtherAttr = new Dictionary<string, string>
+                        {
+                            { "CATEGORY_ID", dto.cisid.ToString() },
+                            { "CATEGORY_NAME_TMP", dto.ciname ?? string.Empty },
+                            { "CATEGORY_NAME", dto.fullname ?? string.Empty },
+                            { "TT_CATEGORY_NOTE", dto.notes ?? string.Empty },
+                            { "TT_CATEGORY_DESC", dto.descr ?? string.Empty },
+                            { "PathCsv", dto.path_csv ?? string.Empty },
+                        },
+                    };
+
+                    if (!dto.HasChildren && !string.IsNullOrWhiteSpace(dto.ciname))
+                    {
+                        string filePath = $"images/Item/{dto.ciname.Trim()}.jpg";
+                        string path = Path.Combine(_env.WebRootPath, filePath);
+                        if (System.IO.File.Exists(path))
+                        {
+                            item.OtherAttr.Add("TT_IMAGE", filePath);
+                        }
+                    }
+
+                    result.Add(item);
+                }
+
+                this.LogSuccess();
+                return JsonSuccess(result);
+            }
+            catch (Exception ex)
+            {
+                LogError(ex.ToString());
                 return JsonValidFail("取得報修品項資料發生錯誤：" + _configHelper.GetMessage("SystemErrorMsg"));
             }
         }
@@ -183,6 +242,7 @@ namespace FTT_API.Controllers
                     dataList.Add(item);
                 }
 
+                this.LogSuccess();
                 return JsonPage(new DataSourceResult
                 {
                     Data = dataList,
@@ -191,7 +251,7 @@ namespace FTT_API.Controllers
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
@@ -233,6 +293,7 @@ namespace FTT_API.Controllers
                     dataList.Add(item);
                 }
 
+                this.LogSuccess();
                 return JsonPage(new DataSourceResult
                 {
                     Data = dataList,
@@ -241,7 +302,7 @@ namespace FTT_API.Controllers
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }

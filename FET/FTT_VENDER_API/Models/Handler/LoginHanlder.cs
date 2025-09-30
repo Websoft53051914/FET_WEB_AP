@@ -1,5 +1,7 @@
 ﻿using Const;
+using Const.VO;
 using Core.Utility.Extensions;
+using FEE_VENDER_API.Common;
 using FTT_VENDER_API.Common;
 using FTT_VENDER_API.Common.ConfigurationHelper;
 using FTT_VENDER_API.Common.OriginClass;
@@ -29,7 +31,7 @@ namespace FTT_VENDER_API.Models.Handler
         /// </summary>
         /// <param name="vm">登入資訊</param>
         /// <returns>錯誤訊息</returns>
-        public string Login(LoginVM vm)
+        public (LoginResultVO, SessionVO?) Login(LoginVM vm)
         {
             bool logLoginStatus = false;
             bool boolIsAuthenticated = false;
@@ -37,12 +39,15 @@ namespace FTT_VENDER_API.Models.Handler
             string logFromIP = _httpContext.Connection.RemoteIpAddress?.ToString();
             string logUserType = vm.Role;
             bool checkUserAuthenticated = _configHelper.Config.GetValue<bool>("CheckUserAuthenticated", true);
+            TokenInfoVO token = new();
 
             string adDomain = _configHelper.Config.GetValue<string>("FETADServer", "");
             LdapAuthentication adAuth = new LdapAuthentication(adDomain);
 
             string errorMsg = string.Empty;
             SessionVO? sessionVO = null;
+
+            JwtConfigVO jwtConfigVO = new();
 
             if (vm.Role == "VENDER")
             {
@@ -83,6 +88,7 @@ namespace FTT_VENDER_API.Models.Handler
                                     usertype = vm.Role,
                                     ivrcode = storeVenderProfileVM.order_id?.ToString(),
                                 };
+                                token = Method.GenerateJwtToken(sessionVO, jwtConfigVO);
                             }
                             else
                             {
@@ -105,12 +111,46 @@ namespace FTT_VENDER_API.Models.Handler
                 {
                     boolIsAuthenticated = true;
                 }
+
+                if (true == boolIsAuthenticated)
+                {
+                    StoreVenderProfileVM storeVenderProfileVM = GetStoreVenderProfileNoPWD(vm.AC);
+                    if (storeVenderProfileVM != null)
+                    {
+                        Dictionary<string, object> paras = new Dictionary<string, object>
+                        {
+                            { "MERCHANT_LOGIN", vm.AC },
+                        };
+
+                        boolIsAuthenticated = true;
+                        logLoginStatus = true;
+                        base.dbHelper.Execute("UPDATE STORE_VENDER_PROFILE SET LOGIN_COUNT=1 WHERE MERCHANT_LOGIN = @MERCHANT_LOGIN", paras);
+                        base.dbHelper.Commit();
+
+                        sessionVO = new SessionVO
+                        {
+                            empno = vm.AC,
+                            empname = storeVenderProfileVM.merchant_name,
+                            engname = storeVenderProfileVM.merchant_name,
+                            ext = storeVenderProfileVM.cp_tel,
+                            username = storeVenderProfileVM.merchant_login,
+                            deptcode = storeVenderProfileVM.merchant_name,
+                            usertype = vm.Role,
+                            ivrcode = storeVenderProfileVM.order_id?.ToString(),
+                        };
+                        token = Method.GenerateJwtToken(sessionVO, jwtConfigVO);
+                    }
+                    else
+                    {
+                        errorMsg = $"該帳號不存在";
+                    }
+                }
             }
 
             if (sessionVO != null)
             {
-                sessionVO.Functions.AddRange(RoleFunc.Vender);
-                Method.SetToSession(sessionVO);
+                sessionVO.Functions.AddRange(RoleFunc.VENDOR);
+                //Method.SetToSession(sessionVO);
             }
 
 
@@ -145,15 +185,47 @@ namespace FTT_VENDER_API.Models.Handler
                 }
 
                 base.dbHelper.Execute(insertSQL, paras);
+                if (logLoginStatus == true)
+                {
+                    paras = new Dictionary<string, object>()
+                        {
+                            { "TokenId", token.TokenId },
+                            { "RegisterDate", token.Iat },
+                            { "VoidStartTime", token.Nbf },
+                            { "VoidEndTime", token.Exp },
+                            { "Account",logAccount.Replace("'", "''") },
+                            { "NOW", DateTime.Now },
+                            { "Status", StatusEnum.Enabled.ToInt() }
+                        };
+                    insertSQL = @"INSERT INTO TB_Token(
+	TokenId, RegisterDate, VoidStartTime, VoidEndTime, Account, CreateTime, UpdateTime, Status)
+	VALUES (@TokenId, @RegisterDate,@VoidStartTime,@VoidEndTime, @Account, @NOW, @NOW, @Status);";
+                    base.dbHelper.Execute(insertSQL, paras);
+                }
                 base.dbHelper.Commit();
             }
             catch (Exception err)
             {
 
             }
-            return errorMsg;
+            return (new LoginResultVO()
+            {
+                ErrorMsg = errorMsg,
+                Token = token
+            }, sessionVO);
         }
-       
+
+        private StoreVenderProfileVM GetStoreVenderProfileNoPWD(string AC)
+        {
+            string sql = @"SELECT * FROM STORE_VENDER_PROFILE WHERE MERCHANT_LOGIN= @AC ";
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "AC", AC },
+            };
+            StoreVenderProfileVM? result = base.dbHelper.Find<StoreVenderProfileVM>(sql, parameters);
+            return result;
+        }
+
         public StoreVenderProfileVM GetStoreVenderProfile(string AC , string PD)
         {
             string sql = @"SELECT * FROM STORE_VENDER_PROFILE WHERE MERCHANT_LOGIN= @AC AND MERCHANT_PASSWORD= @PD";
@@ -164,6 +236,18 @@ namespace FTT_VENDER_API.Models.Handler
             };
             StoreVenderProfileVM? result = base.dbHelper.Find<StoreVenderProfileVM>(sql, parameters);
             return result;
+        }
+
+        public void Logout(string token)
+        {
+            string sql = $"UPDATE tb_token SET Status = {StatusEnum.Cancel.ToInt()},UpdateTime = @NOW WHERE TokenId = @TokenId";
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "TokenId", token },
+                { "NOW", DateTime.Now }
+            };
+            base.dbHelper.Execute(sql, parameters);
+            base.dbHelper.Commit();
         }
     }
 }

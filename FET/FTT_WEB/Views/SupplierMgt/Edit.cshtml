@@ -10,6 +10,9 @@
     };
     var action = Html.ActionName().ToLower() == "create" ? "create" : "edit";
     var actionName = action == "create" ? mapText.Btn_Create : mapText.Btn_Edit;
+
+    var order_id = ViewData["order_id"] as string;
+
 }
 
 <div class="container-fluid">
@@ -33,37 +36,38 @@
             <h5>@(actionName.ToHtmlString())</h5>
         </div>
         <div class="card-body card-body-edit">
-            <form class="needs-validation" novalidate="" method="post" id="submitForm">
+            <form class="needs-validation" novalidate="" method="post" id="shopform">
                 <div class="row gx-2 gy-1 mb-3">
-                  
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                        <label class="col-form-label websoft-form-label pt-2">廠商名稱</label>
-                        <input type="text" class="form-control" placeholder="">
-                    </div>
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                        <label class="col-form-label websoft-form-label pt-2">聯絡人</label>
-                        <input type="text" class="form-control" placeholder="">
-                    </div>
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                        <label class="col-form-label websoft-form-label pt-2">聯絡電話</label>
-                        <input type="text" class="form-control" placeholder="">
-                    </div>
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                        <label class="col-form-label websoft-form-label pt-2">Email</label>
-                        <input type="text" class="form-control" placeholder="">
-                    </div>
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                        <label class="col-form-label websoft-form-label pt-2">登入帳號</label>
-                        <input type="text" class="form-control" placeholder="">
-                    </div>
-                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
-                        <label class="col-form-label websoft-form-label pt-2">登入密碼</label>
-                        <input type="text" class="form-control" placeholder="">
-                    </div>
 
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                        <label class="col-form-label websoft-form-label pt-2 required">廠商名稱</label>
+                        <input type="text" class="form-control" placeholder="" required id="merchant_name">
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                        <label class="col-form-label websoft-form-label pt-2 required">聯絡人</label>
+                        <input type="text" class="form-control" placeholder="" required id="cp_name">
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                        <label class="col-form-label websoft-form-label pt-2 required">聯絡電話</label>
+                        <input type="text" pattern="^09\d{2}-?\d{3}-?\d{3}$" title="請輸入有效手機號碼（0912345678 或 0912-345-678）" class="form-control" placeholder="" id="cp_tel" required>
+                        <div class="invalid-feedback">請輸入有效手機號碼（0912345678 或 0912-345-678）</div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                        <label class="col-form-label websoft-form-label pt-2 required">Email</label>
+                        <input type="email" class="form-control" placeholder="" required id="email">
+                        <div class="invalid-feedback">格式錯誤</div>
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                        <label class="col-form-label websoft-form-label pt-2 required">登入帳號</label>
+                        <input type="text" class="form-control" placeholder="" required id="merchant_login">
+                    </div>
+                    <div class="col-xl-3 col-lg-4 col-md-6 col-12">
+                        <label class="col-form-label websoft-form-label pt-2 required">登入密碼</label>
+                        <input type="text" class="form-control" placeholder="" required id="merchant_password">
+                    </div>
                 </div>
 
-                <button class="btn btn-primary" type="submit" form="submitForm">儲存</button>
+                <button class="btn btn-primary" type="submit" form="shopform">儲存</button>
                 <a class="btn btn-info" href="@Url.Action("Index", new { FuncId = funcId, className = ViewData["className"] })">返回</a>
             </form>
         </div>
@@ -85,5 +89,78 @@
             placeholder: "請選擇",
             allowClear: true,
         });
+
+        $("#shopform").submit(function (e) {
+            e.preventDefault();
+            showLoader();
+
+            if ($(this).is(':invalid')) {
+                hideLoader();
+                alert('有必填欄位尚未輸入 或 輸入的格式不符合！');
+            }
+            else {
+                var vm = {};
+                vm.merchant_name = $('#merchant_name').val();
+                vm.cp_name = $('#cp_name').val();
+                vm.cp_tel = $('#cp_tel').val();
+                vm.email = $('#email').val();
+                vm.merchant_login = $('#merchant_login').val();
+                vm.merchant_password = $('#merchant_password').val();
+
+                vm.order_id = '@order_id';
+
+                $.ajax({
+                    url: '@(config.GetBackendUrl() + Url.Action(action))',
+                    dataType: 'json',
+                    type: 'POST',
+                    data: { vm: vm },
+                    success: function (data) {
+                        hideLoader();
+
+                        if (data.Success == true) {
+                            alert(data.Data);
+                            window.location = "@(Url.Action("index"))";
+                        } else {
+                            alert(data.Message);
+                        }
+                    },
+                    error: function (msg) {
+                        alert("新增異常！");
+                    }
+                });
+            }
+        });
+
+        function GetDetail() {
+            showLoader();
+            $.ajax({
+                type: 'get',
+                url: '@(config.GetBackendUrl() + Url.Action("GetDetail", "SupplierMgt", new { order_id = order_id }))',
+                dataType: 'json',
+                success: function (data) {
+                    hideLoader();
+                    if (data.Success == true) {
+                        var item = data.Data;
+                        $('#merchant_name').val(item.merchant_name);
+
+                        $('#cp_name').val(item.cp_name);
+                        $('#cp_tel').val(item.cp_tel);
+                        $('#email').val(item.email);
+                        $('#merchant_login').val(item.merchant_login);
+                        $('#merchant_password').val(item.merchant_password);
+
+                    } else {
+                        alert(data.Message);
+                    }
+                },
+                error: function (msg) {
+                    hideLoader();
+                }
+            });
+        }
+
+        $(function () {
+            GetDetail();
+        })
     </script>
 }

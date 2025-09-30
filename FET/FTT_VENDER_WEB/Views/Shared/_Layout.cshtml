@@ -405,16 +405,15 @@
         $(document)
         $.ajaxSetup({
             headers: {
-                "Authorization": "Bearer xxxxxxx",   // JWT 或其他 token
-                "X-Custom-Header_acc": "@acc",
-                "X-Custom-Header_userrole": "@userrole",
-                "X-Custom-Header_ivrCode": "@ivrCode",
-                "X-Custom-Header_usertype": "@usertype",
+                
+            },
+            xhrFields: {
+                withCredentials: true
             },
             complete: function (x, e) {
-                if (x.status === 440) {
+                if (x.status === 440 || x.status == 401) {
                     alert('已登出，請重新登入');
-                    window.location.href = '@Url.Action("Index", "Logout")';
+                    window.location.href = '@Url.Action("Index", "Login")';
                 } else if (x.status === 403) {
                     alert("無權限執行此動作");
                 }

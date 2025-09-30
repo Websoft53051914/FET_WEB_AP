@@ -1,5 +1,7 @@
-﻿using Core.Utility.Helper.Message;
+﻿using Const;
+using Core.Utility.Helper.Message;
 using Core.Utility.Web.Base;
+using FEE_VENDER_API.Common;
 using FTT_VENDER_API.Common;
 using FTT_VENDER_API.Common.OriginClass.EntiityClass;
 using FTT_VENDER_API.Models;
@@ -7,23 +9,51 @@ using FTT_VENDER_API.Models.Handler;
 using FTT_VENDER_API.Models.ViewModel.StoreVenderProfile;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using System.Diagnostics;
 using static Const.Enums;
 
 namespace FTT_VENDER_API.Controllers
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class BaseProjectController : BaseController
     {
+        private readonly object _lock = new object();
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="context"></param>
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             var headers = context.HttpContext.Request.Headers;
-            if (headers.TryGetValue("X-Custom-Header_acc", out var headerValue_acc))
+            context.HttpContext.Request.Cookies.TryGetValue("Token", out string? token);
+            context.HttpContext.Request.Headers.TryGetValue("Content-From", out var from);
+            if (!string.IsNullOrEmpty(token) && from != "Logout")
             {
-                headers.TryGetValue("X-Custom-Header_userrole", out var headerValue_userrole);
-                headers.TryGetValue("X-Custom-Header_ivrCode", out var headerValue_ivrCode);
-                headers.TryGetValue("X-Custom-Header_usertype", out var headerValue_usertype);
+                SessionVO? session = null;
+                lock (_lock)
+                {
+                    var tokenInfoEntity = GetTokenInfo(token);
+                    JwtConfigVO jwtConfig = new JwtConfigVO();
+                    var (resultVO, sessionRes) = Method.VerifyAndGenerateJwtToken(token, jwtConfig);
+                    if (resultVO.IsExpired && tokenInfoEntity != null && tokenInfoEntity.Status != (int)StatusEnum.Cancel)
+                    {
+                        RefreshToken(resultVO.TokenInfoVO, token);
+                        Response.Cookies.Append("Token", resultVO.TokenInfoVO.TokenId, new CookieOptions
+                        {
+                            HttpOnly = true,
+                            Secure = true,
+                            SameSite = SameSiteMode.None,
+                        });
+                    }
+                    session = sessionRes;
+                }
 
                 bool logLoginStatus = false;
+                string headerValue_acc = session.username.ToString();
+                string role = session.userrole.ToString();
+                string ivrCode = session.ivrcode.ToString();
+                string headerValue_usertype = session.usertype.ToString();
                 bool boolIsAuthenticated = false;
                 string logAccount = headerValue_acc;
                 //string logFromIP = _httpContext.Connection.RemoteIpAddress?.ToString();
@@ -125,12 +155,29 @@ namespace FTT_VENDER_API.Controllers
                 if (sessionVO != null)
                 {
                     //sessionVO.Functions.AddRange(RoleFunc.Vender);
-                    Method.SetToSession(sessionVO);
+                    //Method.SetToSession(sessionVO);
+                    _sessionVO = sessionVO;
                 }
+            }
+            else
+            {
+
+                if (from != "Login" && from != "Logout")
+                {
+                    context.Result = new UnauthorizedObjectResult(JsonValiFail("無權限進入"));
+                    return;
+                }
+
             }
 
             base.OnActionExecuting(context);
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [ApiExplorerSettings(IgnoreApi = true)]
         public StoreVenderProfileVM GetStoreVenderProfile(string AC, string PD, bool isPassPWD = false)
         {
             BaseDBHandler _BaseDBHandler = new BaseDBHandler();
@@ -151,6 +198,55 @@ namespace FTT_VENDER_API.Controllers
         }
 
         /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public void RefreshToken(TokenInfoVO tokenInfoVO,string oldToken)
+        {
+            BaseDBHandler _BaseDBHandler = new BaseDBHandler();
+            string sql = $"UPDATE tb_token SET Status = {(int)StatusEnum.Cancel},UpdateTime = @NOW WHERE tokenid = @TokenId";
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "TokenId", oldToken },
+                { "NOW", DateTime.Now }
+            };
+            _BaseDBHandler.GetDBHelper().Execute(sql, parameters);
+            parameters = new Dictionary<string, object>()
+                        {
+                            { "TokenId", tokenInfoVO.TokenId },
+                            { "RegisterDate", tokenInfoVO.Iat },
+                            { "VoidStartTime", tokenInfoVO.Nbf },
+                            { "VoidEndTime", tokenInfoVO.Exp },
+                            { "Account",tokenInfoVO.LogAccount },
+                            { "NOW", DateTime.Now },
+                            { "Status",(int)StatusEnum.Enabled }
+                        };
+            sql = @"INSERT INTO TB_Token(
+	TokenId, RegisterDate, VoidStartTime, VoidEndTime, Account, CreateTime, UpdateTime, Status)
+	VALUES (@TokenId, @RegisterDate,@VoidStartTime,@VoidEndTime, @Account, @NOW, @NOW, @Status);";
+            _BaseDBHandler.GetDBHelper().Execute(sql, parameters);
+            _BaseDBHandler.GetDBHelper().Commit();
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public TokenInfoVO? GetTokenInfo(string token)
+        {
+            string sql = "SELECT * FROM tb_token WHERE tokenid = @tokenid";
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "tokenid", token }
+            };
+            BaseDBHandler _BaseDBHandler = new BaseDBHandler();
+            TokenInfoVO? result = _BaseDBHandler.GetDBHelper().Find<TokenInfoVO>(sql, parameters);
+            return result;
+        }
+
+        /// <summary>
         /// 登入資訊
         /// </summary>
         public SessionVO _sessionVO = new();
@@ -162,6 +258,7 @@ namespace FTT_VENDER_API.Controllers
         /// 錯誤訊息資訊
         /// </summary>
         /// <returns></returns>
+        [ApiExplorerSettings(IgnoreApi = true)]
         public MessageHelper GetMessage()
         {
             _msgHelper ??= new MessageHelper();
@@ -173,6 +270,7 @@ namespace FTT_VENDER_API.Controllers
         /// SelectListHandler
         /// </summary>
         /// <returns></returns>
+        [ApiExplorerSettings(IgnoreApi = true)]
         public SelectListHandler GetSelectListHandler()
         {
             _selectListHandler ??= new SelectListHandler();
@@ -208,28 +306,15 @@ namespace FTT_VENDER_API.Controllers
         }
 
         /// <summary>
-        /// 紀錄例外
-        /// </summary>
-        /// <param name="ex"></param>
-        [ApiExplorerSettings(IgnoreApi = true)]
-        protected void LogError(Exception ex)
-        {
-            Trace.Write("<font color=red>Source:" + ex.Source + "</font>");
-            Trace.Write("<font color=red>Msg:" + ex.Message + "</font>");
-            Trace.Write(ex.ToString());
-        }
-
-
-        /// <summary>
         /// 紀錄例外於資料庫
         /// </summary>
         /// <param name="ex"></param>
-        /// <returns>ControlLog.Id</returns>
+        /// <returns>TB_Control_Log.Id</returns>
         //protected long LogError(Exception ex)
         //{
         //    var blLog = BLFactory.GetInstance<LogBL>();
 
-        //    var logDM = new ControlLogDM()
+        //    var logDM = new TB_Control_LogDM()
         //    {
         //        IP = LoginSession.Current.IP ?? Method.GetClientIPAddress(),
         //        Status = ((int)LogStatusEnum.Failed).ToString(),
@@ -245,16 +330,17 @@ namespace FTT_VENDER_API.Controllers
         /// 紀錄失敗訊息於資料庫
         /// </summary>
         /// <param name="exception"></param>
-        /// <returns>ControlLog.Id</returns>
+        /// <returns>TB_Control_Log.Id</returns>
         protected void LogError(string exception)
         {
-            var entity = new controllogEntity()
+            var entity = new TB_Control_LogEntity()
             {
                 IP = Method.GetClientIPAddress(),
                 Status = ((int)LogStatusEnum.Failed).ToString(),
                 ControllerName = ControllerContext.ActionDescriptor?.ControllerName ?? string.Empty,
                 ActionName = ControllerContext.ActionDescriptor?.ActionName ?? string.Empty,
-                Exception = exception
+                Exception = exception,
+                Token = Request.Cookies["Token"] ?? string.Empty,
             };
 
             InsertLog(entity);
@@ -266,7 +352,7 @@ namespace FTT_VENDER_API.Controllers
         /// <param name="description"></param>
         protected void LogSuccess(string description = null)
         {
-            var entity = new controllogEntity()
+            var entity = new TB_Control_LogEntity()
             {
                 IP = Method.GetClientIPAddress(),
                 Status = ((int)LogStatusEnum.Success).ToString(),
@@ -275,19 +361,17 @@ namespace FTT_VENDER_API.Controllers
                 Exception = description,
                 Account = LoginSession.Current?.username ?? "",
                 Name = LoginSession.Current?.empname ?? "",
-                LogTime = DateTime.Now
+                LogTime = DateTime.Now,
+                Token = Request.Cookies["Token"] ?? string.Empty,
             };
 
             InsertLog(entity);
         }
 
-        protected void InsertLog(controllogEntity entity)
+        protected void InsertLog(TB_Control_LogEntity entity)
         {
-            ControlLogHandler _BaseDBHandler = new ControlLogHandler();
+            TB_Control_LogHandler _BaseDBHandler = new TB_Control_LogHandler();
             _BaseDBHandler.Insert(entity);
         }
-
     }
-
-
 }

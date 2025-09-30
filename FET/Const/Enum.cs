@@ -9,49 +9,104 @@ namespace Const
         /// </summary>
         public enum FuncID
         {
+            /// <summary>
+            /// 首頁
+            /// </summary>
             Home_View = 0,
+
+            /// <summary>
+            /// 
+            /// </summary>
             ResetTESTP = 1,
 
-            //新開單
+            /// <summary>
+            /// 新開單
+            /// </summary>
             NewOrder_View = 10001,
-            //自行尋商開單
+
+            /// <summary>
+            /// 自行尋商開單
+            /// </summary>
             NewOrderSelfVendor_View = 10002,
-            //待處理
+
+            /// <summary>
+            /// 待處理
+            /// </summary>
             Pending_View = 10003,
-            //列印到場單
+
+            /// <summary>
+            /// 列印到場單
+            /// </summary>
             OnsitePrint_View = 10004,
-            //處理中
+
+            /// <summary>
+            /// 處理中
+            /// </summary>
             InProcess_View = 10005,
-            //已結案
+
+            /// <summary>
+            /// 已結案
+            /// </summary>
             CaseClosed_View = 10006,
-            //查詢
+
+            /// <summary>
+            /// 查詢
+            /// </summary>
             Query_View = 10007,
 
-
-            //報價維護
+            /// <summary>
+            /// 報價維護
+            /// </summary>
             QuoteMgt_View = 10008,
 
-
-            //門市資料維護
+            /// <summary>
+            /// 門市資料維護
+            /// </summary>
             StoreMgt_View = 10009,
-            //廠商資料維護
+
+            /// <summary>
+            /// 廠商資料維護
+            /// </summary>
             SupplierMgt_View = 10010,
-            //派工規則維護
+
+            /// <summary>
+            /// 派工規則維護
+            /// </summary>
             DispatchRuleMgt_View = 10011,
-            //例外派工維護
+
+            /// <summary>
+            /// 例外派工維護
+            /// </summary>
             CIConfig_View = 10012,
-            //保全廠商維護
+
+            /// <summary>
+            /// 保全廠商維護
+            /// </summary>
             SecurityMgt_View = 10013,
-            //角色權限維護
+
+            /// <summary>
+            /// 角色權限維護
+            /// </summary>
             FTTGroupMgt_View = 10014,
-            //維修品項維護
+
+            /// <summary>
+            /// 維修品項維護
+            /// </summary>
             CIMgt_View = 10015,
-            //派工中
+
+            /// <summary>
+            /// 派工中
+            /// </summary>
             Dispatching_View = 10016,
-            //已派工
+
+            /// <summary>
+            /// 已派工
+            /// </summary>
             Dispatched_View = 10017,
 
-            //Mail Server 設定
+            /// <summary>
+            /// Mail Server 設定
+            /// </summary>
             MailServerSetting_View = 10018,
 
         }

@@ -6,6 +6,7 @@
         IdForm = Guid.NewGuid().ToString("N"),
         IdBtnOk = Guid.NewGuid().ToString("N"),
         IdSelectVender = Guid.NewGuid().ToString("N"),
+        UrlGetSelectListVender = $"{config.GetBackendUrl()}/NewOrder/GetSelectListVender",
     };
 }
 
@@ -88,7 +89,7 @@
 
             showLoader();
             $.ajax({
-                url: '@(Url.Action("GetSelectListVender", "NewOrder")?.ToHtmlString())',
+                url: '@(mapData.UrlGetSelectListVender?.ToHtmlString())',
                 dataType: 'json',
                 type: 'POST',
                 data: data,
@@ -105,13 +106,7 @@
                         });
                     }
                     else {
-                        swal({
-                            text: response['Message'],
-                            button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                            icon: 'error'
-                        }).then(() => {
-
-                        });
+                        MyApp.Alert.error(response['Message']);
                     }
                 })
                 .fail((err) => {
@@ -129,11 +124,7 @@
                 $('#@mapData.IdModal').modal('hide'); // 關閉模態框
             }
             else {
-                swal({
-                    text: '請選擇廠商！',
-                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                    icon: 'warning'
-                });
+                MyApp.Alert.warning('請選擇廠商！');
             }
         });
     });

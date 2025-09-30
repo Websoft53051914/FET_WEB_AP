@@ -264,16 +264,11 @@ limit "+ pageSize + @" offset "+ (startRowNum-1) +@" ;
         {
             int startRowNum = (currentPage <= 1) ? 1 : 1 + (currentPage - 1) * pageSize;
             int endRowNum = (startRowNum - 1) + pageSize;
-            string paggingSQL = @"
-select * from
-(
-select
-    ROW_NUMBER() OVER(ORDER BY " + orderColumn + @") AS RowNum,pageData.*
-from
-    (" + _SQLScript + @") as pageData
-)pageData
-where 
-    pageData.RowNum >= " + startRowNum + @" AND pageData.RowNum <= " + endRowNum + @"
+            string paggingSQL = $@"
+SELECT *
+FROM ({_SQLScript}) pageData 
+ORDER BY {orderColumn}
+OFFSET {startRowNum - 1} LIMIT {pageSize}
 ";
 
             return this.iDBComoponent.GetEntitiesBySQLScript<T>(paggingSQL, CommandType.Text, paras);

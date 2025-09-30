@@ -1,61 +1,200 @@
-﻿using Core.Utility.Helper.DB.Entity;
-using Core.Utility.Utility;
+﻿using Const.DTO;
+using Const.VO;
+using Core.Utility.Helper.DB.Entity;
 using Core.Utility.Web.EX;
-using FTT_VENDER_API.Common;
+using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_VENDER_API.Common.ConfigurationHelper;
-using FTT_VENDER_API.Models;
+using FTT_VENDER_API.Models.Handler;
 using Microsoft.AspNetCore.Mvc;
-using static Const.Enums;
 
 namespace FTT_VENDER_API.Controllers
 {
+    /// <summary>
+    /// API
+    /// </summary>
+    [Route("[controller]")]
     public class ApiController : BaseProjectController
     {
-        private readonly ConfigurationHelper _config;
-        public ApiController(ConfigurationHelper config) 
+        private readonly ConfigurationHelper _configHelper;
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="config"></param>
+        /// <param name="env"></param>
+        public ApiController(ConfigurationHelper config, IWebHostEnvironment env)
         {
-            _config = config;
+            _configHelper = config;
+            _env = env;
         }
 
-        [HttpPost]
-        public IActionResult GetCiDataSelfVendorPageList(DataSourceRequest request)
+        private readonly IWebHostEnvironment _env;
+
+        /// <summary>
+        /// 取得維修品項指定 parentId 下的子項目資料
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("[action]")]
+        public IActionResult GetListTreeChildrenCi(int? parentId, string reqSrc = "ALL", string acType = "")
         {
             try
             {
-                PageEntity pageEntity = base.GetPageEntity(request);
+                ArgumentNullException.ThrowIfNull(parentId);
 
-                //CISID  CINAME ACINAME
-                var data = new List<dynamic>
+                CommonHandler commonHandler = new(_configHelper);
+                List<CIRelationsDTO> dtoList = commonHandler.GetListCIRelations(parentId.Value, reqSrc, acType);
+                List<TreeJsFlatModel> result = [];
+
+                foreach (CIRelationsDTO dto in dtoList)
                 {
-                    new
+                    TreeJsFlatModel item = new()
                     {
-                        CISID = "534",
-                        CINAME = "27吋監控電視螢幕(飛利浦 273V5LHSB)",
-                        ACINAME = "停車監控設備 -27吋監控電視螢幕(飛利浦 273V5LHSB)"
-                    },
-                    new
-                    {
-                        CISID = "4535",
-                        CINAME = "停車監控主機(型號：G5004)",
-                        ACINAME = "停車監控設備 -停車監控主機(型號：G5004)"
-                    },
-                    new
-                    {
-                        CISID = "44564",
-                        CINAME = "停車監控主機(型號：G5004)",
-                        ACINAME = "停車監控設備 -停車監控主機(型號：G5004)"
-                    },
-                };
+                        Id = dto.cisid.ToString(),
+                        Text = dto.ciname ?? string.Empty,
+                        Parent = parentId.Value.ToString(),
+                        Children = dto.HasChildren,
+                        OtherAttr = new Dictionary<string, string>
+                        {
+                            { "CATEGORY_ID", dto.cisid.ToString() },
+                            { "CATEGORY_NAME_TMP", dto.ciname ?? string.Empty },
+                            { "CATEGORY_NAME", dto.fullname ?? string.Empty },
+                            { "TT_CATEGORY_NOTE", dto.notes ?? string.Empty },
+                            { "TT_CATEGORY_DESC", dto.descr ?? string.Empty },
+                        },
+                    };
 
+                    if (!dto.HasChildren && !string.IsNullOrWhiteSpace(dto.ciname))
+                    {
+                        string filePath = $"Item/{dto.ciname.Trim()}.jpg";
+                        string path = Path.Combine(_env.WebRootPath, filePath);
+                        if (System.IO.File.Exists(path))
+                        {
+                            item.OtherAttr.Add("TT_IMAGE", filePath);
+                        }
+                    }
+
+                    result.Add(item);
+                }
+
+                this.LogSuccess();
+                return JsonSuccess(result);
+            }
+            catch (Exception ex)
+            {
+                LogError(ex.ToString());
+                return JsonValidFail("取得報修品項資料發生錯誤：" + _configHelper.GetMessage("SystemErrorMsg"));
+            }
+        }
+
+        /// <summary>
+        /// 取得維修品項指定 id 下的項目資料與其階層資料
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("[action]")]
+        public IActionResult GetListTreeItemCi(List<int> idList, string reqSrc = "ALL", string acType = "")
+        {
+            try
+            {
+                ArgumentNullException.ThrowIfNull(idList);
+
+                CommonHandler commonHandler = new(_configHelper);
+                List<CIRelationsDTO> dtoList = commonHandler.GetListCIRelations(idList, reqSrc, acType);
+                List<TreeJsFlatModel> result = [];
+                foreach (CIRelationsDTO dto in dtoList)
+                {
+                    TreeJsFlatModel item = new()
+                    {
+                        Id = dto.cisid.ToString(),
+                        Text = dto.ciname ?? string.Empty,
+                        Parent = dto.parentsid?.ToString() ?? string.Empty,
+                        Children = dto.HasChildren,
+                        OtherAttr = new Dictionary<string, string>
+                        {
+                            { "CATEGORY_ID", dto.cisid.ToString() },
+                            { "CATEGORY_NAME_TMP", dto.ciname ?? string.Empty },
+                            { "CATEGORY_NAME", dto.fullname ?? string.Empty },
+                            { "TT_CATEGORY_NOTE", dto.notes ?? string.Empty },
+                            { "TT_CATEGORY_DESC", dto.descr ?? string.Empty },
+                            { "PathCsv", dto.path_csv ?? string.Empty },
+                        },
+                    };
+
+                    if (!dto.HasChildren && !string.IsNullOrWhiteSpace(dto.ciname))
+                    {
+                        string filePath = $"images/Item/{dto.ciname.Trim()}.jpg";
+                        string path = Path.Combine(_env.WebRootPath, filePath);
+                        if (System.IO.File.Exists(path))
+                        {
+                            item.OtherAttr.Add("TT_IMAGE", filePath);
+                        }
+                    }
+
+                    result.Add(item);
+                }
+
+                this.LogSuccess();
+                return JsonSuccess(result);
+            }
+            catch (Exception ex)
+            {
+                LogError(ex.ToString());
+                return JsonValidFail("取得報修品項資料發生錯誤：" + _configHelper.GetMessage("SystemErrorMsg"));
+            }
+        }
+
+        /// <summary>
+        /// 取得門市分頁資料
+        /// </summary>
+        [HttpPost("[action]")]
+        public IActionResult GetPageListStore(DataSourceRequest request, DialogIvrCodeGridVO vm)
+        {
+            try
+            {
+                ArgumentNullException.ThrowIfNull(vm);
+                CommonHandler onsitePrintHandler = new(_configHelper);
+                // 取得資料(應該只有自行尋商開單的單據會顯示(vender_id 為當前門市的 ivrcode))
+                PageResult<StoreProfileDTO> pageList = onsitePrintHandler.GetPageListStore(GetPageEntity(request), new StoreProfileDTO
+                {
+                    IvrCodeLike = vm.IvrCodeLike?.Trim(),
+                    ShopNameLike = vm.ShopNameLike?.Trim(),
+                    CompanyLeavesLike = vm.CompanyLeavesLike?.Trim(),
+                    ChannelLike = vm.ChannelLike?.Trim(),
+                    StoreTypeLike = vm.StoreTypeLike?.Trim(),
+                });
+                // 轉成 ViewModel
+                List<DialogIvrCodeGridGridVO> dataList = [];
+                for (int i = 0; i < pageList.Results.Count; i++)
+                {
+                    StoreProfileDTO data = pageList.Results[i];
+
+                    DialogIvrCodeGridGridVO item = new()
+                    {
+                        IvrCode = data.ivr_code,
+                        CompanyLeaves = data.company_leaves,
+                        StoreType = data.store_type,
+                        Channel = data.channel,
+                        Area = data.area,
+                        ShopName = data.shop_name,
+                        OwnerName = data.owner_name,
+                        AsName = data.as_name,
+                        OwnerTel = data.owner_tel,
+                        UrgentTel = data.urgent_tel,
+                        Address = data.address,
+                    };
+
+                    dataList.Add(item);
+                }
+
+                this.LogSuccess();
                 return JsonPage(new DataSourceResult
                 {
-                    Data = data,
-                    Total = 2
+                    Data = dataList,
+                    Total = pageList.DataCount,
                 });
             }
             catch (Exception ex)
             {
-                return JsonValidFail(_config.GetMessage("SystemErrorMsg"));
+                LogError(ex.ToString());
+                return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
     }

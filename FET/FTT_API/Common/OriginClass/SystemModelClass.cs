@@ -11,13 +11,13 @@ namespace FTT_API.Common.OriginClass
         /// </summary>
         /// <param name="EmpNo">員工編號或識別帳號</param>
         /// <returns>角色</returns>
-        public static string GetUserRole(string EmpNo)
+        public static string GetUserRole(string EmpNo, SessionVO _sessionVO)
         {
             string m_Result;
 
-            if (LoginSession.Current != null && !LoginSession.Current.userrole.IsNullOrEmpty())
+            if (_sessionVO != null && !_sessionVO.userrole.IsNullOrEmpty())
             {   // 直接套用存在 Session 中的資料
-                m_Result = LoginSession.Current.userrole;
+                m_Result = _sessionVO.userrole;
             }
             else
             {   // 重新取得資料

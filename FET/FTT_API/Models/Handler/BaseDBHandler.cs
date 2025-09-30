@@ -1,8 +1,7 @@
 ﻿using Core.Utility.Helper.DB;
 using Core.Utility.Helper.Message;
-using DocumentFormat.OpenXml.Presentation;
+using FTT_API.Common;
 using System.Data;
-using System.Data.Common;
 using System.Diagnostics;
 
 namespace FTT_API.Models.Handler
@@ -20,6 +19,11 @@ namespace FTT_API.Models.Handler
         {
             this.dbHelper = dbHelper;
         }
+
+        /// <summary>
+        /// 登入資訊
+        /// </summary>
+        public SessionVO? SessionVO { get; set; } = null;
 
         public IDBHelper GetDBHelper()
         {

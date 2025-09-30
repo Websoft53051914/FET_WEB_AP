@@ -105,7 +105,7 @@ FROM DUAL
         public void DoCreateFttForm(List<Dictionary<string, object>> dataList)
         {
             string sqlInsert = @"
-INSERT INTO public.ftt_form(
+INSERT INTO ftt_form(
 	form_no, ivrcode, category_id, category_name, createtime, empname, emptel, descr, checkitem, tt_category, order_id, tt_no, remark, vender_id, tt_type, repair, resupply, selfconfig)
 	VALUES (@form_no, @ivrcode, @category_id, @category_name, @createtime, @empname, @emptel, @descr, @checkitem, @tt_category, @order_id, @tt_no, @remark, @vender_id, @tt_type, @repair, @resupply, @selfconfig)
 ";

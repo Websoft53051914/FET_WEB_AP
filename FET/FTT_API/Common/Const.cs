@@ -36,6 +36,12 @@
         /// </summary>
         public static readonly DateTime LUNAR_NEW_YEAR_END = new DateTime(2024, 2, 15, 8, 0, 0);
 
+        public const string TOKEN_NAME = "FTT_Token";
+
+        public const string USER_LOGIN_NAME = "FTT_userLoginName";
+
+        public const string USER_ROLE = "FTT_userrole";
+
         #region Api訊息
         public const string SystemErrorMsg = "錯誤，請聯絡系統管理員";
         public const string InsertSuccessMsg = "資料新增成功";

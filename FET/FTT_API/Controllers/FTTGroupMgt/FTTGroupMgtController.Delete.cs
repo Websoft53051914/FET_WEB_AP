@@ -7,7 +7,7 @@ namespace FTT_API.Controllers.FTTGroupMgt
 {
     public partial class FTTGroupMgtController : BaseProjectController
     {
-        [HttpPost]
+        [HttpPost("[action]")]
         public IActionResult Delete(string empno)
         {
             try
@@ -15,10 +15,12 @@ namespace FTT_API.Controllers.FTTGroupMgt
                 ftt_groupSQL _ftt_groupSQL = new ftt_groupSQL();
                 _ftt_groupSQL.Delete(empno);
 
+                this.LogSuccess("刪除完成");
                 return JsonSuccess("刪除完成");
             }
             catch (Exception ex)
             {
+                this.LogError(ex.ToString());
                 return JsonValidFail("系統異常");
             }
         }

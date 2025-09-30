@@ -31,7 +31,7 @@ WHERE  form_no =@form_no
 
         }
 
-        internal form_access_controlDTO GetInfo(string IVRCode, string FormType, string TSTATUS, string FormNo, string EmpNo)
+        internal List<form_access_controlDTO> GetInfoList(string IVRCode, string FormType, string TSTATUS, string FormNo, string EmpNo)
         {
             BaseDBHandler baseHandler = new BaseDBHandler();
             Dictionary<string, object> paras = new Dictionary<string, object>();
@@ -47,7 +47,7 @@ WHERE  form_no =@form_no
             else
                 qrySQL = "select * from form_access_control where form_type=@FormType and (status=@TSTATUS) and User_Type IN (SELECT User_Type FROM V_ACCESS_ROLE WHERE FORM_TYPE=@FormType AND FORM_NO=@FormNo AND (EMPNO=@EmpNo or DEPTCODE=@IVRCode or instr(AGENT,@EmpNo)>0 OR USER_GROUP IN (SELECT FTT_GROUP AS USER_GROUP FROM FTT_GROUP WHERE EMPNO=@EmpNo))) order by orderid";
 
-            return baseHandler.GetDBHelper().Find<form_access_controlDTO>(qrySQL, paras);
+            return baseHandler.GetDBHelper().FindList<form_access_controlDTO>(qrySQL, paras);
         }
     }
 }

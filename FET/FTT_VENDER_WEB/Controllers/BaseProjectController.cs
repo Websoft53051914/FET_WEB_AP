@@ -81,12 +81,12 @@ namespace FTT_VENDER_WEB.Controllers
         /// 紀錄例外於資料庫
         /// </summary>
         /// <param name="ex"></param>
-        /// <returns>ControlLog.Id</returns>
+        /// <returns>Control_Log.Id</returns>
         //protected long LogError(Exception ex)
         //{
         //    var blLog = BLFactory.GetInstance<LogBL>();
 
-        //    var logDM = new ControlLogDM()
+        //    var logDM = new Control_LogDM()
         //    {
         //        IP = LoginSession.Current.IP ?? Method.GetClientIPAddress(),
         //        Status = ((int)LogStatusEnum.Failed).ToString(),
@@ -102,12 +102,12 @@ namespace FTT_VENDER_WEB.Controllers
         /// 紀錄失敗訊息於資料庫
         /// </summary>
         /// <param name="exception"></param>
-        /// <returns>ControlLog.Id</returns>
+        /// <returns>Control_Log.Id</returns>
         //protected long LogError(string exception)
         //{
         //    var blLog = BLFactory.GetInstance<LogBL>();
 
-        //    var logDM = new ControlLogDM()
+        //    var logDM = new Control_LogDM()
         //    {
         //        IP = LoginSession.Current.IP ?? Method.GetClientIPAddress(),
         //        Status = ((int)LogStatusEnum.Failed).ToString(),
@@ -127,7 +127,7 @@ namespace FTT_VENDER_WEB.Controllers
         //{
         //    var blLog = BLFactory.GetInstance<LogBL>();
 
-        //    var logDM = new ControlLogDM()
+        //    var logDM = new Control_LogDM()
         //    {
         //        IP = LoginSession.Current.IP ?? Method.GetClientIPAddress(),
         //        Status = ((int)LogStatusEnum.Success).ToString(),

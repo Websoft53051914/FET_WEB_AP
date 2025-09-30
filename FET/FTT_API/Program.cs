@@ -5,6 +5,10 @@ using Hangfire;
 using FTT_API.Models.Handler;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using Const.VO;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 
 IConfiguration Config = new ConfigurationBuilder().AddJsonFile("appSettings.json").Build();
@@ -77,10 +81,19 @@ builder.Services.AddControllersWithViews()
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 builder.Configuration.AddJsonFile("message.json", optional: true, reloadOnChange: true);
 
-
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(jwt =>
+{
+    jwt.SaveToken = true;
+});
 //JOB
-builder.Services.AddSingleton<DeviceAccessIndoorService>();
-builder.Services.AddHostedService(provider => provider.GetRequiredService<DeviceAccessIndoorService>());
+builder.Services.AddSingleton<FETTaskService>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<FETTaskService>());
 
 
 builder.Services.AddSingleton<ConfigurationHelper>();
@@ -102,7 +115,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowLocalhost7234",
         policy =>
         {
-            policy.WithOrigins("https://localhost:7234") // 允許的來源
+            policy.WithOrigins("https://localhost:50102") // 允許的來源
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials()
@@ -171,7 +184,7 @@ app.UseRouting();
 // 使用 CORS
 app.UseCors("AllowLocalhost7234");
 
-
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseSession();

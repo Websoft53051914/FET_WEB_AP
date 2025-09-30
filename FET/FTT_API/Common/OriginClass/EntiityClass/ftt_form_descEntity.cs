@@ -11,7 +11,7 @@ namespace FTT_API.Common.OriginClass.EntiityClass
 
         public decimal? form_no { get; set; }
 
-        public DateTime? create_date { get; set; }
+        public string create_date { get; set; }
 
         public string User_Type { get; set; }
 

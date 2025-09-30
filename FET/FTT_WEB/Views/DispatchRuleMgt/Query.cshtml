@@ -1,0 +1,410 @@
+﻿@model DispatchRuleMgtQueryVO
+@{
+    var mapData = new
+    {
+        Grid = new
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            IdPageSelect = Guid.NewGuid().ToString("N"),
+            IdPagers = Guid.NewGuid().ToString("N"),
+            UrlGetPageList = $"{config.GetBackendUrl()}/DispatchRuleMgt/GetPageListQuery",
+            CbGroup = Guid.NewGuid().ToString("N"),
+        },
+        FormSearch = new
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            IdBtnSearch = Guid.NewGuid().ToString("N"),
+        },
+        PartialDIG = new DialogIvrCodeGridVO(),
+        PartialDVG = new DialogVenderGridVO(),
+        PartialIT = new ItemsTreeVO(),
+        UrlGetInitData = $"{config.GetBackendUrl()}/DispatchRuleMgt/GetInitDataQuery",
+        UrlExportExcel = $"{config.GetBackendUrl()}/DispatchRuleMgt/ExportExcelQuery",
+    };
+    // 依角色隱藏
+    List<SelectListItem> SelectListArea = new()
+{
+        new SelectListItem("N","N"),
+        new SelectListItem("N1","N1"),
+        new SelectListItem("N2","N2"),
+        new SelectListItem("N3","N3"),
+        new SelectListItem("C","C"),
+        new SelectListItem("C1","C1"),
+        new SelectListItem("C2","C2"),
+        new SelectListItem("S","S"),
+        new SelectListItem("S1","S1"),
+        new SelectListItem("S2","S2"),
+    };
+    List<SelectListItem> SelectListYN = new()
+{
+        new SelectListItem("N","N"),
+        new SelectListItem("Y","Y"),
+    };
+}
+
+<div class="container-fluid">
+    <div class="page-header" style="padding-bottom:20px">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>派工規則查詢</h3>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Home" data-bs-original-title="" title="">首頁</a></li>
+                    <li class="breadcrumb-item">功能</li>
+                    <li class="breadcrumb-item active"><a href="" data-bs-original-title="" title="">派工規則查詢</a></li>
+                </ol>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container-fluid">
+    <form id="@(mapData.FormSearch.Id)">
+        <div class="card mb-2">
+            <div class="card-body py-3 card-body-reduction">
+                <div class="row none_hover row-cols-1 row-cols-md-2 row-cols-lg-3 row-cols-xl-4 gy-2 mb-2">
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">報修類別</label>
+                        <button id="btnSelectCategoryId" type="button" class="btn btn btn-info">選擇項目</button>
+                        <input asp-for="CategoryIdFilter" type="hidden" />
+                        <input asp-for="CategoryName" type="hidden" />
+                        <input asp-for="CategoryDesc" type="text" class="form-control" placeholder="" readonly>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">報修廠商</label>
+                        <input asp-for="VenderIdEq" type="hidden" />
+                        <input asp-for="VendorName" type="text" class="form-control" placeholder="" readonly>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">報修門市</label>
+                        <input asp-for="IvrCodeEq" type="hidden" />
+                        <input asp-for="StoreName" type="text" class="form-control" placeholder="" readonly>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">公司別</label>
+                        <select asp-for="CompanyEq" class="form-control initSelect2Clearable">
+                            <option></option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">店格</label>
+                        <select asp-for="StoreTypeEq" class="form-control initSelect2Clearable">
+                            <option></option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">通路</label>
+                        <select asp-for="ChannelEq" class="form-control initSelect2Clearable">
+                            <option></option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">區域</label>
+                        <select asp-for="AreaEq" asp-items="@(new SelectList(SelectListArea, nameof(SelectListItem.Value), nameof(SelectListItem.Text)))" class="form-control initSelect2Clearable">
+                            <option></option>
+                        </select>
+                    </div>
+                    <div class="col">
+                        <label class="col-form-label websoft-form-label pt-2">是否保固</label>
+                        <select asp-for="IfWarrantEq" asp-items="@(new SelectList(SelectListYN, nameof(SelectListItem.Value), nameof(SelectListItem.Text)))" class="form-select initSelect2Clearable">
+                            <option></option>
+                        </select>
+                    </div>
+                </div>
+                <button id="@(mapData.FormSearch.IdBtnSearch)" type="button" class="btn btn-primary">送出查詢</button>
+                <button id="btnExportExcel" type="button" class="btn btn-primary">匯出Excel</button>
+            </div>
+        </div>
+    </form>
+    <div class="card">
+        <div class="card-body">
+            <div id="@(mapData.Grid.Id)"></div>
+            <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
+                <div id="pageResizer" class="jsgrid-pager-page">
+                    <span>每頁筆數:</span>
+                    <select id="@(mapData.Grid.IdPageSelect)">
+                    </select>
+                </div>
+                <div id="@(mapData.Grid.IdPagers)">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<partial name="Form/_DialogIvrCodeGrid" model="mapData.PartialDIG" />
+<partial name="Form/_DialogVenderGrid" model="mapData.PartialDVG" />
+<partial name="Form/_ItemsTree" model="mapData.PartialIT" />
+
+@section scripts
+{
+    <script>
+        var context = {
+
+        };
+        var cookieName = 'DispatchRuleMgtQueryGridInfo';
+
+        $(function () {
+            $('.initDatepicker').datetimepicker({
+                format: 'YYYY/MM/DD',
+            });
+
+            $('.initSelect2Clearable').select2({
+                allowClear: true
+            });
+
+            $('#@(mapData.PartialDIG.Id)').on('hidden.bs.modal', function (e) {
+                let ctx = context['@(mapData.PartialDIG.Id)'];
+                console.log(ctx);
+                if (ctx.result && ctx.selectedItem) {
+                    $('#@(Html.IdFor(m => m.IvrCodeEq))').val(ctx.selectedItem['@(nameof(DialogIvrCodeGridGridVO.IvrCode))'] || '');
+                    $('#@(Html.IdFor(m => m.StoreName))').val(ctx.selectedItem['@(nameof(DialogIvrCodeGridGridVO.ShopName))'] || '');
+                }
+                else {
+                    $('#@(Html.IdFor(m => m.IvrCodeEq))').val(null);
+                    $('#@(Html.IdFor(m => m.StoreName))').val(null);
+                }
+            });
+
+            $('#@(mapData.PartialDVG.Id)').on('hidden.bs.modal', function (e) {
+                let ctx = context['@(mapData.PartialDVG.Id)'];
+
+                if (ctx.result && ctx.selectedItem) {
+                    $('#@(Html.IdFor(m => m.VenderIdEq))').val(ctx.selectedItem['@(nameof(DialogVenderGridGridVO.OrderId))'] || '');
+                    $('#@(Html.IdFor(m => m.VendorName))').val(ctx.selectedItem['@(nameof(DialogVenderGridGridVO.MerchantName))'] || '');
+                }
+                else {
+                    $('#@(Html.IdFor(m => m.VenderIdEq))').val(null);
+                    $('#@(Html.IdFor(m => m.VendorName))').val(null);
+                }
+            });
+
+            $('#@(mapData.PartialIT.Id)').on('hidden.bs.modal', function (e) {
+                let ctx = context['@(mapData.PartialIT.Id)'];
+
+                if (ctx.result && ctx.selectedItem) {
+                    let data = ctx.selectedItem.original['OtherAttr'];
+                    $('#@(Html.IdFor(m => m.CategoryIdFilter))').val(data['CATEGORY_ID'] || '');
+                    $('#@(Html.IdFor(m => m.CategoryName))').val(data['CATEGORY_NAME'] || '');
+                    $('#@(Html.IdFor(m => m.CategoryDesc))').val(data['CATEGORY_NAME'] || '');
+                }
+                else {
+                    $('#@(Html.IdFor(m => m.CategoryIdFilter))').val(null);
+                    $('#@(Html.IdFor(m => m.CategoryName))').val(null);
+                    $('#@(Html.IdFor(m => m.CategoryDesc))').val(null);
+                }
+            });
+
+            callInitData();
+
+            let pageIndex = 1;
+            let pageSize = pageDataSource[0].id;
+            if (Cookies.get(cookieName)) {
+                var cookieObj = JSON.parse(Cookies.get(cookieName));
+                if (cookieObj && cookieObj.FromEdit == true) {
+                    if (cookieObj.PageIndex) {
+                        pageIndex = parseInt(cookieObj.PageIndex);
+                    }
+
+                    if (cookieObj.PageSize) {
+                        pageSize = parseInt(cookieObj.PageSize);
+                    }
+
+                    Cookies.remove(cookieName);
+                }
+            }
+            initGrid(pageIndex, pageSize);
+        });
+
+        function callInitData() {
+            let data = {};
+            showLoader();
+            $.ajax({
+                url: '@(mapData.UrlGetInitData?.ToHtmlString())',
+                dataType: 'json',
+                type: 'POST',
+                data: data,
+                cache: false
+            })
+                .done((response) => {
+                    if (response.Success && response.Data) {
+                        if (response.Data['@(nameof(DispatchRuleMgtQueryVO.SelectListCompany))']) {
+                            let $control = $('#@(Html.IdFor(m => m.CompanyEq))');
+                            let dataSource = $.map(response.Data['@(nameof(DispatchRuleMgtQueryVO.SelectListCompany))'], (val, idx) => {
+                                $.extend(val, {
+                                    id: val['@(nameof(SelectListItem.Value))'],
+                                    text: val['@(nameof(SelectListItem.Text))'],
+                                });
+
+                                return val;
+                            });
+                            $control.empty();
+                            $control.html('<option></option>')
+                            $control.select2({
+                                allowClear: true,
+                                data: dataSource,
+                            });
+                        }
+
+                        if (response.Data['@(nameof(DispatchRuleMgtQueryVO.SelectListStoreType))']) {
+                            let $control = $('#@(Html.IdFor(m => m.StoreTypeEq))');
+                            let dataSource = $.map(response.Data['@(nameof(DispatchRuleMgtQueryVO.SelectListStoreType))'], (val, idx) => {
+                                $.extend(val, {
+                                    id: val['@(nameof(SelectListItem.Value))'],
+                                    text: val['@(nameof(SelectListItem.Text))'],
+                                });
+
+                                return val;
+                            });
+                            $control.empty();
+                            $control.html('<option></option>')
+                            $control.select2({
+                                allowClear: true,
+                                data: dataSource,
+                            });
+                        }
+
+                        if (response.Data['@(nameof(DispatchRuleMgtQueryVO.SelectListChannel))']) {
+                            let $control = $('#@(Html.IdFor(m => m.ChannelEq))');
+                            let dataSource = $.map(response.Data['@(nameof(DispatchRuleMgtQueryVO.SelectListChannel))'], (val, idx) => {
+                                $.extend(val, {
+                                    id: val['@(nameof(SelectListItem.Value))'],
+                                    text: val['@(nameof(SelectListItem.Text))'],
+                                });
+
+                                return val;
+                            });
+                            $control.empty();
+                            $control.html('<option></option>')
+                            $control.select2({
+                                allowClear: true,
+                                data: dataSource,
+                            });
+                        }
+                    }
+                    else {
+                        swal({
+                            text: '初始化失敗' + response['Message'],
+                            button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                            icon: 'error'
+                        });
+                    }
+                })
+                .fail((err) => {
+                    console.log(err);
+                    swal({
+                        text: '初始化失敗',
+                        button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                        icon: 'error'
+                    });
+                })
+                .always(() => {
+                    hideLoader();
+                });
+        }
+
+        $('#@(Html.IdFor(m => m.StoreName))').on('click', function (e) {
+            $('#@(mapData.PartialDIG.Id)').modal('show');
+        });
+
+        $('#@(Html.IdFor(m => m.VendorName))').on('click', function (e) {
+            $('#@(mapData.PartialDVG.Id)').modal('show');
+        });
+
+        $('#btnSelectCategoryId').on('click', function (e) {
+            $('#@(mapData.PartialIT.Id)').modal('show');
+        });
+
+        $('#@(mapData.FormSearch.IdBtnSearch)').on('click', function (e) {
+            context['@(mapData.Grid.Id)'].reload();
+        });
+
+        $('#btnExportExcel').on('click', function (e) {
+            let data = {};
+            $.extend(data, $('#@(mapData.FormSearch.Id)').serializeObject(), context['@(mapData.Grid.Id)'].filter);
+
+            postSubmitJson('@(mapData.UrlExportExcel?.ToHtmlString())', data);
+        });
+    </script>
+    <script>
+        function initGrid(cookiePageIndex, cookiePageSize) {
+            context['@(mapData.Grid.Id)'] = {};
+            var ctxGrid = context['@(mapData.Grid.Id)'];
+            ctxGrid.$Grid = $('#@(mapData.Grid.Id)');
+            ctxGrid.$Grid.jsGrid({
+                pageIndex: cookiePageIndex,
+                paging: true,
+                pageSize: cookiePageSize,
+                pageLoading: true,
+                pagerContainer: '#@(mapData.Grid.IdPagers)',
+                autoload: false,
+                sorting: true,
+                controller: {
+                    loadData: function (filter) {
+                        var d = $.Deferred();
+                        ctxGrid.filter = { ...filter };
+                        filter.vm = {};
+                        $.extend(filter.vm, $('#@(mapData.FormSearch.Id)').serializeObject());
+
+                        //分頁頁數紀錄相關 紀錄查詢時將查詢條件、頁數 start
+                        var cookieobj = {
+                            PageIndex: filter.pageIndex,
+                            PageSize: filter.pageSize,
+                            ...filter.vm
+                        };
+                        Cookies.set(cookieName, JSON.stringify(cookieobj), { expires: 1 });
+
+                        $.ajax({
+                            type: 'POST',
+                            url: '@(mapData.Grid.UrlGetPageList?.ToHtmlString())',
+                            data: filter,
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.Success === false) {
+                                    swal({
+                                        text: res.Message,
+                                        button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                                        icon: 'error'
+                                    });
+                                    d.reject();
+                                    return;
+                                }
+                                var da = {
+                                    data: res.Data,
+                                    itemsCount: res.Total
+                                }
+                                d.resolve(da);
+                            }
+                        });
+
+                        return d.promise();
+                    }
+                },
+                fields: [
+                    { name: '@(nameof(DispatchRuleMgtQueryGridVO.IvrCode))', title: 'IVR_CODE', type: 'text', width: 140, align: 'center' },
+                    { name: '@(nameof(DispatchRuleMgtQueryGridVO.ShopName))', title: '門市名稱', type: 'text', width: 120, align: 'center' },
+                    { name: '@(nameof(DispatchRuleMgtQueryGridVO.L1Desc))', title: '報修類別', type: 'text', width: 150, align: 'center' },
+                    { name: '@(nameof(DispatchRuleMgtQueryGridVO.L2Desc))', title: '報修次類別', type: 'text', width: 150, align: 'center' },
+                    { name: '@(nameof(DispatchRuleMgtQueryGridVO.CiName))', title: '報修名稱', type: 'text', width: 200, align: 'center' },
+                    { name: '@(nameof(DispatchRuleMgtQueryGridVO.Warrant))', title: '保固內廠商', type: 'text', width: 180, align: 'center' },
+                    { name: '@(nameof(DispatchRuleMgtQueryGridVO.NonWarrant))', title: '保固外廠商', type: 'text', width: 200, align: 'center' },
+                    { width: 'auto' }
+                ],
+            });
+
+            //分頁頁數紀錄相關
+            ctxGrid.$Grid.jsGrid('_setPage', cookiePageIndex);//jsgrid bug 不會自動將頁碼設定成pageindex
+
+            $('#@(mapData.Grid.IdPageSelect)').select2({
+                minimumResultsForSearch: -1,
+                data: pageDataSource
+            });
+            $('#@(mapData.Grid.IdPageSelect)').data('select2').$container.addClass('w-auto');
+            $('#@(mapData.Grid.IdPageSelect)').on('change', (e) => {
+                onPageLenghtSelect(e.currentTarget.value, ctxGrid.$Grid);
+            });
+            ctxGrid.reload = function () {
+                ctxGrid.$Grid.jsGrid('search');
+            };
+        }
+    </script>
+}

@@ -180,7 +180,7 @@
 
                     $.ajax({
                         type: "POST",
-                        url: "@Url.Action("Create")",
+                        url: "@(config.GetBackendUrl() + Url.Action("Create"))",
                         data: vm,
                         dataType: "json",
                         success: function (res) {
@@ -242,7 +242,7 @@
                         };
                         $.ajax({
                             type: "POST",
-                            url: "@Url.Action("GetPageList")",
+                            url: "@(config.GetBackendUrl() + Url.Action("GetPageList"))",
                             data: filter,
                             dataType: "json",
                             success: function (res) {
@@ -291,7 +291,7 @@
                                         };
 
                                         $.ajax({
-                                            url: '@(mapUrl.Delete.ToHtmlString())',
+                                            url: '@(config.GetBackendUrl() + mapUrl.Delete.ToHtmlString())',
                                             dataType: 'json',
                                             type: 'POST',
                                             data: data

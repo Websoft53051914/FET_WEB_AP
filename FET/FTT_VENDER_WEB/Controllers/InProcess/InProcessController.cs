@@ -8,5 +8,12 @@ namespace FTT_VENDER_WEB.Controllers.InProcess
         {
             return View();
         }
+
+        public IActionResult Detail(string formNo)
+        {
+            ViewData["form_no"] = formNo; ;
+
+            return View();
+        }
     }
 }

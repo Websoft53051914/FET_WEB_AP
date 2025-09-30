@@ -1,4 +1,5 @@
 ﻿using Core.Utility.Helper.DB;
+using FTT_VENDER_API.Common;
 using System.Data;
 using System.Diagnostics;
 
@@ -17,6 +18,11 @@ namespace FTT_VENDER_API.Models.Handler
         {
             this.dbHelper = dbHelper;
         }
+
+        /// <summary>
+        /// 登入資訊
+        /// </summary>
+        public SessionVO? SessionVO { get; set; } = null;
 
         public IDBHelper GetDBHelper()
         {
@@ -75,7 +81,7 @@ namespace FTT_VENDER_API.Models.Handler
             return flag;
         }
 
-        public bool CheckDataExist(string TableName, Dictionary<string,object> Condition)
+        public bool CheckDataExist(string TableName, Dictionary<string, object> Condition)
         {
             string whereClause = string.Join(" AND ", Condition.Select(kv => $"{kv.Key} = @{kv.Key}"));
             Dictionary<string, object> parameters = Condition.ToDictionary(kv => kv.Key, kv => kv.Value);

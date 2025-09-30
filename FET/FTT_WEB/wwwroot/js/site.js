@@ -344,3 +344,29 @@ const SiteConst = {
         return orig.call(this, type, listener, options);
     };
 })();
+
+/**
+ * 依階層路徑展開動態載入的 jsTree 
+ */
+function expandTree(treeId, pathIdList, callbackComplete) {
+    let tree = $('#' + treeId).jstree(true);
+    let ids = [...pathIdList];
+
+    let expandNext = function () {
+        if (ids.length === 0) {
+            if (callbackComplete) callbackComplete();
+            return;
+        }
+        let id = ids.shift();
+        let node = tree.get_node(id);
+        if (node && !node.state.opened && node.children.length === 0 && node.children_d.length === 0) {
+            // 尚未展開：會觸發 AJAX 載入
+            tree.open_node(id, function () {
+                expandNext();
+            }, false);
+        } else {
+            expandNext(); // 已展開或找不到，跳過
+        }
+    };
+    expandNext();
+}

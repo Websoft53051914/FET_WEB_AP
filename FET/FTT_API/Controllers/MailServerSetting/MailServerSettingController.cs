@@ -9,6 +9,7 @@ using FTT_API.Common.ConfigurationHelper;
 
 namespace FTT_API.Controllers.MailServerSetting
 {
+    [Route("[controller]")]
     public class MailServerSettingController : BaseProjectController
     {
         private readonly IWebHostEnvironment _hostingEnvironment;
@@ -19,15 +20,7 @@ namespace FTT_API.Controllers.MailServerSetting
             _configHelper = configHelper;
         }
 
-        public IActionResult Index()
-        {
-            var MailServerHandler = new MailServerHandler(_configHelper, HttpContext);
-
-            MailServerSettingVM vm = MailServerHandler.GetEdit();
-            return View(vm);
-        }
-
-        [HttpPost]
+        [HttpPost("[action]")]
         public IActionResult Update(MailServerSettingVM vm)
         {
             var MailServerHandler = new MailServerHandler(_configHelper, HttpContext);
@@ -37,13 +30,15 @@ namespace FTT_API.Controllers.MailServerSetting
             }
             catch (Exception ex)
             {
+                this.LogError(ex.ToString());
                 return BadRequest();
             }
 
             //return BadRequest();
+            this.LogSuccess("MailServerSetting儲存成功");
             return JsonSuccess("資料儲存成功");
         }
 
-       
+
     }
 }

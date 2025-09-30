@@ -27,22 +27,22 @@ namespace FTT_WEB.Controllers.MailServerSetting
             return View(vm);
         }
 
-        [HttpPost]
-        public IActionResult Update(MailServerSettingVM vm)
-        {
-            var MailServerHandler = new MailServerHandler(_configHelper, HttpContext);
-            try
-            {
-                MailServerHandler.Update(vm);
-            }
-            catch (Exception ex)
-            {
-                return BadRequest();
-            }
+        //[HttpPost]
+        //public IActionResult Update(MailServerSettingVM vm)
+        //{
+        //    var MailServerHandler = new MailServerHandler(_configHelper, HttpContext);
+        //    try
+        //    {
+        //        MailServerHandler.Update(vm);
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        return BadRequest();
+        //    }
 
-            //return BadRequest();
-            return JsonSuccess("資料儲存成功");
-        }
+        //    //return BadRequest();
+        //    return JsonSuccess("資料儲存成功");
+        //}
 
        
     }

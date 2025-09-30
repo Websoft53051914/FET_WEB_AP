@@ -1,4 +1,10 @@
-﻿@model NewOrderVM
+﻿@model NewOrderVO
+@{ 
+    var mapData = new
+    {
+        UrlPost = $"{config.GetBackendUrl()}/NewOrder/Create",
+    };
+}
 
 <div class="container-fluid">
     <div class="page-header" style="padding-bottom:20px">
@@ -36,11 +42,7 @@
 
         $('#rmBtn_Create').on('click', function (e) {
             if (context.TTItemList.count == 0) {
-                swal({
-                    text: '請先新增報修資料，謝謝！',
-                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                    icon: 'warning'
-                });
+                MyApp.Alert.warning('請先新增報修資料，謝謝！');
                 return;
             }
 
@@ -49,7 +51,7 @@
             $.extend(data, formData);
             showLoader();
             $.ajax({
-                url: '@(Url.Action("Create")?.ToHtmlString())',
+                url: '@(mapData.UrlPost?.ToHtmlString())',
                 dataType: 'json',
                 type: 'POST',
                 data: data,
@@ -57,26 +59,19 @@
             })
                 .done((response) => {
                     if (response.Success) {
-                        swal({
-                            text: response['Data'],
-                            button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                            icon: 'success'
-                        }).then((result) => {
-                            console.log('window.opener', window.opener);
-                            if (window.opener) {
-                                window.opener.location.reload();
-                            }
-                            else {
-                                location.reload();
-                            }
-                        });
+                        MyApp.Alert.success(response['Data'])
+                            .then((result) => {
+                                console.log('window.opener', window.opener);
+                                if (window.opener) {
+                                    window.opener.location.reload();
+                                }
+                                else {
+                                    location.reload();
+                                }
+                            });
                     }
                     else {
-                        swal({
-                            text: response['Message'],
-                            button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                            icon: 'error'
-                        });
+                        MyApp.Alert.error(response['Message']);
                     }
                 })
                 .fail((err) => {

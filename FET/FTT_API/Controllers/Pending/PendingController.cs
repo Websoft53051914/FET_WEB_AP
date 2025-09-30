@@ -29,9 +29,9 @@ namespace FTT_API.Controllers.Pending
 
                 v_ftt_form2SQL _v_ftt_form2SQL = new v_ftt_form2SQL();
 
-                vm.USERROLE = LoginSession.Current.userrole;
-                vm.IVRCODE = LoginSession.Current.ivrcode;
-                vm.EMPNO = LoginSession.Current.empno;
+                vm.USERROLE = _sessionVO.userrole;
+                vm.IVRCODE = _sessionVO.ivrcode;
+                vm.EMPNO = _sessionVO.empno;
 
                 var list = _v_ftt_form2SQL.FindPageList(pageEntity, vm);
 
@@ -41,6 +41,7 @@ namespace FTT_API.Controllers.Pending
                     item.No = (request.pageIndex - 1) * request.pageSize + i + 1;
                 }
 
+                this.LogSuccess();
                 return Json(new DataSourceResult
                 {
                     Data = list.Results,
@@ -49,6 +50,7 @@ namespace FTT_API.Controllers.Pending
             }
             catch (Exception ex)
             {
+                this.LogError(ex.ToString());
                 return JsonValidFail("系統錯誤");
             }
         }

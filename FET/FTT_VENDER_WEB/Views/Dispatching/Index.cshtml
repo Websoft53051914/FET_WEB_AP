@@ -8,7 +8,7 @@
             IdPagers = Guid.NewGuid().ToString("N"),
             UrlGetPageList = $"{config.GetBackendUrl()}/Dispatching/GetPageList",
         },
-        UrlDetail = Url.Action("Detail", "Pending", new { formNo = "tempId" }),
+        UrlDetail = Url.Action("Detail", "Dispatching", new { formNo = "tempId" }),
     };
 }
 

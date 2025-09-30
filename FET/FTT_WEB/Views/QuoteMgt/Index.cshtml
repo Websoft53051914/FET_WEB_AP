@@ -180,8 +180,10 @@
                     hideLoader();
                     if (data.Success) {
                         alert(data.Data);
+                        $('#File').val('');
                     } else {
                         alert(data.Message);
+                        $('#File').val('');
                     }
                 }
             });
@@ -252,8 +254,10 @@
                     hideLoader();
                     if (data.Success) {
                         alert(data.Data);
+                        $('#File').val('');
                     } else {
                         alert(data.Message);
+                        $('#File').val('');
                     }
                 }
             });

@@ -1,0 +1,249 @@
+﻿@model DialogIvrCodeGridVO
+@{
+    // 舊版頁面： "/Storemgt/Store.aspx"
+    var mapData = new
+    {
+        IdModal = Model.Id,
+        IdBtnOk = Guid.NewGuid(),
+        FormSearch = new
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            IdBtnSearch = Guid.NewGuid().ToString("N"),
+        },
+        Grid = new
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            IdPageSelect = Guid.NewGuid().ToString("N"),
+            IdPagers = Guid.NewGuid().ToString("N"),
+            UrlGetPageList = $"{config.GetBackendUrl()}/Api/GetPageListStore",
+            CbGroup = Guid.NewGuid().ToString("N"),
+        },
+    };
+
+    List<SelectListItem> SelectListCompanyLeaves = new()
+{
+        new SelectListItem("FET","FET"),
+        new SelectListItem("KGT","KGT"),
+    };
+    List<SelectListItem> SelectListChannel = new()
+{
+        new SelectListItem("RETAIL","RETAIL"),
+        new SelectListItem("FRANCHISE","FRANCHISE"),
+        new SelectListItem("PARADIGM","PARADIGM"),
+        new SelectListItem("CONCEPT","CONCEPT"),
+    };
+    List<SelectListItem> SelectListStoreType = new()
+{
+        new SelectListItem("RETAIL","RETAIL"),
+        new SelectListItem("FRANCHISE","FRANCHISE"),
+        new SelectListItem("MINI FRANCHISE","MINI FRANCHISE"),
+        new SelectListItem("CONVERGENT CITY","CONVERGENT CITY"),
+        new SelectListItem("CONCEPT STORE","CONCEPT STORE"),
+        new SelectListItem("REGIONAL CENTER","REGIONAL CENTER"),
+    };
+}
+
+<div class="modal fade max100vh" id="@(mapData.IdModal)" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header text-center">
+                <h5>選擇門市</h5>
+                <button class="btn-close" type="button" aria-label="Close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="@(mapData.FormSearch.Id)">
+                    <div class="card mb-2">
+                        <div class="card-body py-3 card-body-reduction">
+                            <div class="row none_hover row-cols-1 row-cols-md-2 row-cols-xl-3 gy-2 mb-2">
+                                <div class="col">
+                                    <label class="col-form-label websoft-form-label pt-2">IVR_Code</label>
+                                    <input name="@(nameof(Model.IvrCodeLike))" type="text" class="form-control" placeholder="">
+                                </div>
+                                <div class="col">
+                                    <label class="col-form-label websoft-form-label pt-2">店名</label>
+                                    <input name="@(nameof(Model.ShopNameLike))" type="text" class="form-control" placeholder="">
+                                </div>
+                                <div class="col">
+                                    <label class="col-form-label websoft-form-label pt-2">公司別</label>
+                                    <select name="@(nameof(Model.CompanyLeavesLike))" asp-items="@(new SelectList(SelectListCompanyLeaves, nameof(SelectListItem.Value), nameof(SelectListItem.Text)))" class="form-select initSelect2Clearable">
+                                        <option></option>
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <label class="col-form-label websoft-form-label pt-2">通路</label>
+                                    <select name="@(nameof(Model.ChannelLike))" asp-items="@(new SelectList(SelectListChannel, nameof(SelectListItem.Value), nameof(SelectListItem.Text)))" class="form-select initSelect2Clearable">
+                                        <option></option>
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <label class="col-form-label websoft-form-label pt-2">店格</label>
+                                    <select name="@(nameof(Model.StoreTypeLike))" asp-items="@(new SelectList(SelectListStoreType, nameof(SelectListItem.Value), nameof(SelectListItem.Text)))" class="form-select initSelect2Clearable">
+                                        <option></option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button id="@(mapData.FormSearch.IdBtnSearch)" type="button" class="btn btn-primary">送出查詢</button>
+                        </div>
+                    </div>
+                </form>
+                <div id="@(mapData.Grid.Id)"></div>
+                <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
+                    <div id="pageResizer" class="jsgrid-pager-page">
+                        <span>每頁筆數:</span>
+                        <select id="@(mapData.Grid.IdPageSelect)">
+                        </select>
+                    </div>
+                    <div id="@(mapData.Grid.IdPagers)">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" type="button" id="@(mapData.IdBtnOk)">確認</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var context = context || {};
+
+    $(function () {
+        if (!context['@(mapData.IdModal)']) {
+            context['@(mapData.IdModal)'] = {};
+        }
+
+        var ctxModal = context['@(mapData.IdModal)'];
+        ctxModal.selectedItem = null;
+        ctxModal.result = '';
+        
+        $('.initSelect2Clearable').select2({
+            allowClear: true
+        });
+
+        const initGrid = function () {
+            ctxModal['@(mapData.Grid.Id)'] = {};
+            var ctxGrid = ctxModal['@(mapData.Grid.Id)'];
+            ctxGrid.$Grid = $('#@(mapData.Grid.Id)');
+            ctxGrid.$Grid.jsGrid({
+                pageIndex: 1,
+                paging: true,
+                pageSize: pageDataSource[0].id,
+                pageLoading: true,
+                pagerContainer: '#@(mapData.Grid.IdPagers)',
+                autoload:true,
+                rowClass: function (item, itemIndex) {
+                    // 設定行class
+                    return itemIndex % 2 === 0 ? 'even' : 'odd';
+                },
+                rowClick: function (args) {
+                    ctxModal.selectedItem = args.item;
+                    // 點擊行時，選中checkbox 單選
+                    $('input[data-group="@(mapData.Grid.CbGroup)"]').prop("checked", false);
+                    $(args.event.target).closest("tr").find('input[data-group="@(mapData.Grid.CbGroup)"]').prop("checked", true);
+                },
+                controller: {
+                    loadData: function (filter) {
+                        var d = $.Deferred();
+                        filter.vm = {};
+                        $.extend(filter.vm, $('#@(mapData.FormSearch.Id)').serializeObject());
+
+                        $.ajax({
+                            type: 'POST',
+                            url: '@(mapData.Grid.UrlGetPageList?.ToHtmlString())',
+                            data: filter,
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.Success === false) {
+                                    swal({
+                                        text: res.Message,
+                                        button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                                        icon: 'error'
+                                    });
+                                    d.reject();
+                                    return;
+                                }
+                                var da = {
+                                    data: res.Data,
+                                    itemsCount: res.Total
+                                }
+                                d.resolve(da);
+                            }
+                        });
+
+                        return d.promise();
+                    }
+                },
+                fields: [
+                    {
+                        type: 'control', align: 'center',
+                        width: 80,
+                        editButton: false,
+                        deleteButton: false,
+                        title: '',
+                        itemTemplate: (value, item) => {
+                            let $cb = buildCheckboxSingle({
+                                id: item['@(nameof(DialogIvrCodeGridGridVO.IvrCode))'],
+                                text: ' ',
+                                inputClassNames: 'cb-item',
+                                dataGroup: '@(mapData.Grid.CbGroup)',
+                            });
+
+                            return $cb;
+                        }
+                    },
+                    { name: '@(nameof(DialogIvrCodeGridGridVO.IvrCode))', title: 'IVR Code', type: 'text', width: 100, align: 'center' },
+                    { name: '@(nameof(DialogIvrCodeGridGridVO.CompanyLeaves))', title: '公司別', type: 'text', width: 100, align: 'center' },
+                    { name: '@(nameof(DialogIvrCodeGridGridVO.StoreType))', title: '店格', type: 'text', width: 100, align: 'center' },
+                    { name: '@(nameof(DialogIvrCodeGridGridVO.Channel))', title: '通路', type: 'text', width: 150, align: 'center' },
+                    { name: '@(nameof(DialogIvrCodeGridGridVO.Area))', title: '區域', type: 'text', width: 150, align: 'center' },
+                    { name: '@(nameof(DialogIvrCodeGridGridVO.ShopName))', title: '店名', type: 'text', width: 180, align: 'center' },
+                    { name: '@(nameof(DialogIvrCodeGridGridVO.OwnerName))', title: '店長/聯絡人', type: 'text', width: 180, align: 'center' },
+                    { name: '@(nameof(DialogIvrCodeGridGridVO.AsName))', title: '區經理/業務', type: 'text', width: 180, align: 'center' },
+                    { name: '@(nameof(DialogIvrCodeGridGridVO.OwnerTel))', title: '店長電話', type: 'text', width: 180, align: 'center' },
+                    { name: '@(nameof(DialogIvrCodeGridGridVO.UrgentTel))', title: '緊急電話', type: 'text', width: 180, align: 'center' },
+                    { name: '@(nameof(DialogIvrCodeGridGridVO.Address))', title: '地址', type: 'text', width: 250, align: 'center' },
+                    { width: 'auto' }
+                ],
+            });
+
+            $('#@(mapData.Grid.IdPageSelect)').select2({
+                minimumResultsForSearch: -1,
+                data: pageDataSource
+            });
+            $('#@(mapData.Grid.IdPageSelect)').data('select2').$container.addClass('w-auto');
+            $('#@(mapData.Grid.IdPageSelect)').on('change', (e) => {
+                onPageLenghtSelect(e.currentTarget.value, ctxGrid.$Grid);
+            });
+            ctxGrid.reload = function () {
+                ctxGrid.$Grid.jsGrid('search');
+            };
+        };
+        // Modal 開啟事件
+        $('#@(mapData.IdModal)').on('show.bs.modal', function (e) {
+            // 清空checkbox
+            $('input[data-group="@(mapData.Grid.CbGroup)"]').prop("checked", false);
+            ctxModal.selectedItem = null;
+            ctxModal.result = '';
+        });
+
+        $('#@(mapData.IdBtnOk)').on('click', function (e) {
+            if (ctxModal.selectedItem) {
+                ctxModal.result = '1';
+                $('#@mapData.IdModal').modal('hide'); // 關閉模態框
+            }
+            else {
+                swal({
+                    text: '請選擇一個門市',
+                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                    icon: 'warning'
+                });
+            }
+        });
+
+        $('#@(mapData.FormSearch.IdBtnSearch)').on('click', function (e) {
+            ctxModal['@(mapData.Grid.Id)'].reload();
+        });
+
+        initGrid();
+    });
+</script>

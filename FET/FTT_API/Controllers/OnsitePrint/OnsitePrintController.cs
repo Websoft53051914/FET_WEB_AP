@@ -45,8 +45,7 @@ namespace FTT_API.Controllers.OnsitePrint
             {
                 OnsitePrintHandler onsitePrintHandler = new(_configHelper);
                 // 取得資料(應該只有自行尋商開單的單據會顯示(vender_id 為當前門市的 ivrcode))
-                // TODO： 目前寫死IVRCode
-                PageResult<VFttForm2DTO> pageList = onsitePrintHandler.GetPageListPrwp(GetPageEntity(request), "29");
+                PageResult<VFttForm2DTO> pageList = onsitePrintHandler.GetPageListPrwp(GetPageEntity(request), _sessionVO.ivrcode);
                 // 轉成 ViewModel
                 List<OnsitePrintVO> dataList = [];
                 for (int i = 0; i < pageList.Results.Count; i++)
@@ -71,6 +70,7 @@ namespace FTT_API.Controllers.OnsitePrint
                     dataList.Add(item);
                 }
 
+                this.LogSuccess();
                 return JsonPage(new DataSourceResult
                 {
                     Data = dataList,
@@ -79,7 +79,7 @@ namespace FTT_API.Controllers.OnsitePrint
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                this.LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
@@ -95,9 +95,8 @@ namespace FTT_API.Controllers.OnsitePrint
             try
             {
                 OnsitePrintHandler onsitePrintHandler = new(_configHelper);
-                // 取得資料 
-                // TODO： 目前寫死IVRCode
-                PageResult<VFttForm2DTO> pageList = onsitePrintHandler.GetPageListConfirm(GetPageEntity(request), "29");
+                // 取得資料
+                PageResult<VFttForm2DTO> pageList = onsitePrintHandler.GetPageListConfirm(GetPageEntity(request), _sessionVO.ivrcode);
                 // 轉成 ViewModel
                 List<OnsitePrintVO> dataList = [];
                 for (int i = 0; i < pageList.Results.Count; i++)
@@ -122,6 +121,7 @@ namespace FTT_API.Controllers.OnsitePrint
                     dataList.Add(item);
                 }
 
+                this.LogSuccess();
                 return JsonPage(new DataSourceResult
                 {
                     Data = dataList,
@@ -130,14 +130,14 @@ namespace FTT_API.Controllers.OnsitePrint
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                this.LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
 
         /// <summary>
+        /// 列印到場單<para/>
         /// [/pool/printwp.aspx]PrintWP_Click()<para/>
-        /// 列印維修單
         /// </summary>
         /// <returns></returns>
         [HttpPost("[action]")]
@@ -162,11 +162,12 @@ namespace FTT_API.Controllers.OnsitePrint
                 localReport.DataSources.Add(new ReportDataSource("DataSet1_V_FTT_FORM", dataTable));
                 byte[] pdfFileBytes = localReport.Render("PDF");
 
+                this.LogSuccess();
                 return File(pdfFileBytes, "application/pdf");
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                this.LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
@@ -201,11 +202,12 @@ namespace FTT_API.Controllers.OnsitePrint
 
                 commonHandler.GetDBHelper().Commit();
 
+                this.LogSuccess();
                 return JsonOK();
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                this.LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
@@ -240,11 +242,12 @@ namespace FTT_API.Controllers.OnsitePrint
 
                 commonHandler.GetDBHelper().Commit();
 
+                this.LogSuccess();
                 return JsonOK();
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                this.LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
@@ -284,11 +287,12 @@ namespace FTT_API.Controllers.OnsitePrint
 
                 onsitePrintHandler.GetDBHelper().Commit();
 
+                this.LogSuccess();
                 return JsonOK();
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                this.LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }

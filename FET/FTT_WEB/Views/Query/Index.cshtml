@@ -17,14 +17,12 @@
         },
         PartialDIG = new DialogIvrCodeGridVO(),
         PartialDVG = new DialogVenderGridVO(),
-        TreeModalId = Guid.NewGuid().ToString("N"),
+        PartialIT = new ItemsTreeVO(),
         UrlGetInitData = $"{config.GetBackendUrl()}/Query/GetInitData",
-        UrlDetail = Url.Action("Detail", "Pending", new { formNo = "tempId" }),
+        UrlDetail = Url.Action("Detail", "Query", new { formNo = "tempId" }),
         UrlPrintWP = $"{config.GetBackendUrl()}/OnsitePrint/PrintWP",
         UrlExportExcel = $"{config.GetBackendUrl()}/Query/ExportExcel",
     };
-    ;
-    ViewData["TreeModalId"] = mapData.TreeModalId;
     Model.CloseDateGte = Model.CompleteDateGte = Model.CreateDateGte = DateTime.Now.AddDays(-3).Date;
     Model.CloseDateLte = Model.CompleteDateLte = Model.CreateDateLte = DateTime.Now.Date;
     // 依角色隱藏
@@ -143,7 +141,7 @@
                         <input asp-for="VenderIdEq" type="hidden" />
                         <input asp-for="VendorName" type="text" class="form-control" placeholder="" readonly>
                     </div>
-                    <div class="col">
+                    <div class="col hide-if-role-store">
                         <label class="col-form-label websoft-form-label pt-2">報修門市</label>
                         <input asp-for="IvrCodeEq" type="hidden" />
                         <input asp-for="StoreName" type="text" class="form-control" placeholder="" readonly>
@@ -160,7 +158,7 @@
                             <option></option>
                         </select>
                     </div>
-                    <div class="col">
+                    <div class="col hide-if-role-store">
                         <label class="col-form-label websoft-form-label pt-2">通路</label>
                         <select asp-for="ChannelEq" class="form-control initSelect2Clearable">
                             <option></option>
@@ -208,17 +206,23 @@
 
 <partial name="Form/_DialogIvrCodeGrid" model="mapData.PartialDIG" />
 <partial name="Form/_DialogVenderGrid" model="mapData.PartialDVG" />
-<partial name="Form/_RMItemTree" view-data='new ViewDataDictionary(ViewData)' />
+<partial name="Form/_ItemsTree" model="mapData.PartialIT" />
 
 @section scripts
 {
     <script>
         var context = {
-
+            userRole: '',
         };
         var cookieName = 'QueryGridInfo';
 
         $(function () {
+            context.userRole = (Cookies.get('userrole') || '').toLowerCase();
+
+            if (context.userRole === 'store') {
+                $('.hide-if-role-store').addClass('d-none');
+            }
+
             $('.initDatepicker').datetimepicker({
                 format: 'YYYY/MM/DD',
             });
@@ -253,8 +257,8 @@
                 }
             });
 
-            $('#@(mapData.TreeModalId)').on('hidden.bs.modal', function (e) {
-                let ctx = context['@(mapData.TreeModalId)'];
+            $('#@(mapData.PartialIT.Id)').on('hidden.bs.modal', function (e) {
+                let ctx = context['@(mapData.PartialIT.Id)'];
 
                 if (ctx.result && ctx.selectedItem) {
                     let data = ctx.selectedItem.original['OtherAttr'];
@@ -440,7 +444,7 @@
         });
 
         $('#btnSelectCategoryId').on('click', function (e) {
-            $('#@(mapData.TreeModalId)').modal('show');
+            $('#@(mapData.PartialIT.Id)').modal('show');
         });
 
         function printWp(formNoList) {

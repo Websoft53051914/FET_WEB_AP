@@ -51,17 +51,17 @@
             </div>
             <div class="nav-right col pull-right right-menu p-0">
                 <ul class="nav-menus" style="padding: 0px 10px;">
-                    <li>
-                        <i class="fa fa-user-circle-o me-1" aria-hidden="true" style="font-size:16px"></i>@GetUserLoginName()
+                    <li id="userloginname">
+                        <i class="fa fa-user-circle-o me-1" aria-hidden="true" style="font-size:16px"></i>
                     </li>
                     <li class="onhover-dropdown p-0">
-                        <a class="btn btn-primary-light" href="@Url.Action("Index", "Logout")" data-bs-original-title="" title="" style="min-width: 100px;">
+                        <button class="btn btn-primary-light" style="min-width: 100px;" id="btn-logout">
                             <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather feather-log-out">
                                 <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
                                 <polyline points="16 17 21 12 16 7"></polyline>
                                 <line x1="21" y1="12" x2="9" y2="12"></line>
                             </svg>登出
-                        </a>
+                        </button>
                     </li>
                     <li class="align-items-center hide500" style="display:flex;white-space:nowrap;">
                         <a role="button" style="color:var(--main_color)" href="/download/FAQ_20250311.doc" download="FAQ.doc">問與答FAQ</a>
@@ -81,9 +81,39 @@
         </div>
     </div>
 }
-
+<script src="~/lib/jsCookie/js.cookie.min.js"></script>
 <script>
     $(document).ready(function () {
-        
+        $('#userloginname').append(decodeURIComponent(Cookies.get('userLoginName')))
+        $('#btn-logout').on('click', function () {
+            showLoader();
+            // var data = { formNo: formNo };
+            $.ajax({
+                type: 'post',
+                url: '@(config.GetBackendUrl() + Url.Action("Logout", "Logout"))',
+                xhrFields: {
+                    withCredentials: true
+                },
+                headers: {
+                    'Content-from': 'Logout'
+                },
+                // data: data,
+                dataType: 'json',
+                success: function (data) {
+                    if (data.Success == true) {
+                        hideLoader();
+                        window.location.href = '@Url.Action("Index", "Login")';
+
+
+                    } else {
+                        alert(data.Message);
+                        hideLoader();
+                    }
+                },
+                error: function (data) {
+                    hideLoader();
+                }
+            });
+        })
     });
 </script>

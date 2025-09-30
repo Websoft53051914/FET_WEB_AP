@@ -26,11 +26,11 @@ namespace FTT_API.Controllers.InProcess
             {
                 PageEntity pageEntity = base.GetPageEntity(request);
 
-                vm.USERROLE = LoginSession.Current.userrole;
-                vm.IVRCODE = LoginSession.Current.ivrcode;
-                vm.EMPNO = LoginSession.Current.empno;
+                vm.USERROLE = _sessionVO.userrole;
+                vm.IVRCODE = _sessionVO.ivrcode;
+                vm.EMPNO = _sessionVO.empno;
 
-                var _InProcessHanlder = new InProcessHanlder(_config, HttpContext);
+                var _InProcessHanlder = new InProcessHandler(_config, HttpContext);
                 var pageList = _InProcessHanlder.FindPageList(pageEntity, vm);
 
                 for (int i = 0; i < pageList.Results.Count; i++)
@@ -41,6 +41,7 @@ namespace FTT_API.Controllers.InProcess
                     item.IsTicket = item.StatusId == "TICKET";
                 }
 
+                this.LogSuccess();
                 return Json(new DataSourceResult
                 {
                     Data = pageList.Results,
@@ -49,6 +50,7 @@ namespace FTT_API.Controllers.InProcess
             }
             catch (Exception ex)
             {
+                this.LogError(ex.ToString());
                 return JsonValidFail("系統錯誤");
             }
         }
@@ -60,7 +62,7 @@ namespace FTT_API.Controllers.InProcess
             try
             {
                 var form_No = vm.form_no;
-                var _InProcessHanlder = new InProcessHanlder(_config, HttpContext);
+                var _InProcessHanlder = new InProcessHandler(_config, HttpContext);
                 string kpiTime = _InProcessHanlder.GetKPITime(form_No);
 
                 if (kpiTime == "") kpiTime = "3";
@@ -76,17 +78,20 @@ namespace FTT_API.Controllers.InProcess
 
                     if (m_FormType == "")
                         m_FormType = "FTT_FORM";
-                    _InProcessHanlder.InsertFTT_FORM_LOG(form_No, LoginSession.Current.empname, m_FormType);
+                    _InProcessHanlder.InsertFTT_FORM_LOG(form_No, _sessionVO.empname, m_FormType);
                     //db.ExecuteNonQuery("INSERT INTO FTT_FORM_LOG (FORM_NO,UPDATE_EMPNO,UPDATETIME,FIELDNAME,ACTION,FORM_TYPE,ROOT_NO) VALUES ('" + Form_No.Text + "','" + Session["empname"].ToString() + "',SYSDATE,'催單','FORM','" + m_FormType + "','" + Form_No.Text + "')");
+                    this.LogSuccess("已發送催單通知!!");
                     return JsonSuccess("已發送催單通知!!");
                 }
                 else
                 {
-                    return JsonValidFail("此工單KPI為" + kpiTime + "天，目前尚未Fail，無法催單!!");
+                    this.LogSuccess($"此工單【{form_No}】KPI為" + kpiTime + "天，目前尚未Fail，無法催單!!");
+                    return JsonValidFail($"此工單【{form_No}】KPI為" + kpiTime + "天，目前尚未Fail，無法催單!!");
                 }
             }
             catch (Exception ex)
             {
+                this.LogError(ex.ToString());
                 return JsonValidFail("系統錯誤");
             }
         }

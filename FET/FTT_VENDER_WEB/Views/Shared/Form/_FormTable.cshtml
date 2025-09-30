@@ -46,6 +46,12 @@
     <input type="hidden" id="FORM_ACTION" name="FORM_ACTION" value="INSERT" />
     <input type="hidden" id="AMOUNT_CONFIG" name="AMOUNT_CONFIG" value="" />
 
+
+    <input type="hidden" id="updateCOMPLETETIME" name="updateCOMPLETETIME" value="false" />
+    <input type="hidden" id="updatePRECOMPLETETIME" name="updatePRECOMPLETETIME" value="false" />
+    <input type="hidden" id="updateVENDOR_ARRIVE_DATE" name="updateVENDOR_ARRIVE_DATE" value="false" />
+
+
     <div>
         <div class="table-responsive  bg-white" style="overflow-y: hidden;">
             <table class="table table-bordered align-middle" style="table-layout: fixed;">
@@ -174,9 +180,9 @@
                         <td colspan="2"></td>
                         @*廠商無顯示*@
                         @*<th class="table-header">門市自行尋商</th>
-                            <td id="SELFCONFIG_NOTE">
-                                N
-                            </td>*@
+                        <td id="SELFCONFIG_NOTE">
+                        N
+                        </td>*@
                     </tr>
 
                     <tr>
@@ -287,7 +293,7 @@
                         <td bgcolor="#FFDDEE" id="COMPLETETIME_DESC">完修日期：</td>
                         <td colspan="5">
                             <div class="input-group date" id="COMPLETETIME_Shell" data-target-input="nearest" style=" max-width: 200px;">
-                                <input id="COMPLETE_DATE" name="COMPLETETIME" class="form-control datetimepicker-input" data-target="#COMPLETETIME_Shell " />
+                                <input id="COMPLETETIME" name="COMPLETETIME" class="form-control datetimepicker-input" data-target="#COMPLETETIME_Shell " />
                                 <div class="input-group-text" data-target="#COMPLETETIME_Shell" data-toggle="datetimepicker"><i class="fa fa-calendar"></i></div>
                                 <div class="invalid-feedback">請輸入完修日期</div>
                             </div>
@@ -353,6 +359,7 @@
                                 <div class="col">
                                     <label class="col-form-label websoft-form-label pt-2">數量</label>
                                     <input id="QTY" min="1" type="number" class="form-control " style="width: 80px" />
+                                    <div class="invalid-feedback">請輸入數量</div>
                                 </div>
                                 <div class="col">
                                     <label class="col-form-label websoft-form-label pt-2">單位</label>
@@ -361,6 +368,7 @@
                                 <div class="col">
                                     <label class="col-form-label websoft-form-label pt-2">單價</label>
                                     <input id="PRICE" min="1" type="number" class="form-control " style="width: 80px" />
+                                    <div class="invalid-feedback">請輸入單價</div>
                                 </div>
                             </div>
                             <div class="d-flex gap-2 mb-2">
@@ -403,14 +411,12 @@
 
                     <tr>
                         <td colspan="6" width="100%" align="center">
-                            @* ////TODO 補上送出 *@
-                            <button id="SubmitForm" type="submit" class="btn btn-primary" onclick="CheckFormInTicket(event)" style="display:none;">送出</button>
-
-                            <span id=submitbutton>
-                                <input id="btnSubmit" type="submit" value="" class="btn btn-primary" />
-                                @* @(Html.Raw(SubmitButton)) *@
-                            </span>
-                            <button type="button" onclick="parent.window.close();" class="btn btn-primary">關閉視窗</button>
+                            <div class="d-flex gap-2 justify-content-center flex-wrap">
+                                <button id="SubmitForm" type="submit" class="btn btn-primary" onclick="CheckFormInTicket(event)" style="display:none;">送出</button>
+                                <template id="tmplButton">
+                                </template>
+                                <button type="button" onclick="parent.window.close();" class="btn btn-primary">關閉視窗</button>
+                            </div>
                         </td>
                     </tr>
                 </tbody>
@@ -516,75 +522,52 @@
                 $('#STATUS').val($('#SELECTSTATUS').val());
                 $('#TICKET_INFO').val($('#SELECTSTATUS').val());
 
-                $('#DESCRIPTION').removeAttr('required', '');
-                $('#SELECTSTATUS').removeAttr('required', '');
-                $('#COMPLETETIME').removeAttr('required', '');
-                $('#PRECOMPLETETIME').removeAttr('required', '');
-                $('#PRICE').removeAttr('required', '');
-                $('#QTY').removeAttr('required', '');
-                $('#PRECOMPLETETIME').removeAttr('required', '');
-                $('#VENDOR_ARRIVE_DATE').removeAttr('required');
-
-                updateCOMPLETETIME = false;
-                updatePRECOMPLETETIME = false;
-
                 var RequireField = '';
                 switch ($('#SELECTSTATUS').val()) {
                     case "COMPLETE":
-                        $('#DESCRIPTION').attr('required', '');
-                        $('#SELECTSTATUS').attr('required', '');
-                        $('#COMPLETETIME').attr('required', '');
-                        $('#VENDOR_ARRIVE_DATE').attr('required', '');
-
-                        updateCOMPLETETIME = true;
-
+                        context.RequireField = convertToFormField(",DESCRIPTION,SELECTSTATUS,COMPLETETIME,VENDOR_ARRIVE_DATE,");
                         $('#COMPLETE_PANEL').show();
                         $('#VENDOR_ARRIVE_DATE_PANEL').show();
                         $('#AMOUNT_PANEL').show();
-
                         iFrameIsSubmit = false;
                         break;
                     case "PENDING":
-                        $('#DESCRIPTION').attr('required', '')
-                        $('#SELECTSTATUS').attr('required', '')
-                        $('#PRECOMPLETETIME').attr('required', '')
+                        context.RequireField = convertToFormField(",DESCRIPTION,SELECTSTATUS,PRECOMPLETETIME,");
                         $('#PENDING_PANEL').show();
-
-                        updatePRECOMPLETETIME = true;
-
                         iFrameIsSubmit = true;
                         break;
                     case "OFFER":
-                        $('#DESCRIPTION').attr('required', '')
-                        $('#SELECTSTATUS').attr('required', '')
-                        $('#PRICE').attr('required', '')
-                        $('#QTY').attr('required', '')
+                        //context.RequireField = convertToFormField(",DESCRIPTION,SELECTSTATUS,PRECOMPLETETIME,PRICE,QTY,");
+                        context.RequireField = convertToFormField(",DESCRIPTION,SELECTSTATUS,PRECOMPLETETIME,");
+
                         $('#AMOUNT_PANEL').show();
                         $('#PENDING_PANEL').show();
                         iFrameIsSubmit = false;
                         break;
 
                     case "ASSETER":
+                        // $('#AMOUNT_PANEL').show();
+                        context.RequireField = '';
                         $('#ASSETER_PANEL').show();
-                        iFrameIsSubmit = false;
+                        iFrameIsSubmit = true;
                         break;
 
                     case "NOSHOW":
-                        $('#DESCRIPTION').attr('required', '')
-                        $('#SELECTSTATUS').attr('required', '')
-                        $('#PRECOMPLETETIME').attr('required', '')
+                        context.RequireField = convertToFormField(",DESCRIPTION,SELECTSTATUS,PRECOMPLETETIME,");
                         $('#PENDING_PANEL').show();
-
-                        updatePRECOMPLETETIME = true;
-
                         iFrameIsSubmit = true;
                         break;
 
                     default:
                         break;
                 }
+
+                handleRequireField();
+                // $('#COMPLETETIME').prop('disabled', 'true');
+                // $('#VENDOR_ARRIVE_DATE').prop('disabled', 'true');
+
             }
-        })
+        });
 
         $('#EXPENSE_DESC_SEL').select2({
             placeholder: {
@@ -639,6 +622,7 @@
                 },
                 error: function (msg) {
                     console.log(msg);
+                    MyApp.Alert.error('呼叫 API 異常');
                 }
             });
         });
@@ -674,7 +658,7 @@
             console.log(vm);
             showLoader();
             $.ajax({
-                url: '@(config.GetBackendUrl() + Url.Action("Add_FTT_FORM_AMOUNT"))',
+                url: '@(config.GetBackendUrl() + Url.Action("Add_FTT_FORM_AMOUNT", "pending"))',
                 dataType: 'json',
                 type: 'POST',
                 data: { vm: vm },
@@ -683,7 +667,7 @@
                 .done((response) => {
                     if (response.Success) {
                         // 更新金額彙總欄後送出表單
-                        $('#btnSubmit').trigger('click');
+                        $('#form1').trigger('submit');
                     }
                     else {
                         MyApp.Alert.error(response['Message']);
@@ -696,7 +680,7 @@
                 .always(() => {
                     hideLoader();
                 });
-        })
+        });
 
         $("#form1").submit(function (e) {
             e.preventDefault();
@@ -707,11 +691,24 @@
             }
             else {
                 var vm = {};
+
+                if ($('#COMPLETETIME').val() != '') {
+                    vm.updateCOMPLETETIME = true;
+                }
+                if ($('#VENDOR_ARRIVE_DATE').val() != '') {
+                    vm.updateVENDOR_ARRIVE_DATE = true;
+                }
+                if ($('#PRECOMPLETETIME').val() != '') {
+                    vm.updatePRECOMPLETETIME = true;
+                }
+
                 vm.form_no = '@form_no';
 
+                vm.DESCRIPTION = $('#DESCRIPTION').val();
                 vm.TICKET_INFO = $('#TICKET_INFO').val();
                 vm.COMPLETETIME = $('#COMPLETETIME').val();
                 vm.PRECOMPLETETIME = $('#PRECOMPLETETIME').val();
+                vm.VENDOR_ARRIVE_DATE = $('#VENDOR_ARRIVE_DATE').val();
                 vm.CATEGORY_ID = $('#CATEGORY_ID').val();
                 vm.CATEGORY_NAME = $('#CATEGORY_NAME').val();
                 vm.REMARK = $('#REMARK').val();
@@ -720,7 +717,7 @@
                 vm.STATUS = $('#STATUS').val();
 
                 $.ajax({
-                    url: '@(config.GetBackendUrl() + Url.Action("Detail","Pending"))',
+                    url: '@(config.GetBackendUrl() + Url.Action("Detail", "Pending"))',
                     dataType: 'json',
                     type: 'POST',
                     data: { vm: vm },
@@ -779,97 +776,93 @@
             url: '@(config.GetBackendUrl() + Url.Action("GetDetail", "Pending"))' + '?form_no=' + formNo,
             // data: data,
             dataType: 'json',
-            success: function (data) {
-                if (data.Success == true) {
-                    $('#StoreClass_Company').text(data.Data.Store_profileDTO.Company);
-                    $('#StoreClass_StoreType').text(data.Data.Store_profileDTO.StoreType);
-                    $('#StoreClass_IVRCode').text(data.Data.Store_profileDTO.IVRCode);
-                    $('#StoreClass_Channel').text(data.Data.Store_profileDTO.Channel);
-                    $('#StoreClass_Area').text(data.Data.Store_profileDTO.Area);
-                    $('#StoreClass_StoreName').text(data.Data.Store_profileDTO.StoreName);
-                    $('#StoreClass_eMail').text(data.Data.Store_profileDTO.eMail);
-                    $('#StoreClass_Owner').text(data.Data.Store_profileDTO.Owner);
-                    $('#StoreClass_PhoneUrgent').text(data.Data.Store_profileDTO.PhoneUrgent);
-                    $('#StoreClass_Manager').text(data.Data.Store_profileDTO.Manager);
-                    $('#StoreClass_Phone').text(data.Data.Store_profileDTO.Phone);
-                    $('#StoreClass_BusinessTime1').text(data.Data.Store_profileDTO.BusinessTime1);
-                    $('#StoreClass_BusinessTime2').text(data.Data.Store_profileDTO.BusinessTime2);
-                    $('#StoreClass_BusinessTime3').text(data.Data.Store_profileDTO.BusinessTime3);
-                    $('#StoreClass_BusinessTime4').text(data.Data.Store_profileDTO.BusinessTime4);
-                    $('#StoreClass_DecorationCondition').text(data.Data.Store_profileDTO.DecorationCondition);
-                    $('#StoreClass_PhoneFax').text(data.Data.Store_profileDTO.PhoneFax);
-                    $('#StoreClass_Address').text(data.Data.Store_profileDTO.Address);
-                    $('#StoreClass_Note').text(data.Data.Store_profileDTO.Note);
-                    context.KpiDays = data.Data['KpiDays'];
+            success: function (response) {
+                if (response.Success == true) {
+                    var data = response.Data;
 
-                    $('#ApprovalDate').text(data.Data.ApprovalDate);
-                    $('#WarrantyTime').text(data.Data.WarrantyTime);
+                    $('#StoreClass_Company').text(data.Store_profileDTO.Company);
+                    $('#StoreClass_StoreType').text(data.Store_profileDTO.StoreType);
+                    $('#StoreClass_IVRCode').text(data.Store_profileDTO.IVRCode);
+                    $('#StoreClass_Channel').text(data.Store_profileDTO.Channel);
+                    $('#StoreClass_Area').text(data.Store_profileDTO.Area);
+                    $('#StoreClass_StoreName').text(data.Store_profileDTO.StoreName);
+                    $('#StoreClass_eMail').text(data.Store_profileDTO.eMail);
+                    $('#StoreClass_Owner').text(data.Store_profileDTO.Owner);
+                    $('#StoreClass_PhoneUrgent').text(data.Store_profileDTO.PhoneUrgent);
+                    $('#StoreClass_Manager').text(data.Store_profileDTO.Manager);
+                    $('#StoreClass_Phone').text(data.Store_profileDTO.Phone);
+                    $('#StoreClass_BusinessTime1').text(data.Store_profileDTO.BusinessTime1);
+                    $('#StoreClass_BusinessTime2').text(data.Store_profileDTO.BusinessTime2);
+                    $('#StoreClass_BusinessTime3').text(data.Store_profileDTO.BusinessTime3);
+                    $('#StoreClass_BusinessTime4').text(data.Store_profileDTO.BusinessTime4);
+                    $('#StoreClass_DecorationCondition').text(data.Store_profileDTO.DecorationCondition);
+                    $('#StoreClass_PhoneFax').text(data.Store_profileDTO.PhoneFax);
+                    $('#StoreClass_Address').text(data.Store_profileDTO.Address);
+                    $('#StoreClass_Note').text(data.Store_profileDTO.Note);
+                    context.KpiDays = data['KpiDays'];
 
-                    $('#APPROVE_FORM_STATUS_DESC').text('*目前表單狀態: ' + data.Data.Status_Desc);
-                    $('#User_Type').val(data.Data.User_Type);
-                    $('#STATUS_DESC').val(data.Data.Status_Desc);
-                    $('#FORM').val(data.Data.Form_Type);
-                    $('#FORM_TYPE').val(data.Data.Form_Type);
-                    $('#STATUS').val(data.Data.Status);
-                    $('#ACTION_NAME').val(data.Data.ActionName);
-                    $('#STORE_TYPE').val(data.Data.Store_profileDTO.StoreType);
-                    $('#IVRCODE').val(data.Data.Store_profileDTO.IVRCode);
+                    $('#ApprovalDate').text(data.ApprovalDate);
+                    $('#WarrantyTime').text(data.WarrantyTime);
 
-                    var RequireField = data.Data.RequireField;
-                    var accesscontrol = RequireField.split(/,/);
+                    $('#APPROVE_FORM_STATUS_DESC').text('*目前表單狀態: ' + data.Status_Desc);
+                    $('#User_Type').val(data.User_Type);
+                    $('#STATUS_DESC').val(data.Status_Desc);
+                    $('#FORM').val(data.Form_Type);
+                    $('#FORM_TYPE').val(data.Form_Type);
+                    $('#STATUS').val(data.Status);
+                    $('#ACTION_NAME').val(data.ActionName);
+                    $('#STORE_TYPE').val(data.Store_profileDTO.StoreType);
+                    $('#IVRCODE').val(data.Store_profileDTO.IVRCode);
 
-                    for (i = 0; i < accesscontrol.length; i++) {
-                        if (accesscontrol[i] != '' && accesscontrol[i] != null)
-                            $('#' + accesscontrol[i]).attr('required', '');
-                    }
+                    var RequireField = data.RequireField;
+                    context.RequireField = RequireField;
 
-                    var UpdateField = data.Data.UpdateField;
+                    var UpdateField = data.UpdateField;
                     // 表單權限處理
                     form_access_control(document.form1, UpdateField);
 
-                    $('#PreHandleDesc').val(data.Data.PreHandleDesc)
+                    $('#PreHandleDesc').text(data.PreHandleDesc)
 
-                    if (data.Data.FranchiseMsg != "" && data.Data.FranchiseMsg != null) {
-                        MyApp.Alert.warning(data.Data.FranchiseMsg);
+                    if (data.FranchiseMsg != "" && data.FranchiseMsg != null) {
+                        MyApp.Alert.warning(data.FranchiseMsg);
                     }
 
-                    //if (data.Data.Ftt_formDTO.tt_category == "緊急(新開單)") {
+                    //if (data.Ftt_formDTO.tt_category == "緊急(新開單)") {
 
                     //    var option = new Option('緊急(新開單)', '緊急(新開單)', true, true);
                     //    $('#TT_CATEGORY').append(option).trigger('change');
                     //}
 
-                    console.log(data.Data.Ftt_formDTO.tt_category);
-                    $("#TT_CATEGORY").val(data.Data.Ftt_formDTO.tt_category);
+                    $("#TT_CATEGORY").val(data.Ftt_formDTO.tt_category);
                     $("#TT_CATEGORY").trigger('change');
 
-                    if (data.Data.Ftt_formDTO.repair == 'Y') {
+                    if (data.Ftt_formDTO.repair == 'Y') {
                         $('[name="Repair"][value="Y"]').prop('checked', true);
                     } else {
                         $('[name="Repair"][value="N"]').prop('checked', true);
                     }
 
-                    if (data.Data.Ftt_formDTO.resupply == 'Y') {
+                    if (data.Ftt_formDTO.resupply == 'Y') {
                         $('[name="Resupply"][value="Y"]').prop('checked', true);
                     } else {
                         $('[name="Resupply"][value="N"]').prop('checked', true);
                     }
 
-                    $('#CREATE_TIME').text(data.Data.Create_Time);
+                    $('#CREATE_TIME').text(data.Create_Time);
 
-                    $('#CIDesc').text(data.Data.Ftt_formDTO.CIDesc);
-                    $('#EMPNAME').text(data.Data.Ftt_formDTO.empname);
-                    $('#EMPTEL').text(data.Data.Ftt_formDTO.emptel);
-                    $('#CATEGORY_ID').val(data.Data.Ftt_formDTO.category_id);
-                    $('#CATEGORY_NAME').val(data.Data.Ftt_formDTO.category_name);
-                    $('#VENDER_ID').val(data.Data.Ftt_formDTO.vender_id);
-                    $('#SELFCONFIG').val(data.Data.Ftt_formDTO.selfconfig);
-                    $('#SELFCONFIG_NOTE').text(data.Data.Ftt_formDTO.selfconfig);
-                    $('#TT_CATEGORY_NOTE_PANNEL').text(data.Data.Ftt_formDTO.checkitem);
-                    $('#TT_CATEGORY_DESC_PANNEL').text(data.Data.Ftt_formDTO.descr);
-                    $('#REMARK').val(data.Data.Ftt_formDTO.remark);
+                    $('#CIDesc').text(data.Ftt_formDTO.CIDesc);
+                    $('#EMPNAME').text(data.Ftt_formDTO.empname);
+                    $('#EMPTEL').text(data.Ftt_formDTO.emptel);
+                    $('#CATEGORY_ID').val(data.Ftt_formDTO.category_id);
+                    $('#CATEGORY_NAME').val(data.Ftt_formDTO.category_name);
+                    $('#VENDER_ID').val(data.Ftt_formDTO.vender_id);
+                    $('#SELFCONFIG').val(data.Ftt_formDTO.selfconfig);
+                    $('#SELFCONFIG_NOTE').text(data.Ftt_formDTO.selfconfig);
+                    $('#TT_CATEGORY_NOTE_PANNEL').text(data.Ftt_formDTO.checkitem);
+                    $('#TT_CATEGORY_DESC_PANNEL').text(data.Ftt_formDTO.descr);
+                    $('#REMARK').val(data.Ftt_formDTO.remark);
 
-                    if (data.Data.Ftt_formDTO.category_id == '1275') {
+                    if (data.Ftt_formDTO.category_id == '1275') {
                         document.all.TT_CATEGORY_LABEL.innerHTML = "報修前確認事項及損壞狀況描述：";
                         document.all.TT_CATEGORY_NOTE_LABEL.innerHTML = "報修前檢查事項：";
                         document.all.TT_CATEGORY_DESC_LABEL.innerHTML = "報修機台編號：";
@@ -884,95 +877,91 @@
                         $('#REMARK_LABEL2').hide();
                     }
 
-                    if (data.Data.Ftt_formDTO.selfconfig == "N") {
-                        $('#VENDER_ID').val(data.Data.Ftt_formDTO.order_id);
-                        $('#VENDER_NAME').text(data.Data.Ftt_formDTO.merchant_name);
-                        $('#CP_NAME').text(data.Data.Ftt_formDTO.cp_name);
-                        $('#CP_TEL').text(data.Data.Ftt_formDTO.cp_tel);
+                    if (data.Ftt_formDTO.selfconfig == "N") {
+                        $('#VENDER_ID').val(data.Ftt_formDTO.order_id);
+                        $('#VENDER_NAME').text(data.Ftt_formDTO.merchant_name);
+                        $('#CP_NAME').text(data.Ftt_formDTO.cp_name);
+                        $('#CP_TEL').text(data.Ftt_formDTO.cp_tel);
                     }
                     else {
-                        $('#VENDER_NAME').text(data.Data.storename);
+                        $('#VENDER_NAME').text(data.storename);
                     }
 
-                    $('#FORM').text(data.Data.Form);
-                    $('#STATUS').text(data.Data.Status);
-                    $('#STATUS_DESC').text(data.Data.Status_Desc);
+                    $('#FORM').text(data.Form);
+                    $('#STATUS').text(data.Status);
+                    $('#STATUS_DESC').text(data.Status_Desc);
 
-                    if (data.Data.ShowApproveCommon) {
-                        $('#submitbutton')
-                            .append(
-                                $('<font>', {
-                                    id: 'approvecommon',
-                                    css: {
-                                        font: 'bold 9pt Arial',
-                                        color: '#000080',
-                                        'text-decoration': 'none'
-                                    },
-                                    text: '建議／說明'
-                                })
-                            )
-                            .append('：')
-                            .append(
-                                $('<input>', {
-                                    type: 'text',
-                                    name: 'approvecommon',
-                                    maxlength: 200,
-                                    size: 80
-                                })
-                            );
-                    }
-
-                    if (data.Data.ShowPriorStatus) {
-                        $('#STATUSWORDING').val(data.Data.StatusWording);
-                        $('#FORM_TYPE').val(data.Data.Form_Type);
-                        $('#STATUS').val(data.Data.Status);
-                        RequireField = data.Data.RequireField;
-                        $('#btnSubmit').val(data.Data.BtnSubmitName);
-                    }
-                    if (data.Data.ApproveY) {
-                        $('#btnSubmit').val(data.Data.BtnSubmitName);
-                        $('#STATUSWORDING').val(data.Data.StatusWording);
-                        RequireField = data.Data.RequireField;
-                        $('#FORM_TYPE').val(data.Data.Form_Type);
-                        document.all.APPROVE.value = 'Y';
-                        $('#User_Type').val(data.Data.User_Type);
-                        $('#STATUS').val(data.Data.Status);
-                    }
-                    else {
-                        $('#btnSubmit').val(data.Data.BtnSubmitName);
-                        $('#STATUSWORDING').val(data.Data.StatusWording);
-                        RequireField = data.Data.RequireField;
-                        $('#FORM_TYPE').val(data.Data.Form_Type);
-                        $('#STATUS').val(data.Data.Status);
-                    }
-
-                    if (data.Data.ShowSubmitButton == false) {
-                        $('#btnSubmit').addClass('d-none');
-                    }
-
-                    $('#User_Type').val(data.Data.User_Type);
-                    UpdateField = data.Data.UpdateField;
-                    RequireField = data.Data.RequireField;
-
-                    if (data.Data.ShowOriginSubmitForm == true) {
+                    // 處理表單按鈕
+                    if (data['ShowOriginSubmitForm'] === true) {
                         $('#SubmitForm').show();
                     }
+                    else {
+                        let $tmpl = $('#tmplButton');
+                        let $parent = $tmpl.parent();
+                        // 刪除舊的動態元件
+                        $parent.find('.dynamic').remove();
+                        if (data['FormTableButtons'] && data['FormTableButtons'].length) {
+                            $.each(data['FormTableButtons'], function (index, value) {
+                                if (value['@(nameof(FormTableButtonVO.IsApproveCommon))'] === true) {
+                                    let $label = $('<label>', {
+                                        class: 'col-form-label m-0 dynamic',
+                                        text: '建議／說明：',
+                                    });
+                                    let $input = $('<input>', {
+                                        name: 'approvecommon',
+                                        type: 'text',
+                                        class: 'form-control w-200p dynamic',
+                                        maxlength: 200,
+                                    });
 
-                    if (data.Data.UpdateSELECTSTATUSOption2 == true) {
+                                    $label.insertBefore($tmpl);
+                                    $input.insertBefore($tmpl);
+                                }
+                                else {
+                                    let $button = $('<button>', {
+                                        type: 'submit',
+                                        class: 'btn btn-primary dynamic',
+                                        text: value['@(nameof(FormTableButtonVO.StatusWording))'],
+                                    }).on('click', function (e) {
+                                        $('#STATUSWORDING').val(value['@(nameof(FormTableButtonVO.StatusWording))']);
+                                        $('#FORM_TYPE').val(value['@(nameof(FormTableButtonVO.FormType))']);
+                                        $('#STATUS').val(value['@(nameof(FormTableButtonVO.Status))']);
+                                        context.RequireField = convertToFormField(value['@(nameof(FormTableButtonVO.RequireField))']);
+                                        let approve = value['@(nameof(FormTableButtonVO.Approve))'];
+
+                                        if (approve === 'Y') {
+                                            $('#User_Type').val(value['@(nameof(FormTableButtonVO.UserType))']);
+                                            // 舊程式無找到 APPROVE 的 input
+                                            //$('#APPROVE').val(approve);
+                                        }
+
+                                        handleRequireField();
+                                    });
+                                    $button.insertBefore($tmpl);
+                                }
+                            });
+                        }
+                    }
+
+                    $('#User_Type').val(data.User_Type);
+                    UpdateField = data.UpdateField;
+                    RequireField = data.RequireField;
+
+                    if (data.UpdateSELECTSTATUSOption2 == true) {
                         $("#SELECTSTATUS option").eq(2).text("故障排除");
                         $("#SELECTSTATUS").trigger("change.select2");
                     }
 
-                    if (data.Data.DeleteSELECTSTATUSOption3 == true) {
+                    if (data.DeleteSELECTSTATUSOption3 == true) {
                         $("#SELECTSTATUS option").eq(3).remove();
                         $("#SELECTSTATUS").trigger("change.select2");
                     }
 
-                    if (data.Data.TempStatus == 'TICKET') {
+                    if (data.TempStatus == 'TICKET') {
                         $('#SELECTSTATUS_PANEL').show();
                     }
 
-                    if (data.Data.DeleteSELECTSTATUS2ThreeTimes == true) {
+                    if (data.DeleteSELECTSTATUS2ThreeTimes == true) {
                         $("#SELECTSTATUS option").eq(2).remove();
                         $("#SELECTSTATUS").trigger("change.select2");
                         $("#SELECTSTATUS option").eq(2).remove();
@@ -981,37 +970,36 @@
                         $("#SELECTSTATUS").trigger("change.select2");
                     }
 
-                    for (var i = 0; i < data.Data.Ftt_form_amountDTOs.length; i++) {
-                        var item = data.Data.Ftt_form_amountDTOs[i];
-                        addItemRow(item, data.Data.HideAmountDel);
-
+                    // 處理資料庫的金額彙整欄資料
+                    for (var i = 0; i < data.Ftt_form_amountDTOs.length; i++) {
+                        var item = data.Ftt_form_amountDTOs[i];
+                        addItemRow(item, data.HideAmountDel);
                     }
 
-                    if (data.Data.HideNewData == true) {
+                    if (data.HideNewData == true) {
                         $('#NewData').hide();
                     }
 
-                    $('#CATEGORY_ID').val(data.Data.Category_Id);
-                    $('#Totals').text(data.Data.Amount_Cost);
-                    $('#AMOUNT_COST').val(data.Data.Amount_Cost)
+                    $('#CATEGORY_ID').val(data.Category_Id);
+                    $('#Totals').text(data.Amount_Cost);
+                    $('#AMOUNT_COST').val(data.Amount_Cost)
+                    $('#AMOUNT_CONFIG').val(data.Amount_Config);
 
-                    $('#AMOUNT_CONFIG').val(data.Data.Amount_Config);
-
-                    for (var i = 0; i < data.Data.Amount_SelectList.length; i++) {
-                        var item = data.Data.Amount_SelectList[i];
+                    for (var i = 0; i < data.Amount_SelectList.length; i++) {
+                        var item = data.Amount_SelectList[i];
 
                         var option = new Option(item.Text, item.Value, true, true);
                         $('#EXPENSE_TYPE').append(option).trigger('change');
                     }
 
-                    if (data.Data.UpdateAmount_Config == true) {
+                    if (data.UpdateAmount_Config == true) {
                         $('.input_class').hide();
                     }
                     else {
                         $('.select_class').next('.select2-container').hide();
                     }
 
-                    var ticket_info = data.Data.Ftt_formDTO.ticket_info;
+                    var ticket_info = data.Ftt_formDTO.ticket_info;
                     if (ticket_info != '' && ticket_info != null) {
                         document.getElementById(ticket_info + "_PANEL").style.display = "";
                         $('#TICKET_INFO').val(ticket_info);
@@ -1019,25 +1007,25 @@
                         if (ticket_info == 'COMPLETE') {
                             $('#AMOUNT_PANEL').show();
 
-                            $("#COMPLETETIME_Shell").datetimepicker('date', data.Data.Ftt_formDTO.completetime);
-                            $('#VENDOR_ARRIVE_DATEShell').datetimepicker('date', data.Data.Ftt_formDTO.vendor_arrive_date);
+                            $("#COMPLETETIME_Shell").datetimepicker('date', data.Ftt_formDTO.completetime);
+                            $('#VENDOR_ARRIVE_DATEShell').datetimepicker('date', data.Ftt_formDTO.vendor_arrive_date);
                             checkKPI($("#COMPLETETIME_Shell").datetimepicker('date'));
                         }
                         if (ticket_info == 'PENDING') {
                             $('#AMOUNT_PANEL').hide();
-                            $("#PRECOMPLETETIME_Shell").datetimepicker('date', data.Data.Ftt_formDTO.precompletetime);
+                            $("#PRECOMPLETETIME_Shell").datetimepicker('date', data.Ftt_formDTO.precompletetime);
                             checkKPI($("#PRECOMPLETETIME_Shell").datetimepicker('date'));
                         }
                         if (ticket_info == 'OFFER') {
                             $('#AMOUNT_PANEL').show();
                             checkKPI($("#PRECOMPLETETIME_Shell").datetimepicker('date'));
                         }
-                        if (data.Data.ShowAmountPanel) {
+                        if (data.ShowAmountPanel) {
                             $('#AMOUNT_PANEL').show();
                         }
                     }
 
-                    if (data.Data.IsAdmin) {
+                    if (data.IsAdmin) {
                         $('#FormEditTab3').show();
                         $('#FormEditNavItem3').show();
 
@@ -1047,9 +1035,9 @@
                         $('#FormEditNavItem3').remove();
                     }
 
-                    if (data.Data['SelectListDelayReason']) {
+                    if (data['SelectListDelayReason']) {
                         let $control = $('#DELAY_REASON');
-                        let dataSource = $.map(data.Data['SelectListDelayReason'], (val, idx) => {
+                        let dataSource = $.map(data['SelectListDelayReason'], (val, idx) => {
                             $.extend(val, {
                                 id: val['@(nameof(SelectListItem.Value))'],
                                 text: val['@(nameof(SelectListItem.Text))'],
@@ -1069,7 +1057,6 @@
                 } else {
                     MyApp.Alert.error(data.Message);
                     hideLoader();
-
                 }
             },
             error: function (msg) {
@@ -1219,12 +1206,10 @@
     }
 
     function form_access_control(formobj, allowed_field) {
-        allowed_field = ',' + allowed_field + ',';
-        allowed_field = allowed_field.replace(',PRECOMPLETE_DATE,', ',PRECOMPLETETIME,');
-        allowed_field = allowed_field.replace(',COMPLETE_DATE,', ',COMPLETETIME,');
-        var ignoreFieldList = ['EXPENSE_TYPE', 'EXPENSE_DESC_SEL', 'FAULT_REASON', 'REPAIR_ACTION', 'QTY', 'UNIT', 'PRICE'];
+        allowed_field = convertToFormField(allowed_field);
+        var ignoreFieldList = ['EXPENSE_DESC_TEXT', 'EXPENSE_TYPE', 'EXPENSE_DESC_SEL', 'FAULT_REASON', 'REPAIR_ACTION', 'QTY', 'UNIT', 'PRICE'];
         var vobj = eval(formobj);
-        console.log('allowed_field', allowed_field);
+
         if (vobj != null) {
             for (var i = 0; i < vobj.length; i++) {
                 let item = vobj[i];
@@ -1239,7 +1224,7 @@
                                     //alert('Enable '+item.name);
                                     enable_field(item);
                                 }   // Check ACL
-                            }        
+                            }
                         }      // != hidden
                     }         // Name length > 2
                 }           // Name != null
@@ -1268,9 +1253,11 @@
             case 'INPUT':
                 if (vobj.type == 'checkbox' || vobj.type == 'radio') {
                     DisableRadio(vobj);
-                } else if (vobj.type == 'button' || vobj.type == 'submit') {
+                }
+                else if (vobj.type == 'button' || vobj.type == 'submit') {
                     vobj.disabled = true;
-                } else if (vobj.type != 'hidden') {
+                }
+                else if (vobj.type != 'hidden') {
                     DisableKeyInText(vobj);
                 }
                 break;
@@ -1299,9 +1286,11 @@
             case 'INPUT':
                 if (vobj.type == 'checkbox' || vobj.type == 'radio') {
                     EnableRadio(vobj);
-                } else if (vobj.type == 'button' || vobj.type == 'submit') {
+                }
+                else if (vobj.type == 'button' || vobj.type == 'submit') {
                     vobj.disabled = false;
-                } else if (vobj.type != 'hidden') {
+                }
+                else if (vobj.type != 'hidden') {
                     EnableKeyInText(vobj);
                 }
                 break;
@@ -1332,13 +1321,12 @@
             return;
         }
 
-        console.log(iFrameIsSubmit);
         if (!iFrameIsSubmit) {
             $('#SubmitFormAddAmount').trigger('click');
             return false;
         }
 
-        $('#btnSubmit').trigger('click');
+        $('#form1').trigger('submit');
     }
 
     function deleteAllOptions(obj) {
@@ -1406,9 +1394,8 @@
     function checkKPI(endDate) {
         let mStartDate = moment($('#CREATE_TIME').text(), 'YYYY/MM/DD');
         let mEndDate = moment(endDate, 'YYYY/MM/DD');
-        console.log(mStartDate, mEndDate);
         let diffDays = mEndDate.diff(mStartDate, 'days');
-        console.log(context.KpiDays, diffDays);
+
         if (diffDays > context.KpiDays) {
             $('#DELAY_REASON_PANEL').show();
             $('#DELAY_REASON').prop('disabled', false);
@@ -1418,5 +1405,47 @@
             $('#DELAY_REASON').prop('disabled', true);
         }
     }
+</script>
+<script>
+    /**
+     * 必填欄位
+     */
+    context.RequireField = '';
+    /**
+     * 檢查是否必填欄位
+     */
+    context.CheckRequireField = ['DESCRIPTION', 'SELECTSTATUS', 'COMPLETETIME', 'VENDOR_ARRIVE_DATE', 'PRECOMPLETETIME', 'PRICE', 'QTY', 'EMPNAME', 'EMPTEL', 'CATEGORY_ID', 'VENDER_ID'];
 
+    /**
+     * 將 DB 的欄位名稱修改為目前表單的欄位名稱
+     */
+    function convertToFormField(field) {
+        field = `,${field || ''},`;
+        field = field
+            .replace(',PRECOMPLETE_DATE,', ',PRECOMPLETETIME,')
+            .replace(',COMPLETE_DATE,', ',COMPLETETIME,');
+
+        return field.substring(1, field.length - 1);
+    }
+
+    /**
+     * 處理必填欄位
+     */
+    function handleRequireField() {
+        let requireField = `,${context.RequireField},`;
+        $.each(context.CheckRequireField, function (index, value) {
+            let $control = $('#' + value);
+
+            if ($control.length === 0) {
+                return;
+            }
+
+            if (requireField.includes(`,${value},`)) {
+                $control.attr('required', '');
+            }
+            else {
+                $control.removeAttr('required');
+            }
+        });
+    }
 </script>

@@ -1,44 +1,28 @@
-﻿using Core.Utility.Helper.CaptchaCode;
+﻿using Const.VO;
 using FTT_VENDER_API.Common;
-using FTT_VENDER_API.Common.Attribute;
 using FTT_VENDER_API.Common.ConfigurationHelper;
 using FTT_VENDER_API.Models.Handler;
 using FTT_VENDER_API.Models.ViewModel.Login;
-using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using static Const.Enums;
 
 namespace FTT_VENDER_API.Controllers.Login
 {
+    /// <summary>
+    /// 登入 API
+    /// </summary>
+    [Route("[controller]")]
     public partial class LoginController : BaseProjectController
     {
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly ConfigurationHelper _configHelper;
+        /// <summary>
+        /// Constructor
+        /// </summary>
         public LoginController(IWebHostEnvironment hostingEnvironment, ConfigurationHelper configHelper)
         {
             _hostingEnvironment = hostingEnvironment;
             _configHelper = configHelper;
         }
-        public IActionResult Index(string goalURL = "")
-        {
-
-            var LoginHanlder = new LoginHanlder(_configHelper, HttpContext);
-
-            if (LoginSession.Current != null && LoginSession.Current.empno != null)
-            {
-                if (!string.IsNullOrEmpty(goalURL))
-                {
-                    return Redirect(goalURL);
-                }
-                else
-                {
-                    return RedirectToAction("Index", "Home", new { area = "" });
-                }
-            }
-
-            return View();
-        }
-
 
         /// <summary>
         /// 登入
@@ -46,63 +30,48 @@ namespace FTT_VENDER_API.Controllers.Login
         /// <param name="vm"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        [HttpPost]
+        [HttpPost("[action]")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Login(LoginVM vm)
         {
             try
             {
                 var loginHanlder = new LoginHanlder(_configHelper, HttpContext);
-                string errorMsg = loginHanlder.Login(vm);
+                (LoginResultVO resultVO, SessionVO? sessionVO) = loginHanlder.Login(vm);
 
-                if (!string.IsNullOrEmpty(errorMsg))
+                if (!string.IsNullOrEmpty(resultVO.ErrorMsg))
                 {
-                    return JsonValidFail(errorMsg);
+                    this.LogSuccess();
+                    return JsonValidFail(resultVO.ErrorMsg);
                 }
 
+                if (!string.IsNullOrEmpty(resultVO.Token.TokenId))
+                {
+                    Response.Cookies.Append("Token", resultVO.Token.TokenId, new CookieOptions
+                    {
+                        HttpOnly = true,
+                        Secure = true,
+                        SameSite = SameSiteMode.None,
+                    });
+                }
+                string userLoginName = string.Empty;
+                if (sessionVO != null)
+                {
+                    string userType = sessionVO.usertype;
+
+                    userLoginName = sessionVO.engname;
+                }
+                Response.Cookies.Append("userLoginName", userLoginName, new CookieOptions { Secure = true, SameSite = SameSiteMode.None });
+                Response.Cookies.Append("userrole", sessionVO?.userrole ?? string.Empty, new CookieOptions { Secure = true, SameSite = SameSiteMode.None });
+
+                this.LogSuccess();
                 return JsonOK();
             }
             catch (Exception ex)
             {
+                this.LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
-        }
-
-
-
-        /// <summary>
-        /// 畫出 圖形驗證碼
-        /// </summary>
-        /// <returns></returns>
-        public ActionResult CaptchaCode()
-        {
-            //自製的土炮驗證碼
-            CaptchaCodeHelper_ImageSharp captchaCode = new()
-            {
-                Width = 100
-            };
-
-            CaptchaResult result = captchaCode.Result();
-            TempData[CaptchaCodeHelper.CAPTCHA_CODE] = result.ResultCode;
-
-            return File(result.CaptchaImage, "image/jpeg");
-        }
-
-        [AllowAnonymous]
-        public ActionResult PermissionDenied()
-        {
-            return View();
-        }
-
-
-        [CustomAuthorization(FuncID.Home_View)]
-        public ActionResult CheckLogin()
-        {
-            if (LoginSession.Current.empno != null)
-            {
-                return JsonOK();
-            }
-            return JsonValidFail("逾時");
         }
     }
 }

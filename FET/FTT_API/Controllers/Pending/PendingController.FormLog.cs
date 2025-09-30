@@ -1,17 +1,8 @@
 ﻿using Core.Utility.Helper.DB.Entity;
 using Core.Utility.Web.EX;
-using DocumentFormat.OpenXml.InkML;
-using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
-using FTT_API.Common;
-using FTT_API.Common.OriginClass;
 using FTT_API.Common.OriginClass.EntiityClass;
-using FTT_API.Models;
 using FTT_API.Models.Handler;
-using FTT_API.Models.Partial;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.Rendering;
-using Npgsql;
-using System.Linq;
 
 namespace FTT_API.Controllers.Pending
 {
@@ -24,11 +15,11 @@ namespace FTT_API.Controllers.Pending
             {
                 PageEntity pageEntity = base.GetPageEntity(request);
 
-                PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
+                PendingHandler _PenddingHanlder = new PendingHandler(_config, HttpContext);
 
-                vm.USERROLE = LoginSession.Current.userrole;
-                vm.IVRCODE = LoginSession.Current.ivrcode;
-                vm.EMPNO = LoginSession.Current.empno;
+                vm.USERROLE = _sessionVO.userrole;
+                vm.IVRCODE = _sessionVO.ivrcode;
+                vm.EMPNO = _sessionVO.empno;
 
                 var list = _PenddingHanlder.GetPageList_Log(pageEntity, vm);
 
@@ -38,6 +29,7 @@ namespace FTT_API.Controllers.Pending
                     item.No = (request.pageIndex - 1) * request.pageSize + i + 1;
                 }
 
+                this.LogSuccess();
                 return Json(new DataSourceResult
                 {
                     Data = list.Results,
@@ -46,6 +38,7 @@ namespace FTT_API.Controllers.Pending
             }
             catch (Exception ex)
             {
+                this.LogError(ex.ToString());
                 return JsonValidFail("系統錯誤");
             }
         }
@@ -57,11 +50,11 @@ namespace FTT_API.Controllers.Pending
             {
                 PageEntity pageEntity = base.GetPageEntity(request);
 
-                PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
+                PendingHandler _PenddingHanlder = new PendingHandler(_config, HttpContext);
 
-                vm.USERROLE = LoginSession.Current.userrole;
-                vm.IVRCODE = LoginSession.Current.ivrcode;
-                vm.EMPNO = LoginSession.Current.empno;
+                vm.USERROLE = _sessionVO.userrole;
+                vm.IVRCODE = _sessionVO.ivrcode;
+                vm.EMPNO = _sessionVO.empno;
 
                 var list = _PenddingHanlder.GetPageList_Desc(pageEntity, vm);
 
@@ -71,6 +64,7 @@ namespace FTT_API.Controllers.Pending
                     item.No = (request.pageIndex - 1) * request.pageSize + i + 1;
                 }
 
+                this.LogSuccess();
                 return Json(new DataSourceResult
                 {
                     Data = list.Results,
@@ -79,6 +73,7 @@ namespace FTT_API.Controllers.Pending
             }
             catch (Exception ex)
             {
+                this.LogError(ex.ToString());
                 return JsonValidFail("系統錯誤");
             }
         }

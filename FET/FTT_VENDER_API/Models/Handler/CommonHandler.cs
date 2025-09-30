@@ -1,9 +1,8 @@
 ﻿using Const.DTO;
 using Core.Utility.Helper.DB;
 using Core.Utility.Helper.DB.Entity;
+using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_VENDER_API.Common.ConfigurationHelper;
-using FTT_VENDER_API.Common.OriginClass.EntiityClass;
-using FTT_VENDER_API.Models.ViewModel;
 using System.Text;
 
 namespace FTT_VENDER_API.Models.Handler
@@ -32,37 +31,145 @@ namespace FTT_VENDER_API.Models.Handler
         }
 
         /// <summary>
-        /// 取得管理員名稱
+        /// 
         /// </summary>
         /// <returns></returns>
-        public List<string> GetListAdminEngName()
-        {
-            StringBuilder condition = new();
-            Dictionary<string, object> paras = [];
-
-            string sql = $@"
-SELECT SUBSTR(ENGNAME, INSTR(ENGNAME,' ')+1, LENGTH(ENGNAME)-1) || ', ' || SUBSTR(ENGNAME,1,INSTR(ENGNAME,' ')-1) || ' ' || EMPNAME || ' (' || EXT || ')' 
-FROM FET_USER_PROFILE 
-WHERE EMPNO IN(SELECT UNNEST(STRING_TO_ARRAY((SELECT CONFIG_VALUE FROM MAINTAIN_CONFIG WHERE CONFIG_NAME='ADMIN'),',')))
-";
-
-            return GetDBHelper().FindList<string>(sql, paras);
-        }
-
-        /// <summary>
-        /// 檢查 ivr_code 是否存在
-        /// </summary>
-        /// <param name="ivrCode"></param>
-        /// <returns></returns>
-        public bool CheckExistIvrCode(string ivrCode)
+        public List<CIRelationsDTO> GetListCIRelations(int parentSid, string reqSrc, string acType = "")
         {
             StringBuilder condition = new();
             Dictionary<string, object> paras = new()
             {
-                {"IVR_CODE", ivrCode }
+                {"parentsid", parentSid },
+                {"reqsrc", reqSrc },
             };
 
-            return CheckDataExist("STORE_PROFILE", paras);
+            condition.Append(@"AND parentsid = @parentsid ");
+
+            condition.Append(@"AND ( DECODE(disable, '', NULL, disable) IS NULL
+OR disable = 'N' ) ");
+
+            if (reqSrc == "ALL")
+            {
+                condition.Append(@"AND ( INSTR(',' || reqsrc || ',', @reqsrc) > 0
+OR INSTR(reqsrc, 'ALL,') > 0 ) ");
+            }
+            else
+            {
+                condition.Append("AND ( INSTR(',' || reqsrc || ',', @reqsrc) > 0 ) ");
+            }
+
+            if (!string.IsNullOrWhiteSpace(acType))
+            {
+                condition.Append(@"AND ci.cisid IN (SELECT cisid
+FROM   ci_relations_category
+WHERE  INSTR(actype, @actype) > 0) ");
+                paras.Add("@actype", acType);
+            }
+
+            string sql = $@"
+SELECT ci.*
+       , circ.notes
+       , circ.descr
+       , (SELECT ciname
+          FROM   ci_relations ci3
+          WHERE  ci3.cisid = ci.parentsid
+                 AND rownum = 1) || '-' || ci.ciname AS fullname
+       , EXISTS(SELECT 1
+                FROM   ci_relations ci2
+                WHERE  ci2.parentsid = ci.cisid
+            ) AS HasChildren
+FROM   ci_relations ci
+       LEFT JOIN ci_relations_category circ
+              ON circ.cisid = ci.cisid
+WHERE  1 = 1
+{condition}
+ORDER  BY ciname 
+";
+
+            return GetDBHelper().FindList<CIRelationsDTO>(sql, paras);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public List<CIRelationsDTO> GetListCIRelations(List<int> idList, string reqSrc, string acType = "")
+        {
+            StringBuilder condition = new();
+            Dictionary<string, object> paras = new()
+            {
+                {"IdIn", idList },
+                {"reqsrc", reqSrc },
+            };
+
+            condition.Append(@"AND ci.cisid IN @IdIn ");
+            condition.Append(@"AND ( DECODE(disable, '', NULL, disable) IS NULL
+OR disable = 'N' ) ");
+
+            if (reqSrc == "ALL")
+            {
+                condition.Append(@"AND ( INSTR(',' || reqsrc || ',', @reqsrc) > 0
+OR INSTR(reqsrc, 'ALL,') > 0 ) ");
+            }
+            else
+            {
+                condition.Append("AND ( INSTR(',' || reqsrc || ',', @reqsrc) > 0 ");
+            }
+
+            if (!string.IsNullOrWhiteSpace(acType))
+            {
+                condition.Append(@"AND cisid IN (SELECT cisid
+FROM   ci_relations_category
+WHERE  INSTR(actype, @actype) > 0) ");
+                paras.Add("@actype", acType);
+            }
+
+            string sql = $@"
+WITH recursive path_cte AS
+(
+       SELECT cisid,
+              parentsid,
+              cisid                   AS leaf_id,
+              ARRAY[cisid]::NUMERIC[] AS path_ids
+       FROM   ci_relations
+       WHERE  cisid IN @IdIn
+       UNION ALL
+       SELECT tn.cisid,
+              tn.parentsid,
+              cte.leaf_id,
+              ARRAY[tn.cisid]::NUMERIC[]
+                     || cte.path_ids
+       FROM   ci_relations tn
+       join   path_cte cte
+       ON     tn.cisid = cte.parentsid )
+SELECT ci.*
+       , circ.notes
+       , circ.descr
+       , t_path.path_csv
+       , (SELECT ciname
+          FROM   ci_relations ci3
+          WHERE  ci3.cisid = ci.parentsid
+                 AND rownum = 1) || '-' || ci.ciname AS fullname
+       , EXISTS(SELECT 1
+                FROM   ci_relations ci2
+                WHERE  ci2.parentsid = ci.cisid
+            ) AS HasChildren
+FROM   ci_relations ci
+LEFT JOIN ci_relations_category circ
+        ON circ.cisid = ci.cisid
+LEFT JOIN (
+SELECT leaf_id,
+       array_to_string(path_ids, ',') AS path_csv
+FROM   path_cte
+WHERE  parentsid = 1006
+) t_path 
+        ON t_path.leaf_id = ci.cisid
+WHERE  1 = 1
+{condition}
+ORDER  BY ciname 
+";
+
+            return GetDBHelper().FindList<CIRelationsDTO>(sql, paras);
         }
 
         /// <summary>
@@ -172,49 +279,6 @@ WHERE
         }
 
         /// <summary>
-        /// 取得門市分頁資料
-        /// </summary>
-        /// <param name="pageEntity"></param>
-        /// <param name="ivrCode"></param>
-        /// <returns></returns>
-        public PageResult<StoreVenderProfileDTO> GetPageListVender(PageEntity pageEntity, StoreVenderProfileDTO searchVO)
-        {
-            StringBuilder condition = new();
-            Dictionary<string, object> paras = [];
-
-            if (!string.IsNullOrWhiteSpace(searchVO.MerchantNameLike))
-            {
-                condition.Append($"AND {nameof(StoreVenderProfileDTO.merchant_name)} ILIKE '%' || @{nameof(searchVO.MerchantNameLike)} || '%' ");
-                paras.Add(nameof(searchVO.MerchantNameLike), searchVO.MerchantNameLike);
-            }
-
-            if (!string.IsNullOrWhiteSpace(searchVO.CpNameLike))
-            {
-                condition.Append($"AND {nameof(StoreVenderProfileDTO.cp_name)} ILIKE '%' || @{nameof(searchVO.CpNameLike)} || '%' ");
-                paras.Add(nameof(searchVO.CpNameLike), searchVO.CpNameLike);
-            }
-
-            string sql = $@"
-SELECT *
-FROM   store_vender_profile
-WHERE  1 = 1
-AND order_id IS NOT NULL
-{condition}
-";
-            string sqlCount = $@"
-SELECT
-    COUNT(*)
-FROM(
-{sql}
-) AS pageData
-WHERE
-    1 = 1
-";
-
-            return GetDBHelper().FindPageList<StoreVenderProfileDTO>(sql, sqlCount, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
-        }
-
-        /// <summary>
         /// 取得 form_access_status 資料
         /// </summary>
         /// <returns></returns>
@@ -230,70 +294,6 @@ FROM   form_access_status
 ";
 
             return GetDBHelper().FindList<FormAccessStatusDTO>(sql, paras);
-        }
-
-        /// <summary>
-        /// 取得 store_type 資料
-        /// </summary>
-        /// <returns></returns>
-        public List<StoreTypeDTO> GetListStoreType(StoreTypeDTO searchVO)
-        {
-            StringBuilder condition = new();
-            Dictionary<string, object> paras = [];
-
-            if (!string.IsNullOrWhiteSpace(searchVO.TypeNameEq))
-            {
-                condition.Append($"AND {nameof(StoreTypeDTO.type_name)} = @{nameof(searchVO.TypeNameEq)} ");
-                paras.Add(nameof(searchVO.TypeNameEq), searchVO.TypeNameEq);
-            }
-
-            string sql = $@"
-SELECT type_value
-FROM   store_type
-WHERE  1 = 1
-{condition}
-ORDER  BY order_id  
-";
-
-            return GetDBHelper().FindList<StoreTypeDTO>(sql, paras);
-        }
-
-        /// <summary>
-        /// 取得區域資料
-        /// </summary>
-        /// <returns></returns>
-        public List<string> GetListArea()
-        {
-            //StringBuilder condition = new();
-            Dictionary<string, object> paras = [];
-
-            string sql = $@"
-SELECT DISTINCT area
-FROM   store_profile
-WHERE  decode(area, '', NULL,
-                    area) IS NOT NULL
-ORDER  BY area   
-";
-
-            return GetDBHelper().FindList<string>(sql, paras);
-        }
-
-        /// <summary>
-        /// 取得區經理/業務資料
-        /// </summary>
-        /// <returns></returns>
-        public List<StoreProfileDTO> GetListAsEmp()
-        {
-            //StringBuilder condition = new();
-            Dictionary<string, object> paras = [];
-
-            string sql = $@"
-SELECT DISTINCT as_empno
-                , as_cname
-FROM   store_profile    
-";
-
-            return GetDBHelper().FindList<StoreProfileDTO>(sql, paras);
         }
     }
 }

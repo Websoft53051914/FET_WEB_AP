@@ -19,11 +19,7 @@ namespace FTT_VENDER_API.Models.Handler
             _configHelper = confighelper;
         }
         private readonly ConfigurationHelper _configHelper;
-        /// <summary>
-        /// 登入資訊
-        /// </summary>
-        public SessionVO? SessionVO { get; set; } = null;
-
+        
         /// <summary>
         /// 取得分頁資料
         /// </summary>
@@ -34,7 +30,7 @@ namespace FTT_VENDER_API.Models.Handler
             Dictionary<string, object> paras = new()
             {
                 { "ivr_code", SessionVO?.ivrcode ?? string.Empty },
-                { "user_type", SessionVO?.usertype ?? string.Empty },
+                { "user_type", SessionVO?.userrole ?? string.Empty },
                 { "empno", SessionVO?.empno ?? string.Empty },
             };
             if (string.IsNullOrWhiteSpace(pageEntity.Sort))

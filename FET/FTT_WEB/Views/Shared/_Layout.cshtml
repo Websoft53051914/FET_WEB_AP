@@ -272,7 +272,7 @@
             // select2 預設設定
             $.fn.select2.defaults.set('language', 'zh-TW');
             $.fn.select2.defaults.set('width', '100%');
-            $.fn.select2.defaults.set('placeholder', { id: '', text: '請選擇', selected: 'selected' });
+            $.fn.select2.defaults.set('placeholder', '請選擇');
 
             $.extend(FormSerializer.patterns, {
                 validate: /^[a-z][a-z0-9_]*(?:(?:\.[a-z0-9_]+)|(?:\[[a-z0-9_]+\]))*(?:\[\])?$/i
@@ -337,7 +337,7 @@
         <!-- Page Body Start-->
         <div class="page-body-wrapper null">
             <!-- Page Sidebar Start-->
-            @await Component.InvokeAsync("FTT_WEB.ViewComponents.Menu")
+            @await Component.InvokeAsync("FTT_WEB.ViewComponents.Menu", new { userRole = (Context.Request.Cookies["FTT_userrole"] ?? string.Empty).ToLower() })
             <!-- Page Sidebar Ends-->
             <div class="page-body">
                 <!-- Container-fluid starts-->
@@ -348,14 +348,14 @@
             </div>
             <!-- footer start-->
             @*<footer class="footer">
-            <div class="container-fluid">
-            <div class="row">
-            <div class="col-md-6 footer-copyright">
-            <p class="mb-0">Copyright 2021-22 © viho All rights reserved.</p>
-            </div>
-            </div>
-            </div>
-            </footer>*@
+                <div class="container-fluid">
+                <div class="row">
+                <div class="col-md-6 footer-copyright">
+                <p class="mb-0">Copyright 2021-22 © viho All rights reserved.</p>
+                </div>
+                </div>
+                </div>
+                </footer>*@
         </div>
     </div>
     <script>
@@ -416,16 +416,15 @@
         $(document)
         $.ajaxSetup({
             headers: {
-                "Authorization": "Bearer xxxxxxx",   // JWT 或其他 token
-                "X-Custom-Header_acc": "@acc",
-                "X-Custom-Header_userrole": "@userrole",
-                "X-Custom-Header_ivrCode": "@ivrCode",
-                "X-Custom-Header_usertype": "@usertype",
+
+            },
+            xhrFields: {
+                withCredentials:true
             },
             complete: function (x, e) {
-                if (x.status === 440) {
+                if (x.status === 440||x.status == 401) {
                     alert('已登出，請重新登入');
-                    window.location.href = '@Url.Action("Index", "Logout")';
+                    window.location.href = '@Url.Action("Index", "Login")';
                 } else if (x.status === 403) {
                     alert("無權限執行此動作");
                 }
@@ -465,6 +464,7 @@
     @*     <script src="~/lib/draw/draw.js?20250122"></script> *@
     <partial name="_Loader">
         <partial name="_ValidationScriptsPartial">
+            <partial name="_MyApp" />
             @RenderSection("scripts", false)
 </body>
 </html>

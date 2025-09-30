@@ -1,7 +1,21 @@
-﻿@{
-    var mapAttr = new
+﻿@model CIConfigIndexVO
+@{
+    var mapData = new
     {
-        IdGrid = Guid.NewGuid(),
+        Grid = new
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            IdPageSelect = Guid.NewGuid().ToString("N"),
+            IdPagers = Guid.NewGuid().ToString("N"),
+            UrlGetPageList = $"{config.GetBackendUrl()}/CIConfig/GetPageList",
+        },
+        FormSearch = new
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            IdBtnSearch = Guid.NewGuid().ToString("N"),
+        },
+        UrlExportExcel = $"{config.GetBackendUrl()}/CIConfig/ExportExcel",
+        UrlImportExcel = $"{config.GetBackendUrl()}/CIConfig/ImportExcel",
     };
 }
 
@@ -21,34 +35,34 @@
 </div>
 
 <div class="container-fluid">
-
-    <div class="card mb-2">
-        <div class="card-body py-3 card-body-reduction">
-            <div class="row  mb-2">
-                <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
-                    <label class="col-form-label websoft-form-label pt-2">門市</label>
-                    <input type="text" class="form-control" placeholder="">
+    <form id="@(mapData.FormSearch.Id)">
+        <div class="card mb-2">
+            <div class="card-body py-3 card-body-reduction">
+                <div class="row  mb-2">
+                    <div class="col-xl-3 col-lg-4 col-sm-6 col-12">
+                        <label asp-for="ShopNameLike" class="col-form-label websoft-form-label pt-2">門市</label>
+                        <input asp-for="ShopNameLike" type="text" class="form-control" placeholder="">
+                    </div>
                 </div>
-            </div>
-            <button class="btn btn-primary">送出查詢</button>
-            <button class="btn btn-info" data-bs-toggle="modal" data-bs-target="#BatchModal">資料更新</button>
-        </div>
-    </div>
-
-    <div class="card">
-        <div class="card-body">
-            <div id="@(mapAttr.IdGrid)"></div>
-            <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
-                <div id="pageResizer" class="jsgrid-pager-page">
-                    <span>每頁筆數:</span>
-                    <select id="pageSelect">
-                    </select>
-                </div>
-                <div id="pagers">
-                </div>
+                <button id="@(mapData.FormSearch.IdBtnSearch)" type="button" class="btn btn-primary">送出查詢</button>
+                <button type="button" class="btn btn-info" data-bs-toggle="modal" data-bs-target="#BatchModal">資料更新</button>
             </div>
         </div>
-    </div>
+        <div class="card">
+            <div class="card-body">
+                <div id="@(mapData.Grid.Id)"></div>
+                <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
+                    <div id="pageResizer" class="jsgrid-pager-page">
+                        <span>每頁筆數:</span>
+                        <select id="@(mapData.Grid.IdPageSelect)">
+                        </select>
+                    </div>
+                    <div id="@(mapData.Grid.IdPagers)">
+                    </div>
+                </div>
+            </div>
+        </div>
+    </form>
 </div>
 
 <div class="modal fade" id="BatchModal" tabindex="-1" role="dialog" aria-labelledby="BatchModal" aria-hidden="true">
@@ -59,14 +73,14 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <input class="form-control" type="file" style="max-width:500px" />
+                <input id="file" class="form-control" type="file" accept=".xlsx,.xls" style="max-width:500px" />
                 <div class="text-warningv2 mt-2" role="alert">
                     <p>執行註記 (A:新增  U:更新  D:刪除 )</p>
                 </div>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-primary" type="button">匯入資料</button>
-                <button class="btn btn-primary" type="button">匯出資料</button>
+                <button id="btnImportExcel" class="btn btn-primary" type="button">匯入資料</button>
+                <button id="btnExportExcel" class="btn btn-primary" type="button">匯出資料</button>
             </div>
         </div>
     </div>
@@ -76,108 +90,158 @@
 @section scripts
 {
     <script>
+        var context = {
 
-        const context = {
-            $Grid: $("#@(mapAttr.IdGrid)"),
         };
+        var cookieName = 'CIConfigGridInfo';
 
         $(function () {
-            initGrid(1);
+            let pageIndex = 1;
+            let pageSize = pageDataSource[0].id;
+            if (Cookies.get(cookieName)) {
+                var cookieObj = JSON.parse(Cookies.get(cookieName));
+                if (cookieObj && cookieObj.FromEdit == true) {
+                    if (cookieObj.PageIndex) {
+                        pageIndex = parseInt(cookieObj.PageIndex);
+                    }
 
-            $("#pageSelect").on("change", function () {
-                const val = this.value;
-                onPageLenghtSelect(val, context.$Grid);
+                    if (cookieObj.PageSize) {
+                        pageSize = parseInt(cookieObj.PageSize);
+                    }
+
+                    Cookies.remove(cookieName);
+                }
+            }
+            initGrid(pageIndex, pageSize);
+        });
+
+        $('#@(mapData.FormSearch.IdBtnSearch)').on('click', function (e) {
+            context['@(mapData.Grid.Id)'].reload();
+        });
+
+        $('#btnExportExcel').on('click', function (e) {
+            let data = {};
+            $.extend(data, $('#@(mapData.FormSearch.Id)').serializeObject(), context['@(mapData.Grid.Id)'].filter);
+
+            postSubmitJson('@(mapData.UrlExportExcel?.ToHtmlString())', data);
+        });
+
+        $('#btnImportExcel').on('click', function (e) {
+            var file = $('#file')[0].files[0];
+            if (!file || !file.size) {
+                MyApp.Alert.warning("請選擇檔案");
+                return;
+            }
+
+            var fileName = file.name.toLowerCase();
+            if (!(fileName.endsWith('.xls') || fileName.endsWith('.xlsx'))) {
+                MyApp.Alert.warning('只能上傳 Excel 檔 (.xls / .xlsx)');
+                return;
+            }
+            console.log(file);
+            showLoader();
+            var formData = new FormData();
+            formData.append("file", file);
+
+            $.ajax({
+                url: '@(mapData.UrlImportExcel?.ToHtmlString())',
+                dataType: 'json',
+                type: 'POST',
+                data: formData,
+                processData: false,
+                contentType: false,
             })
+                .done((response) => {
+                    if (response.Success) {
+                        MyApp.Alert.success('匯入成功!');
+                    }
+                    else {
+                        MyApp.Alert.error(response.Message);
+                    }
+                })
+                .fail((err) => {
+                    console.log(err);
+                })
+                .always(() => {
+                    hideLoader();
+                });
+        });
+    </script>
+    <script>
+    function initGrid(cookiePageIndex, cookiePageSize) {
+        context['@(mapData.Grid.Id)'] = {};
+        var ctxGrid = context['@(mapData.Grid.Id)'];
+        ctxGrid.$Grid = $('#@(mapData.Grid.Id)');
+        ctxGrid.$Grid.jsGrid({
+            pageIndex: cookiePageIndex,
+            paging: true,
+            pageSize: cookiePageSize,
+            pageLoading: true,
+            pagerContainer: '#@(mapData.Grid.IdPagers)',
+            autoload: true,
+            controller: {
+                loadData: function (filter) {
+                    var d = $.Deferred();
+                    ctxGrid.filter = { ...filter };
+                    filter.vm = {};
+                    $.extend(filter.vm, $('#@(mapData.FormSearch.Id)').serializeObject());
 
-            $("#pageSelect").select2({
-                minimumResultsForSearch: -1,
-                data: pageDataSource
-            });
-            $("#pageSelect").data("select2").$container.addClass("w-auto");
+                    //分頁頁數紀錄相關 紀錄查詢時將查詢條件、頁數 start
+                    var cookieobj = {
+                        PageIndex: filter.pageIndex,
+                        PageSize: filter.pageSize,
+                        ...filter.vm
+                    };
+                    Cookies.set(cookieName, JSON.stringify(cookieobj), { expires: 1 });
 
-            $('.initDatepicker').datetimepicker({
-                format: 'YYYY/MM/DD',
-            });
+                    $.ajax({
+                        type: 'POST',
+                        url: '@(mapData.Grid.UrlGetPageList?.ToHtmlString())',
+                        data: filter,
+                        dataType: 'json',
+                        success: function (res) {
+                            if (res.Success === false) {
+                                MyApp.Alert.error(res.Message);
+                                d.reject();
+                                return;
+                            }
+                            var da = {
+                                data: res.Data,
+                                itemsCount: res.Total
+                            }
+                            d.resolve(da);
+                        }
+                    });
 
-            $(".select2-Clear").select2({
-                placeholder: "請選擇",
-                allowClear: true,
-            });
+                    return d.promise();
+                }
+            },
+            fields: [
+                { name: '@(nameof(CIConfigGridVO.Cisid))', title: 'CISID', type: 'text', width: 120, align: 'center' },
+                { name: '@(nameof(CIConfigGridVO.Aciname))', title: '報修類別', type: 'text', width: 200, align: 'center' },
+                { name: '@(nameof(CIConfigGridVO.VendorId))', title: '廠商代碼', type: 'text', width: 120, align: 'center' },
+                { name: '@(nameof(CIConfigGridVO.MerchantName))', title: '廠商名稱', type: 'text', width: 180, align: 'center' },
+                { name: '@(nameof(CIConfigGridVO.Ivrcode))', title: 'IVRCODE', type: 'text', width: 120, align: 'center' },
+                { name: '@(nameof(CIConfigGridVO.ShopName))', title: '門市名稱', type: 'text', width: 180, align: 'center' },
+                { name: '@(nameof(CIConfigGridVO.ApprovalDateText))', title: '驗收日期', type: 'text', width: 120, align: 'center' },
+                { width: 'auto' }
+            ],
         });
 
-        function initGrid(cookiePageIndex) {
-            $("#@(mapAttr.IdGrid)").jsGrid({
-                pageIndex: cookiePageIndex,
-                paging: true,
-                width: "100%",
-                pageSize: pageDataSource[0].id,
-                pageButtonCount: 5,
-                pagerFormat: "{first} {prev} {pages} {next} {last}    第 {pageIndex} 頁 共 {pageCount} 頁",
-                pagePrevText: "上一頁",
-                pageNextText: "下一頁",
-                pageFirstText: "第一頁",
-                pageLastText: "最後一頁",
-                // pageLoading: true,
-                // autoload: true,
-                changePageSize: function (pageSize) {
-                    var $this = this;
-                    $this.pageSize = pageSize;
+        //分頁頁數紀錄相關
+        ctxGrid.$Grid.jsGrid('_setPage', cookiePageIndex);//jsgrid bug 不會自動將頁碼設定成pageindex
 
-                    context.$Grid.jsGrid("openPage", 1);
-                },
-                pagerContainer: "#pagers",
-                onDataLoaded: function () {
-                    feather.replace();
-                },
-                data: [
-                    { Id: 1, CISID: 123456, VendorId: 1001, VendorName: "廠商A", IVR_CODE: "IVR001", StoreName: "門市A", InspectionDate: "2023/10/01" },
-                    { Id: 2, CISID: 123457, VendorId: 1002, VendorName: "廠商B", IVR_CODE: "IVR002", StoreName: "門市B", InspectionDate: "2023/10/02" },
-                    { Id: 3, CISID: 123458, VendorId: 1003, VendorName: "廠商C", IVR_CODE: "IVR003", StoreName: "門市C", InspectionDate: "2023/10/03" }
-                ],
-                // controller: {
-                //     loadData: function (filter) {
-                //         var d = $.Deferred();
-                //         $.ajax({
-                //             type: "POST",
-                //             url: "@Url.Action("GetPageList")",
-                //             data: filter,
-                //             dataType: "json",
-                //             success: function (res) {
-                //                 if (res.Success === false) {
-                //                     swal({
-                //                         text: res.Message,
-                //                         icon: "error",
-                //                         button: "確認"
-                //                     });
-                //                     d.reject();
-                //                     return;
-                //                 }
-                //                 var da = {
-                //                     data: res.Data,
-                //                     itemsCount: res.Total
-                //                 }
-                //                 d.resolve(da);
-                //             }
-                //         })
-
-                //         return d.promise();
-                //     }
-                // },
-                fields: [
-                    // CISID , 報修類別 , 廠商代碼 , 廠商名稱 , IVR_CODE , 門市名稱 ,驗收日期
-                    { name: "CISID", title: "CISID", type: "number", width: 100, align: "center" },
-                    { name: "VendorId", title: "廠商代碼", type: "number", width: 100, align: "center" },
-                    { name: "VendorName", title: "廠商名稱", type: "text", width: 150, align: "center" },
-                    { name: "IVR_CODE", title: "IVR_CODE", type: "text", width: 200, align: "center" },
-                    { name: "StoreName", title: "門市名稱", type: "text", width: 200, align: "center" },
-                    { name: "InspectionDate", title: "驗收日期", type: "text", width: 200, align: "center" },
-                ],
-
+        $('#@(mapData.Grid.IdPageSelect)').select2({
+            minimumResultsForSearch: -1,
+            data: pageDataSource
         });
-
-            //分頁頁數紀錄相關
-            context.$Grid.jsGrid('_setPage', cookiePageIndex);//jsgrid bug 不會自動將頁碼設定成pageindex
-        }
-
+        $('#@(mapData.Grid.IdPageSelect)').data('select2').$container.addClass('w-auto');
+        $('#@(mapData.Grid.IdPageSelect)').on('change', (e) => {
+            onPageLenghtSelect(e.currentTarget.value, ctxGrid.$Grid);
+        });
+        ctxGrid.reload = function () {
+            ctxGrid.$Grid.jsGrid('search');
+        };
+    }
     </script>
 }

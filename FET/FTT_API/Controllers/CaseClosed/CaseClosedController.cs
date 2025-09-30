@@ -26,11 +26,11 @@ namespace FTT_API.Controllers.CaseClosed
             {
                 PageEntity pageEntity = base.GetPageEntity(request);
 
-                CaseClosedHanlder _PenddingHanlder = new CaseClosedHanlder(_config, HttpContext);
+                CaseClosedHandler _PenddingHanlder = new CaseClosedHandler(_config, HttpContext);
 
-                vm.USERROLE = LoginSession.Current.userrole;
-                vm.IVRCODE = LoginSession.Current.ivrcode;
-                vm.EMPNO = LoginSession.Current.empno;
+                vm.USERROLE = _sessionVO.userrole;
+                vm.IVRCODE = _sessionVO.ivrcode;
+                vm.EMPNO = _sessionVO.empno;
 
                 var list = _PenddingHanlder.FindPageList(pageEntity, vm);
 
@@ -40,6 +40,8 @@ namespace FTT_API.Controllers.CaseClosed
                     item.No = (request.pageIndex - 1) * request.pageSize + i + 1;
                 }
 
+                this.LogSuccess();
+
                 return Json(new DataSourceResult
                 {
                     Data = list.Results,
@@ -48,6 +50,7 @@ namespace FTT_API.Controllers.CaseClosed
             }
             catch (Exception ex)
             {
+                this.LogError(ex.ToString());
                 return JsonValidFail("系統錯誤");
             }
         }

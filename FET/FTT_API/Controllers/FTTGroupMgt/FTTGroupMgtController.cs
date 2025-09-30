@@ -6,16 +6,10 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace FTT_API.Controllers.FTTGroupMgt
 {
+    [Route("[controller]")]
     public partial class FTTGroupMgtController : BaseProjectController
     {
-        public IActionResult Index()
-        {
-            ftt_groupSQL _ftt_groupSQL = new ftt_groupSQL();
-            var dtos = _ftt_groupSQL.GetGroupList();
-            ViewData["FTT_GroupList"] = dtos.Select(s => new SelectListItem() { Value = s.FTT_Group, Text = s.FTT_Group }).ToList();
-            return View();
-        }
-
+        [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, ftt_groupDTO vm)
        {
             try
@@ -31,6 +25,7 @@ namespace FTT_API.Controllers.FTTGroupMgt
                     item.No = (request.pageIndex - 1) * request.pageSize + i + 1;
                 }
 
+                this.LogSuccess();
                 return Json(new DataSourceResult
                 {
                     Data = list.Results,
@@ -39,6 +34,7 @@ namespace FTT_API.Controllers.FTTGroupMgt
             }
             catch (Exception ex)
             {
+                this.LogError(ex.ToString());
                 return JsonValidFail("系統錯誤");
             }
         }

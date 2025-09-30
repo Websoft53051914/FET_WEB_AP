@@ -1,7 +1,8 @@
-﻿using Core.Utility.Helper.Message;
+﻿using Const;
+using Core.Utility.Extensions;
+using Core.Utility.Helper.Message;
 using Core.Utility.Web.Base;
 using FTT_API.Common;
-using FTT_API.Common.ExtensionMethod;
 using FTT_API.Common.OriginClass;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models;
@@ -9,29 +10,46 @@ using FTT_API.Models.Handler;
 using FTT_API.Models.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
-using Microsoft.Graph.Models;
-using System.Diagnostics;
 using static Const.Enums;
-using static FTT_API.Models.Handler.ControlLogHandler;
 
 namespace FTT_API.Controllers
 {
     public class BaseProjectController : BaseController
     {
+        private readonly object _lock = new object();
         public override void OnActionExecuting(ActionExecutingContext context)
         {
             var headers = context.HttpContext.Request.Headers;
-            if (headers.TryGetValue("X-Custom-Header_acc", out var headerValue_acc))
+            context.HttpContext.Request.Cookies.TryGetValue(FTT_API.Common.Const.TOKEN_NAME, out string? token);
+            context.HttpContext.Request.Headers.TryGetValue("Content-From", out var from);
+
+            if (!string.IsNullOrEmpty(token) && from != "Logout")
             {
-                headers.TryGetValue("X-Custom-Header_userrole", out var headerValue_userrole);
-                headers.TryGetValue("X-Custom-Header_ivrCode", out var headerValue_ivrCode);
-                headers.TryGetValue("X-Custom-Header_usertype", out var headerValue_usertype);
+                SessionVO? session = null;
+                lock (_lock)
+                {
+                    var tokenInfoEntity = GetTokenInfo(token);
+                    JwtConfigVO jwtConfig = new JwtConfigVO();
+                    var (resultVO, sessionRes) = Method.VerifyAndGenerateJwtToken(token, jwtConfig);
+                    if (resultVO.IsExpired && tokenInfoEntity != null && tokenInfoEntity.Status != StatusEnum.Cancel.ToInt())
+                    {
+                        RefreshToken(resultVO.TokenInfoVO, token);
+                        Response.Cookies.Append(FTT_API.Common.Const.TOKEN_NAME, resultVO.TokenInfoVO.TokenId, new CookieOptions
+                        {
+                            HttpOnly = true,
+                            Secure = true,
+                            SameSite = SameSiteMode.None,
+                        });
+                    }
+                    session = sessionRes;
+                }
+
 
                 var logAccount = "";
-                string acc = headerValue_acc.ToString();
-                string role = headerValue_userrole.ToString();
-                string ivrCode = headerValue_ivrCode.ToString();
-                string usertype = headerValue_usertype.ToString();
+                string acc = session.username.ToString();
+                string role = session.userrole.ToString();
+                string ivrCode = session.ivrcode.ToString();
+                string usertype = session.usertype.ToString();
                 // 可以存入 context.HttpContext.Items 給後續使用
                 //context.HttpContext.Items["CustomHeader"] = value;
 
@@ -95,8 +113,8 @@ namespace FTT_API.Controllers
                                 username = acc,
                                 deptcode = emp.DeptCode,
                                 usertype = role,
-                                ivrcode = ivrCode.IsNullOrEmpty() ? "NULL" : ivrCode,
-                                userrole = SystemModelClass.GetUserRole(emp.EmpNO)
+                                ivrcode = string.IsNullOrEmpty(ivrCode) ? "NULL" : ivrCode,
+                                userrole = SystemModelClass.GetUserRole(emp.EmpNO, null)
                             };
                         }
                         else
@@ -155,7 +173,7 @@ namespace FTT_API.Controllers
                                 deptcode = info.area,
                                 usertype = role,
                                 ivrcode = ivrCode,
-                                userrole = SystemModelClass.GetUserRole(info.ivr_code)
+                                userrole = SystemModelClass.GetUserRole(info.ivr_code, null)
                             };
                             Method.SetToSession(sessionVO);
                         }
@@ -173,14 +191,25 @@ namespace FTT_API.Controllers
                 if (sessionVO != null)
                 {
                     //sessionVO.Functions.Append(FuncID.Home_View);
-                    Method.SetToSession(sessionVO);
+                    //Method.SetToSession(sessionVO);
+                    _sessionVO = sessionVO;
                 }
+            }
+            else
+            {
+
+                if (from != "Login" && from != "Logout")
+                {
+                    context.Result = new UnauthorizedObjectResult(JsonValiFail("無權限進入"));
+                    return;
+                }
+
             }
 
             base.OnActionExecuting(context);
         }
 
-        public StoreProfileVM GetStoreInfo(string ivr_code, string pd)
+        protected StoreProfileVM GetStoreInfo(string ivr_code, string pd)
         {
             BaseDBHandler _BaseDBHandler = new BaseDBHandler();
             string sql = @"SELECT*
@@ -192,6 +221,45 @@ namespace FTT_API.Controllers
                 { "SHOP_PASSWORD", pd }
             };
             StoreProfileVM? result = _BaseDBHandler.GetDBHelper().Find<StoreProfileVM>(sql, parameters);
+            return result;
+        }
+
+        protected void RefreshToken(TokenInfoVO tokenInfoVO, string oldToken)
+        {
+            BaseDBHandler _BaseDBHandler = new BaseDBHandler();
+            string sql = $"UPDATE tb_token SET Status = {StatusEnum.Cancel.ToInt()},UpdateTime = @NOW WHERE tokenid = @TokenId";
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "TokenId", oldToken },
+                { "NOW", DateTime.Now }
+            };
+            _BaseDBHandler.GetDBHelper().Execute(sql, parameters);
+            parameters = new Dictionary<string, object>()
+                        {
+                            { "TokenId", tokenInfoVO.TokenId },
+                            { "RegisterDate", tokenInfoVO.Iat },
+                            { "VoidStartTime", tokenInfoVO.Nbf },
+                            { "VoidEndTime", tokenInfoVO.Exp },
+                            { "Account",tokenInfoVO.LogAccount },
+                            { "NOW", DateTime.Now },
+                            { "Status", StatusEnum.Enabled.ToInt() }
+                        };
+            sql = @"INSERT INTO TB_Token(
+	TokenId, RegisterDate, VoidStartTime, VoidEndTime, Account, CreateTime, UpdateTime, Status)
+	VALUES (@TokenId, @RegisterDate,@VoidStartTime,@VoidEndTime, @Account, @NOW, @NOW, @Status);";
+            _BaseDBHandler.GetDBHelper().Execute(sql, parameters);
+            _BaseDBHandler.GetDBHelper().Commit();
+        }
+
+        protected TokenInfoVO? GetTokenInfo(string token)
+        {
+            string sql = "SELECT * FROM tb_token WHERE tokenid = @tokenid";
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "tokenid", token }
+            };
+            BaseDBHandler _BaseDBHandler = new BaseDBHandler();
+            TokenInfoVO? result = _BaseDBHandler.GetDBHelper().Find<TokenInfoVO>(sql, parameters);
             return result;
         }
 
@@ -255,27 +323,18 @@ namespace FTT_API.Controllers
             return RedirectToAction("Redirection", "AlertMsg", paras);
         }
 
-        [ApiExplorerSettings(IgnoreApi = true)]
-        protected void LogError(Exception ex)
-        {
-            Trace.Write("<font color=red>Source:" + ex.Source + "</font>");
-            Trace.Write("<font color=red>Msg:" + ex.Message + "</font>");
-            Trace.Write(ex.ToString());
-        }
-
-
         /// <summary>
         /// 紀錄例外於資料庫
         /// </summary>
         /// <param name="ex"></param>
-        /// <returns>ControlLog.Id</returns>
+        /// <returns>Control_Log.Id</returns>
         //protected long LogError(Exception ex)
         //{
         //    var blLog = BLFactory.GetInstance<LogBL>();
 
-        //    var logDM = new ControlLogDM()
+        //    var logDM = new Control_LogDM()
         //    {
-        //        IP = LoginSession.Current.IP ?? Method.GetClientIPAddress(),
+        //        IP = _sessionVO.IP ?? Method.GetClientIPAddress(),
         //        Status = ((int)LogStatusEnum.Failed).ToString(),
         //        ControllerName = ControllerContext.ActionDescriptor?.ControllerName ?? string.Empty,
         //        ActionName = ControllerContext.ActionDescriptor?.ActionName ?? string.Empty,
@@ -289,16 +348,17 @@ namespace FTT_API.Controllers
         /// 紀錄失敗訊息於資料庫
         /// </summary>
         /// <param name="exception"></param>
-        /// <returns>ControlLog.Id</returns>
+        /// <returns>Control_Log.Id</returns>
         protected void LogError(string exception)
         {
-            var entity = new controllogEntity()
+            var entity = new TB_Control_LogEntity()
             {
                 IP = Method.GetClientIPAddress(),
                 Status = ((int)LogStatusEnum.Failed).ToString(),
                 ControllerName = ControllerContext.ActionDescriptor?.ControllerName ?? string.Empty,
                 ActionName = ControllerContext.ActionDescriptor?.ActionName ?? string.Empty,
-                Exception = exception
+                Exception = exception,
+                Token = Request.Cookies[FTT_API.Common.Const.TOKEN_NAME] ?? string.Empty,
             };
 
             InsertLog(entity);
@@ -310,27 +370,27 @@ namespace FTT_API.Controllers
         /// <param name="description"></param>
         protected void LogSuccess(string description = null)
         {
-            var entity = new controllogEntity()
+            var entity = new TB_Control_LogEntity()
             {
                 IP = Method.GetClientIPAddress(),
                 Status = ((int)LogStatusEnum.Success).ToString(),
                 ControllerName = ControllerContext.ActionDescriptor?.ControllerName ?? string.Empty,
                 ActionName = ControllerContext.ActionDescriptor?.ActionName ?? string.Empty,
                 Exception = description,
-                Account = LoginSession.Current?.username?? "",
-                Name = LoginSession.Current?.empname ?? "",
-                LogTime = DateTime.Now
+                Account = _sessionVO?.username ?? "",
+                Name = _sessionVO?.empname ?? "",
+                LogTime = DateTime.Now,
+                Token = Request.Cookies[FTT_API.Common.Const.TOKEN_NAME] ?? string.Empty,
             };
 
             InsertLog(entity);
         }
 
-        protected void InsertLog(controllogEntity entity)
+        protected void InsertLog(TB_Control_LogEntity entity)
         {
-            ControlLogHandler _BaseDBHandler = new ControlLogHandler();
+            TB_Control_LogHandler _BaseDBHandler = new TB_Control_LogHandler();
             _BaseDBHandler.Insert(entity);
         }
-
 
 
     }

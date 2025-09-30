@@ -55,6 +55,7 @@
     {
         public bool updateCOMPLETETIME { get; set; }
         public bool updatePRECOMPLETETIME { get; set; }
+        public bool updateVENDOR_ARRIVE_DATE { get; set; }
 
         public string DESCRIPTION { get; set; }
         public string STATUS { get; set; }

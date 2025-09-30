@@ -146,7 +146,7 @@
 
                 }
                 $.ajax({
-                    url: '@Url.Action("Update", "MailServerSetting")',
+                    url: "@(config.GetBackendUrl() + Url.Action("Update", "MailServerSetting"))",
                     dataType: "json",
                     type: "POST",
                     data: formData,

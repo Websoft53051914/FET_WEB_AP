@@ -61,6 +61,7 @@ namespace FTT_VENDER_API.Controllers.Dispatching
                     dataList.Add(item);
                 }
 
+                this.LogSuccess();
                 return JsonPage(new DataSourceResult
                 {
                     Data = dataList,
@@ -69,7 +70,7 @@ namespace FTT_VENDER_API.Controllers.Dispatching
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                this.LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }

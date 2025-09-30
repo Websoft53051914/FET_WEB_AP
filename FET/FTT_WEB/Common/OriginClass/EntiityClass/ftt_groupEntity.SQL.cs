@@ -15,7 +15,7 @@ namespace FTT_WEB.Common.OriginClass.EntiityClass
             paras.Add("cname", @$"%{dto.CName}%");
 
             string originSQL = @"
-select * from public.ftt_group 
+select * from ftt_group 
 where cname like @cname 
 ";
 

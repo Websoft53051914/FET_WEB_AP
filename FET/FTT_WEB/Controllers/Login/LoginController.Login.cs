@@ -38,38 +38,7 @@ namespace FTT_WEB.Controllers.Login
 
             return View();
         }
-
-
-        /// <summary>
-        /// 登入
-        /// </summary>
-        /// <param name="vm"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        [HttpPost]
-        [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Login(LoginVM vm)
-        {
-            try
-            {
-                var loginHanlder = new LoginHanlder(_configHelper, HttpContext);
-                string errorMsg = loginHanlder.Login(vm);
-
-                if (!string.IsNullOrEmpty(errorMsg))
-                {
-                    return JsonValidFail(errorMsg);
-                }
-
-                return JsonOK();
-            }
-            catch (Exception ex)
-            {
-                return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
-            }
-        }
-
-
-
+         
         /// <summary>
         /// 畫出 圖形驗證碼
         /// </summary>
@@ -87,22 +56,6 @@ namespace FTT_WEB.Controllers.Login
 
             return File(result.CaptchaImage, "image/jpeg");
         }
-
-        [AllowAnonymous]
-        public ActionResult PermissionDenied()
-        {
-            return View();
-        }
-
-
-        //[CustomAuthorization(FuncID.Home_View)]
-        public ActionResult CheckLogin()
-        {
-            if (LoginSession.Current.empno != null)
-            {
-                return JsonOK();
-            }
-            return JsonValidFail("逾時");
-        }
+          
     }
 }

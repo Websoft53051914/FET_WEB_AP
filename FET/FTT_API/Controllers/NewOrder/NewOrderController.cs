@@ -2,6 +2,7 @@
  * 舊版頁面： "/pool/newopen.aspx", "/Form/SubmitForm.aspx(.cs), "/Form/StoreInfo.ascx", "/Form/TTInfo.ascx"
  */
 using Const;
+using Const.VO;
 using Core.Utility.Utility;
 using FTT_API.Common;
 using FTT_API.Common.ConfigurationHelper;
@@ -15,10 +16,15 @@ using System.Diagnostics;
 namespace FTT_API.Controllers.NewOrder
 {
     /// <summary>
-    /// 新開單
+    /// 新開單 API
     /// </summary>
+    [Route("[controller]")]
     public partial class NewOrderController : BaseProjectController
     {
+        /// <summary>
+        /// Constructor
+        /// </summary>
+        /// <param name="configHelper"></param>
         public NewOrderController(ConfigurationHelper configHelper)
         {
             _configHelper = configHelper;
@@ -29,40 +35,41 @@ namespace FTT_API.Controllers.NewOrder
 
     public partial class NewOrderController
     {
-        public IActionResult Index()
+        /// <summary>
+        /// 取得頁面資料
+        /// </summary>
+        [HttpPost("[action]")]
+        public IActionResult GetInitData()
         {
             try
             {
                 // [SubmitForm.aspx.cs.Page_Load]登入資訊已遺失檢查(統一檢查)
-                ArgumentNullException.ThrowIfNullOrWhiteSpace(LoginSession.Current.ivrcode);
+                ArgumentNullException.ThrowIfNullOrWhiteSpace(_sessionVO.ivrcode);
 
                 DateTime now = DateTime.Now;
-
                 CommonHandler commonHandler = new(_configHelper);
                 // [newopen.aspx]檢查 IVRCode 是否存在
-                bool checkExistIvrCode = commonHandler.CheckExistIvrCode(LoginSession.Current.ivrcode);
+                bool checkExistIvrCode = commonHandler.CheckExistIvrCode(_sessionVO.ivrcode);
                 if (!checkExistIvrCode)
                 {
+                    this.LogSuccess();
                     List<string> adminNameList = commonHandler.GetListAdminEngName();
-                    return RedirectToAlertMsg("Index", "Home", $"門市[{LoginSession.Current.ivrcode}]尚未完成工程收驗無法報修!\r\n\r\n請聯絡 {string.Join("，", adminNameList)}", "warning");
-                }
-                // [SubmitForm.aspx.cs.Page_Load]年節期間暫停設備報修
-                if (now < Common.Const.LUNAR_NEW_YEAR_END && now > Common.Const.LUNAR_NEW_YEAR_START)
-                {
-                    return View("StopByLunarNewYear");
+                    return JsonValidFail($"門市[{_sessionVO.ivrcode}]尚未完成工程收驗無法報修!\r\n\r\n請聯絡 {string.Join("，", adminNameList)}");
                 }
 
-                StoreVM? storeVM = commonHandler.GetStoreData(LoginSession.Current.ivrcode);
+                StoreVO? storeVM = commonHandler.GetStoreData(_sessionVO.ivrcode);
                 if (commonHandler.GetMessage().IsError())
                 {
-                    return RedirectToAlertMsg("Index", "Home", commonHandler.GetMessage().GetErrMsg(), "error");
+                    this.LogSuccess();
+                    return JsonValidFail(commonHandler.GetMessage().GetErrMsg());
                 }
-                NewOrderVM vm = new()
+
+                NewOrderVO result = new()
                 {
-                    StoreVM = storeVM ?? new(),
-                    IVRCODE = LoginSession.Current.ivrcode,
-                    EMPNAME = LoginSession.Current.empname,
-                    EMPTEL = LoginSession.Current.ext,
+                    StoreVO = storeVM ?? new(),
+                    IVRCODE = _sessionVO.ivrcode,
+                    EMPNAME = _sessionVO.empname,
+                    EMPTEL = _sessionVO.ext,
                     Prompt = commonHandler.GetFieldData("CONFIG_VALUE", "MAINTAIN_CONFIG", new Dictionary<string, object>
                     {
                         { "CONFIG_NAME", "MARQUEE" }
@@ -71,28 +78,42 @@ namespace FTT_API.Controllers.NewOrder
 
                 if (storeVM != null)
                 {
-                    vm.CREATE_TIME = DateTime.Now.ToString(DbConst.FORMAT_DATE2);
+                    result.CREATE_TIME = DateTime.Now.ToString(DbConst.FORMAT_DATE2);
                     DateTime? approvalDate = ConvertUtility.DateTimeTryParse(storeVM.ApprovalDate);
                     DateTime? warrantyTime = approvalDate?.AddYears(1);
-                    vm.APPROVALDATE = approvalDate?.ToString(DbConst.FORMAT_DATE2) ?? string.Empty;
-                    vm.WARRANTYTIME = warrantyTime?.ToString(DbConst.FORMAT_DATE2) ?? string.Empty;
+                    result.APPROVALDATE = approvalDate?.ToString(DbConst.FORMAT_DATE2) ?? string.Empty;
+                    result.WARRANTYTIME = warrantyTime?.ToString(DbConst.FORMAT_DATE2) ?? string.Empty;
                     if (warrantyTime.HasValue && now > warrantyTime.Value)
                     {
                         if (storeVM.Channel == "FRANCHISE")
                         {
-                            vm.WarrantyTimeFlag2 = true;
+                            result.WarrantyTimeFlag2 = true;
                         }
 
-                        vm.WarrantyTimeFlag1 = true;
+                        result.WarrantyTimeFlag1 = true;
+                    }
+                    result.ReqSrc = storeVM.StoreType;
+                    if(result.IVRCODE.Length > 4)
+                    {
+                        result.AcType = "FRANCHISE";
+                        if (result.WarrantyTimeFlag2)
+                        {
+                            result.ReqSrc = "WARRANTY";
+                        }
+                    }
+                    else
+                    {
+                        result.AcType = "RETAIL";
                     }
                 }
 
-                return View(vm);
+                this.LogSuccess();
+                return JsonSuccess(result);
             }
             catch (Exception ex)
             {
-                LogError(ex);
-                return RedirectToAlertMsg("Index", "Home", _configHelper.GetMessage("SystemErrorMsg"));
+                this.LogError(ex.ToString());
+                return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
 
@@ -101,7 +122,7 @@ namespace FTT_API.Controllers.NewOrder
         /// </summary>
         /// <param name="vm"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("[action]")]
         public IActionResult Create(NewOrderVM vm)
         {
             try
@@ -151,11 +172,12 @@ namespace FTT_API.Controllers.NewOrder
 
                 newOrderHandler.DoCreateFttForm(dataList);
 
+                this.LogSuccess("報修單開立成功！");
                 return JsonSuccess("報修單開立成功！");
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                this.LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
@@ -168,7 +190,7 @@ namespace FTT_API.Controllers.NewOrder
         /// </summary>
         /// <param name="parentId"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("[action]")]
         public IActionResult RetrieveTTCount(int cisid, string ivrCode)
         {
             try
@@ -176,15 +198,21 @@ namespace FTT_API.Controllers.NewOrder
                 NewOrderHandler newOrderHandler = new(_configHelper);
                 string ret = newOrderHandler.RetrieveTTCount(cisid, ivrCode);
 
+                this.LogSuccess();
                 return JsonSuccess(ret);
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                this.LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
 
+        /// <summary>
+        /// 取得廠商清單
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("[action]")]
         public IActionResult GetSelectListVender(int cisid, string ivrCode, string ifWarrant)
         {
             try
@@ -229,11 +257,12 @@ namespace FTT_API.Controllers.NewOrder
                     }
                 }
 
+                this.LogSuccess();
                 return JsonSuccess(selectListItemList);
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                this.LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
@@ -241,9 +270,8 @@ namespace FTT_API.Controllers.NewOrder
         /// <summary>
         /// [Form/checkdata.asp]檢查報修項目是否已報修
         /// </summary>
-        /// <param name="parentId"></param>
         /// <returns></returns>
-        [HttpPost]
+        [HttpPost("[action]")]
         public IActionResult CheckRepairReported(int categoryId)
         {
             try
@@ -251,11 +279,12 @@ namespace FTT_API.Controllers.NewOrder
                 NewOrderHandler newOrderHandler = new(_configHelper);
                 int ret = newOrderHandler.GetCountRepairReported(categoryId, LoginSession.Current.ivrcode);
 
+                this.LogSuccess();
                 return JsonSuccess(ret > 0 ? "Y" : string.Empty);
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                this.LogError(ex.ToString());
                 return JsonValidFail("檢查報修項目是否已報修" + _configHelper.GetMessage("SystemErrorMsg"));
             }
         }

@@ -28,9 +28,9 @@
         public const string FORMAT_DATETIME2 = "yyyy/MM/dd HH:mm:ss";
 
         /// <summary>
-        /// 時間格式(預定入國日+航班抵達時間用)
+        /// 時間格式
         /// </summary>
-        public const string FORMAT_SHORTDATETIME = "yyyyMMddHHmm";
+        public const string FORMAT_SHORTDATETIME = "yyyyMMddHHmmss";
 
         /// <summary>
         /// 資料庫日期格式

@@ -27,6 +27,14 @@ namespace FTT_API.Common.OriginClass.EntiityClass
     {
         public int No { get; set; }
 
+        public string ciname { get; set; }
+        public string remark { get; set; }
+        public string reqsrc { get; set; }
+
+
+        public string cicategory { get; set; }
+        public string parentsid { get; set; }
+
     }
 
 

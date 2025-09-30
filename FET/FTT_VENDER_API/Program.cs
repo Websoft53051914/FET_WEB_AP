@@ -4,6 +4,7 @@ using Microsoft.Extensions.FileProviders;
 using FTT_VENDER_API.Models.Handler;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 
 IConfiguration Config = new ConfigurationBuilder().AddJsonFile("appSettings.json").Build();
@@ -76,6 +77,17 @@ builder.Services.AddControllersWithViews()
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 builder.Configuration.AddJsonFile("message.json", optional: true, reloadOnChange: true);
 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultScheme = JwtBearerDefaults.AuthenticationScheme;
+    options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+})
+.AddJwtBearer(jwt =>
+{
+    jwt.SaveToken = true;
+});
+
 
 builder.Services.AddSingleton<ConfigurationHelper>();
 
@@ -86,7 +98,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowLocalhost7234",
         policy =>
         {
-            policy.WithOrigins("https://localhost:7236") // 允許的來源
+            policy.WithOrigins("https://localhost:50402") // 允許的來源
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials()
@@ -154,6 +166,7 @@ app.UseRouting();
 app.UseCors("AllowLocalhost7234");
 
 
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseSession();

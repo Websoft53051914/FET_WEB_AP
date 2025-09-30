@@ -23,5 +23,14 @@ namespace FTT_API.Common.ConfigurationHelper
             return _configuration[$"Message:{LocaleConst.ZH_TW}:{key}"] ?? defaultVal;
         }
 
+        /// <summary>
+        /// 取得 OutputPath(匯入檔案存放位置) 參數
+        /// </summary>
+        /// <returns></returns>
+        public string GetOutputPath()
+        {
+            return _configuration["OutputPath"] ?? string.Empty;
+        }
+
     }
 }

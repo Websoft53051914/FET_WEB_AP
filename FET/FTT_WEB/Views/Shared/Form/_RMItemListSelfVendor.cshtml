@@ -3,7 +3,14 @@
     {
         IdModal = ViewData["ModalId2"],
         IdBtnOk = Guid.NewGuid(),
-        IdGrid = Guid.NewGuid().ToString("N"),
+        Grid = new
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            IdPageSelect = Guid.NewGuid().ToString("N"),
+            IdPagers = Guid.NewGuid().ToString("N"),
+            UrlGetPageList = $"{config.GetBackendUrl()}/Api/GetCiDataSelfVendorPageList",
+            CbGroup = Guid.NewGuid().ToString("N"),
+        },
     };
 }
 <style>
@@ -20,7 +27,16 @@
                 <button class="btn-close" type="button" aria-label="Close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div id="@(mapData.IdGrid)"></div>
+                <div id="@(mapData.Grid.Id)"></div>
+                <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
+                    <div id="pageResizer" class="jsgrid-pager-page">
+                        <span>每頁筆數:</span>
+                        <select id="@(mapData.Grid.IdPageSelect)">
+                        </select>
+                    </div>
+                    <div id="@(mapData.Grid.IdPagers)">
+                    </div>
+                </div>
             </div>
             <div class="modal-footer">
                 <button class="btn btn-primary" type="button" id="@(mapData.IdBtnOk)">確認</button>
@@ -37,100 +53,115 @@
             context['@(mapData.IdModal)'] = {};
         }
 
-        var ctx = context['@(mapData.IdModal)'];
-        ctx.selectedItem = null;
-        ctx.result = '';
+        var ctxModal = context['@(mapData.IdModal)'];
+        ctxModal.selectedItem = null;
+        ctxModal.result = '';
 
-        $("#@(mapData.IdGrid)").jsGrid({
-            height: "auto",
-            autoload: false,
-            paging: true,
-            pageLoading: true,
-            rowClass: function (item, itemIndex) {
-                //設定行class
-                return itemIndex % 2 === 0 ? "even" : "odd";
-            },
-            rowClick: function (args) {
-                console.log(args);
-                ctx.selectedItem = args['item'];
-                //點擊行時，選中checkbox 單選
-                $("input[name='RMItemListSelfVendorCheckbox']").prop("checked", false);
-                $(args.event.target).closest("tr").find("input[name='RMItemListSelfVendorCheckbox']").prop("checked", true);
-            },
-            controller: {
-                loadData: function (filter) {
-                    var d = $.Deferred();
-                    $.ajax({
-                        type: "POST",
-                        url: "@Url.Action("GetCiDataSelfVendorPageList", "Api")",
-                        data: filter,
-                        dataType: "json",
-                        success: function (res) {
-                            if (res.Success === false) {
-                                swal({
-                                    text: res.Message,
-                                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                                    icon: 'error'
-                                });
-                                d.reject();
-                                return;
-                            }
-                            var da = {
-                                data: res.Data,
-                                itemsCount: res.Total
-                            }
-                            d.resolve(da);
-                        }
-                    });
+        const initGrid = function () {
+            ctxModal['@(mapData.Grid.Id)'] = {};
+            var ctxGrid = ctxModal['@(mapData.Grid.Id)'];
+            ctxGrid.$Grid = $('#@(mapData.Grid.Id)');
+            ctxGrid.$Grid.jsGrid({
+                pageIndex: 1,
+                paging: true,
+                pageSize: pageDataSource[0].id,
+                pageLoading: true,
+                pagerContainer: '#@(mapData.Grid.IdPagers)',
+                autoload: true,
+                rowClass: function (item, itemIndex) {
+                    // 設定行class
+                    return itemIndex % 2 === 0 ? 'even' : 'odd';
+                },
+                rowClick: function (args) {
+                    ctxModal.selectedItem = args.item;
+                    // 點擊行時，選中checkbox 單選
+                    $('input[data-group="@(mapData.Grid.CbGroup)"]').prop("checked", false);
+                    $(args.event.target).closest("tr").find('input[data-group="@(mapData.Grid.CbGroup)"]').prop("checked", true);
+                },
+                controller: {
+                    loadData: function (filter) {
+                        var d = $.Deferred();
+                        filter.vm = {};
 
-                    return d.promise();
-                }
-            },
-            fields: [
-                {
-                    type: 'control', align: "center",
-                    width: 80,
-                    editButton: false,
-                    deleteButton: false,
-                    headerTemplate: (value, item) => {
-                        return "";
-                    },
-                    itemTemplate: (value, item) => {
-                        //checkbox
-                        return $("<input>")
-                            .attr("type", "checkbox")
-                            .attr("name", "RMItemListSelfVendorCheckbox")
-                            .attr("value", item.CISID);
+                        $.ajax({
+                            type: 'POST',
+                            url: '@(mapData.Grid.UrlGetPageList?.ToHtmlString())',
+                            data: filter,
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.Success === false) {
+                                    MyApp.Alert.error(res.Message);
+                                    d.reject();
+                                    return;
+                                }
+                                var da = {
+                                    data: res.Data,
+                                    itemsCount: res.Total
+                                }
+                                d.resolve(da);
+                            }
+                        });
+
+                        return d.promise();
                     }
                 },
-                { name: "@(nameof(CiDataVM.CATEGORY_ID))", type: "number", title: "CISID", width: 120 },
-                { name: "@(nameof(CiDataVM.CATEGORY_NAME_TMP))", type: "text", title: "品項名稱", width: 250 },
-                { name: "@(nameof(CiDataVM.CATEGORY_NAME))", type: "text", title: "品項描述", width: 350 },
-                { width: 'auto' }
-            ]
-        });
+                fields: [
+                    {
+                        type: 'control', align: 'center',
+                        width: 80,
+                        editButton: false,
+                        deleteButton: false,
+                        title: '',
+                        itemTemplate: (value, item) => {
+                            let $cb = buildCheckboxSingle({
+                                id: item['@(nameof(DialogIvrCodeGridGridVO.IvrCode))'],
+                                text: ' ',
+                                inputClassNames: 'cb-item',
+                                dataGroup: '@(mapData.Grid.CbGroup)',
+                            });
+
+                            return $cb;
+                        }
+                    },
+                    { name: "@(nameof(CiDataVO.CATEGORY_ID))", type: "number", title: "CISID", width: 120 },
+                    { name: "@(nameof(CiDataVO.CATEGORY_NAME_TMP))", type: "text", title: "品項名稱", width: 250 },
+                    { name: "@(nameof(CiDataVO.CATEGORY_NAME))", type: "text", title: "品項描述", width: 350 },
+                    { width: 'auto' }
+                ],
+            });
+
+            $('#@(mapData.Grid.IdPageSelect)').select2({
+                minimumResultsForSearch: -1,
+                data: pageDataSource
+            });
+            $('#@(mapData.Grid.IdPageSelect)').data('select2').$container.addClass('w-auto');
+            $('#@(mapData.Grid.IdPageSelect)').on('change', (e) => {
+                onPageLenghtSelect(e.currentTarget.value, ctxGrid.$Grid);
+            });
+            ctxGrid.reload = function () {
+                ctxGrid.$Grid.jsGrid('search');
+            };
+        };
 
         //RMItemListSelfVendorModal on show
         $('#@(mapData.IdModal)').on('show.bs.modal', function (e) {
-            //清空checkbox
-            $("input[name='RMItemListSelfVendorCheckbox']").prop("checked", false);
-            //重新載入資料
-            $("#@(mapData.IdGrid)").jsGrid("loadData");
+            // 清空checkbox
+            $('input[data-group="@(mapData.Grid.CbGroup)"]').prop("checked", false);
+            ctxModal.selectedItem = null;
+            ctxModal.result = '';
         });
         //RMItemListSelfVendorModal confirm button click
         $('#@(mapData.IdBtnOk)').on('click', function (e) {
-            if (ctx.selectedItem) {
-                ctx.result = '1';
+            if (ctxModal.selectedItem) {
+                ctxModal.result = '1';
                 $('#@mapData.IdModal').modal('hide'); // 關閉模態框
             }
             else {
-                swal({
-                    text: '請選擇一個品項',
-                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                    icon: 'warning'
-                });
+                MyApp.Alert.warning('請選擇一個品項');
             }
         });
+
+        initGrid();
     });
 
 </script>

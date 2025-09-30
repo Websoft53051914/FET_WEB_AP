@@ -6,32 +6,12 @@ using System.Text;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models.Handler;
 
-namespace FTT_WEB.Controllers.InProcess
+namespace FTT_API.Background
 {
     public class FETTaskHelper
     {
-        private StreamWriter logFile;
-        private readonly string logPath;
-        //private NpgsqlConnection conn;
-        //Server=192.168.1.36;Port=5444;Database=ftt;User Id=enterprisedb;Password=websoft@123;CommandTimeout=86400
-        private readonly string connStr = "Server=192.168.1.36;Port=5444;Database=ftt;User Id=enterprisedb;Password=websoft@123;CommandTimeout=86400";
-
-        public FETTaskHelper(string logPath)
+        public FETTaskHelper()
         {
-            this.logPath = logPath;
-            OpenLogFile(logPath);
-        }
-
-        //public void Open()
-        //{
-        //    conn = new NpgsqlConnection(connStr);
-        //    conn.Open();
-        //}
-
-        public void Close()
-        {
-            //conn?.Close();
-            CloseLogFile();
         }
 
         // ========= 主流程 =========
@@ -51,18 +31,18 @@ namespace FTT_WEB.Controllers.InProcess
 
                 if (approve_formDTO == null)
                 {
-                    InsertLog("eof get TT data !");
+                    //InsertLog("eof get TT data !");
                     return;
                 }
 
-                InsertLog("get TT data ! SQL=" + sql);
+                //InsertLog("get TT data ! SQL=" + sql);
 
                 UpdateForm(approve_formDTO.form_no);
                 InsertFormDesc(approve_formDTO.form_no);
             }
             catch (Exception ex)
             {
-                ErrorLog("get TT data fail! " + sql, ex);
+                //ErrorLog("get TT data fail! " + sql, ex);
             }
         }
 
@@ -81,11 +61,11 @@ namespace FTT_WEB.Controllers.InProcess
                 baseHandler.GetDBHelper().Execute(sql, paras);
                 baseHandler.GetDBHelper().Commit();
 
-                InsertLog($"update approve_form NO={formNo} Successful!");
+                //InsertLog($"update approve_form NO={formNo} Successful!");
             }
             catch (Exception ex)
             {
-                ErrorLog($"update approve_form NO={formNo} Fail!", ex);
+                //ErrorLog($"update approve_form NO={formNo} Fail!", ex);
             }
         }
 
@@ -104,11 +84,11 @@ namespace FTT_WEB.Controllers.InProcess
                 baseHandler.GetDBHelper().Execute(sql, paras);
                 baseHandler.GetDBHelper().Commit();
 
-                InsertLog($"insert into ftt_form_desc NO={formNo} Successful!");
+                //InsertLog($"insert into ftt_form_desc NO={formNo} Successful!");
             }
             catch (Exception ex)
             {
-                ErrorLog($"insert into ftt_form_desc NO={formNo} Fail!", ex);
+                //ErrorLog($"insert into ftt_form_desc NO={formNo} Fail!", ex);
             }
         }
 
@@ -128,25 +108,6 @@ namespace FTT_WEB.Controllers.InProcess
         private void OpenLogFile(string filename)
         {
             Directory.CreateDirectory(Path.GetDirectoryName(filename));
-            logFile = new StreamWriter(filename, true, Encoding.UTF8);
-        }
-
-        private void CloseLogFile()
-        {
-            logFile?.Close();
-        }
-
-        public void InsertLog(string message)
-        {
-            logFile.WriteLine($"({TransDateStr(DateTime.Now)}) {message}");
-            logFile.Flush();
-        }
-
-        public void ErrorLog(string message, Exception ex)
-        {
-            InsertLog("--- Error Handler ---");
-            InsertLog("--- " + message + " ---");
-            InsertLog("Error: " + ex.Message);
         }
 
         // ========= 其他功能 =========
@@ -196,7 +157,7 @@ namespace FTT_WEB.Controllers.InProcess
             {
                 var fet_user_profileDTO = baseHandler.GetDBHelper().Find<fet_user_profileDTO>(sql, paras);
                 if (fet_user_profileDTO != null)
-                    return $"{ValidateField(fet_user_profileDTO.EmpNo)}({ValidateField(fet_user_profileDTO.EmpName)})";
+                    return $"{ValidateField(fet_user_profileDTO.empno)}({ValidateField(fet_user_profileDTO.empname)})";
             }
             catch { }
             return $"({empNo})";
@@ -222,7 +183,7 @@ namespace FTT_WEB.Controllers.InProcess
 
                 var fet_user_profileDTO = baseHandler.GetDBHelper().Find<fet_user_profileDTO>(sql, paras);
                 if (fet_user_profileDTO != null)
-                    return $"{ValidateField(fet_user_profileDTO.EmpNo)}({ValidateField(fet_user_profileDTO.EmpName)})";
+                    return $"{ValidateField(fet_user_profileDTO.empno)}({ValidateField(fet_user_profileDTO.empname)})";
             }
             catch { }
             return data;

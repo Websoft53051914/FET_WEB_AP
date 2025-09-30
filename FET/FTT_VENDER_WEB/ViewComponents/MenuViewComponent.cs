@@ -17,9 +17,10 @@ namespace FTT_VENDER_WEB.ViewComponents
         {
             try
             {
+                var roleFunc = RoleFunc.VENDOR;
                 var vm = new HomeMenuVM();
 
-                var filteredTreeData = RoleFunc.GetMenuByFuncIds(RoleFunc.Vender);
+                var filteredTreeData = RoleFunc.GetMenuByFuncIds(roleFunc);
                 vm.TreeData = filteredTreeData;
              
                 //檢查目前在哪個頁面

@@ -1,13 +1,18 @@
-﻿@model NewOrderVM
+﻿@model NewOrderVO
 @{
-    string TreeModalId = Guid.NewGuid().ToString("N");
-    ViewData["TreeModalId"] = TreeModalId;
     string ModalId2 = Guid.NewGuid().ToString("N");
     ViewData["ModalId2"] = ModalId2;
     string DialogVenderModalId = Guid.NewGuid().ToString("N");
     ViewData["DialogVenderModalId"] = DialogVenderModalId;
-
-    StoreVM StoreVM = Model.StoreVM;
+    var mapData = new
+    {
+        PartialIT = new ItemsTreeVO(),
+        UrlGetInitData = $"{config.GetBackendUrl()}/NewOrder/GetInitData",
+        UrlRetrieveTTCount = $"{config.GetBackendUrl()}/NewOrder/RetrieveTTCount",
+        UrlCheckRepairReported = $"{config.GetBackendUrl()}/NewOrder/CheckRepairReported",
+        UrlImage = $"{config.GetBackendUrl()}/",
+        UrlImageNoProduct = $"{config.GetBackendUrl()}/Item/no-product.gif",
+    };
 }
 
 <style>
@@ -35,78 +40,78 @@
                     </tr>
                     <tr>
                         <th class="table-header ">公司別：</th>
-                        <td>@(StoreVM.Company?.ToHtmlString())</td>
+                        <td><span id="@(Html.IdFor(m => m.StoreVO.Company))Text"></span></td>
                         <th class="table-header ">店格：</th>
                         <td>
-                            @(StoreVM.StoreType?.ToHtmlString())
-                            <input type="hidden" id="STORE_TYPE" value="@(StoreVM.StoreType)" />
+                            <span id="@(Html.IdFor(m => m.StoreVO.StoreType))Text"></span>
+                            <input type="hidden" id="STORE_TYPE" />
                         </td>
                         <th class="table-header">IVR Code：</th>
                         <td>
-                            @(StoreVM.IVRCode?.ToHtmlString())
+                            <span id="@(Html.IdFor(m => m.StoreVO.IVRCode))Text"></span>
                             <input type="hidden" asp-for="IVRCODE" />
                         </td>
                     </tr>
                     <tr>
                         <th class="table-header">通路：</th>
-                        <td>@(StoreVM.Channel?.ToHtmlString())</td>
+                        <td><span id="@(Html.IdFor(m => m.StoreVO.Channel))Text"></span></td>
                         <th class="table-header">區域：</th>
-                        <td>@(StoreVM.Area?.ToHtmlString())</td>
+                        <td><span id="@(Html.IdFor(m => m.StoreVO.Area))Text"></span></td>
                         <th class="table-header">店名：</th>
-                        <td>@(StoreVM.StoreName?.ToHtmlString())</td>
+                        <td><span id="@(Html.IdFor(m => m.StoreVO.StoreName))Text"></span></td>
                     </tr>
                     <tr>
                         <th class="table-header">eMails：</th>
-                        <td>@(StoreVM.EMail?.ToHtmlString())</td>
+                        <td><span id="@(Html.IdFor(m => m.StoreVO.EMail))Text"></span></td>
                         <th class="table-header">店長/聯絡人：</th>
-                        <td>@(StoreVM.Owner?.ToHtmlString())</td>
+                        <td><span id="@(Html.IdFor(m => m.StoreVO.Owner))Text"></span></td>
                         <th class="table-header">緊急電話：</th>
-                        <td>@(StoreVM.PhoneUrgent?.ToHtmlString())</td>
+                        <td><span id="@(Html.IdFor(m => m.StoreVO.PhoneUrgent))Text"></span></td>
                     </tr>
                     <tr>
                         <th class="table-header">區經理 / 業務：</th>
-                        <td>@(StoreVM.Manager?.ToHtmlString())</td>
+                        <td><span id="@(Html.IdFor(m => m.StoreVO.Manager))Text"></span></td>
                         <th class="table-header">店長電話：</th>
-                        <td>@(StoreVM.Phone?.ToHtmlString())</td>
+                        <td><span id="@(Html.IdFor(m => m.StoreVO.Phone))Text"></span></td>
                         <th rowspan="4" class="table-header">營業時間：</th>
                         <td rowspan="4" valign="middle">
                             <table width="100%" height="80" cellpadding="0" cellspacing="0">
                                 <tr>
                                     <td style="">週一~五</td>
                                     <td style="">:</td>
-                                    <td>@(StoreVM.BusinessTime1?.ToHtmlString())</td>
+                                    <td><span id="@(Html.IdFor(m => m.StoreVO.BusinessTime1))Text"></span></td>
                                 </tr>
                                 <tr>
                                     <td style="">星期六</td>
                                     <td style=""> :</td>
-                                    <td>@(StoreVM.BusinessTime2?.ToHtmlString())</td>
+                                    <td><span id="@(Html.IdFor(m => m.StoreVO.BusinessTime2))Text"></span></td>
                                 </tr>
                                 <tr>
                                     <td style="">星期日</td>
                                     <td style="">:</td>
-                                    <td>@(StoreVM.BusinessTime3?.ToHtmlString())</td>
+                                    <td><span id="@(Html.IdFor(m => m.StoreVO.BusinessTime3))Text"></span></td>
                                 </tr>
                                 <tr>
                                     <td style="">國定假日</td>
                                     <td style="">:</td>
-                                    <td>@(StoreVM.BusinessTime4?.ToHtmlString())</td>
+                                    <td><span id="@(Html.IdFor(m => m.StoreVO.BusinessTime4))Text"></span></td>
                                 </tr>
                             </table>
                         </td>
                     </tr>
                     <tr>
                         <th class="table-header">裝潢型態：</th>
-                        <td>@(StoreVM.DecorationCondition?.ToHtmlString())</td>
+                        <td><span id="@(Html.IdFor(m => m.StoreVO.DecorationCondition))Text"></span></td>
                         <th class="table-header">傳真電話：</th>
-                        <td>@(StoreVM.PhoneFax?.ToHtmlString())</td>
+                        <td><span id="@(Html.IdFor(m => m.StoreVO.PhoneFax))Text"></span></td>
                     </tr>
                     <tr>
                         <th class="table-header">地址：</th>
-                        <td colspan="3">@(StoreVM.Address?.ToHtmlString())</td>
+                        <td colspan="3"><span id="@(Html.IdFor(m => m.StoreVO.Address))Text"></span></td>
                     </tr>
                     <tr>
                         <th class="table-header">備註：</th>
-                        <td colspan="3">@(StoreVM.Note?.ToHtmlString())</td>
+                        <td colspan="3"><span id="@(Html.IdFor(m => m.StoreVO.Note))Text"></span></td>
                     </tr>
 
                     <tr>
@@ -135,7 +140,7 @@
                             <input type="hidden" asp-for="TemplateItem.CATEGORY_NAME" />
                             <input type="hidden" asp-for="CATEGORY_NAME_TMP" />
                             <input type="hidden" id="storeType" />
-                            <marquee id="@Html.IdFor(m => m.Prompt)" scrollamount="2" bgcolor="yellow" style="color:blue;">@(Model.Prompt?.ToHtmlString())</marquee>
+                            <marquee id="@Html.IdFor(m => m.Prompt)" scrollamount="2" bgcolor="yellow" style="color:blue;"></marquee>
                         </th>
                     </tr>
 
@@ -174,13 +179,13 @@
                     <tr>
                         <th class="table-header">報修日期：</th>
                         <td>
-                            <span>@(Model.CREATE_TIME?.ToHtmlString())</span>
+                            <span id="@(Html.IdFor(m => m.CREATE_TIME))Text"></span>
                         </td>
                         <th class="table-header" rowspan="3">報修品項圖樣：</th>
                         <td rowspan="3">
                             <span id="TT_IMAGE_PANNEL"></span>
                             <div class="d-flex justify-content-center">
-                                <img class="m-0" id="TT_IMAGE" src="@(Url.Content("~/images/Item/no-product.gif"))" data-default-src="@(Url.Content("~/images/Item/no-product.gif"))" width="100" onclick="window.open(this.src,'showImg', 'status=no,toolbar=no,scrollbars=yes,resizable=yes,width=600,Height=500');" style="cursor:pointer;" align="middle" />
+                                <img class="m-0" id="TT_IMAGE" src="@(mapData.UrlImageNoProduct?.ToHtmlString())" data-default-src="@(mapData.UrlImageNoProduct?.ToHtmlString())" width="100" onclick="window.open(this.src,'showImg', 'status=no,toolbar=no,scrollbars=yes,resizable=yes,width=600,Height=500');" style="cursor:pointer;" align="middle" />
                             </div>
                         </td>
                         <th class="table-header">
@@ -197,7 +202,7 @@
                     <tr>
                         <th class="table-header">驗收日：</th>
                         <td>
-                            <span>@(Model.APPROVALDATE?.ToHtmlString())</span>
+                            <span id="@(Html.IdFor(m => m.APPROVALDATE))Text"></span>
                         </td>
                         <th class="table-header">報修廠商聯絡人：</th>
                         <td>
@@ -208,7 +213,7 @@
                     <tr>
                         <th class="table-header">保固期日期：</th>
                         <td>
-                            <span>@(Model.WARRANTYTIME?.ToHtmlString())</span>
+                            <span id="@(Html.IdFor(m => m.WARRANTYTIME))Text"></span>
                         </td>
                         <th class="table-header">報修廠商聯絡電話</th>
                         <td>
@@ -287,7 +292,7 @@
 </div>
 
 <partial name="Form/_RMItemListSelfVendor" view-data='new ViewDataDictionary(ViewData)' />
-<partial name="Form/_RMItemTree" view-data='new ViewDataDictionary(ViewData)' />
+<partial name="Form/_ItemsTree" model="mapData.PartialIT" />
 <partial name="Form/_DialogVender" view-data='new ViewDataDictionary(ViewData)' />
 
 <script>
@@ -301,13 +306,15 @@
             placeholder: "請選擇",
             allowClear: true
         });
+
+        callInitData();
     });
 
     //initModel.Type : 1.新開單  , 2.自行尋商
     function initFormTable (initModel) {
         if (initModel.Type === 1) {
             $("#rmBtn_SelectItems").on("click", function () {
-                $("#@(TreeModalId)").modal("show");
+                $("#@(mapData.PartialIT.Id)").modal("show");
             });
             $("#SELFCONFIG_NOTE").text("N");
             $('#@(Html.IdFor(m => m.TT_CATEGORY))').select2({
@@ -315,8 +322,8 @@
                     { id: '一般', text: '一般' },
                 ]
             });
-            $('#@(TreeModalId)').on('hidden.bs.modal', function (e) {
-                let ctx = context['@(TreeModalId)'];
+            $('#@(mapData.PartialIT.Id)').on('hidden.bs.modal', function (e) {
+                let ctx = context['@(mapData.PartialIT.Id)'];
 
                 if (ctx.result && ctx.selectedItem) {
                     let data = ctx.selectedItem.original['OtherAttr'];
@@ -333,10 +340,6 @@
             $('#@(Html.IdFor(m => m.SELFCONFIG))').val('Y');
             $('#btnSelectVender').addClass('d-none');
             $('#@Html.IdFor(m => m.Prompt)').addClass('d-none');
-            // 報修廠商固定為登入者
-            $('#@(Html.IdFor(m => m.TemplateItem.VENDER_ID))').val('@(Model.IVRCODE)');
-            $('#@(Html.IdFor(m => m.TemplateItem.VENDER_NAME))').val('@(Model.EMPNAME)');
-            $('#VENDER_NAME_DISPLAY').text('@(Model.EMPNAME?.ToHtmlString())');
             $('#@(Html.IdFor(m => m.TT_CATEGORY))').select2({
                 data: [
                     { id: '一般', text: '一般' },
@@ -372,7 +375,7 @@
 
         // [TTInfo.ascx]RetireveItemImage()
         if (data['TT_IMAGE']) {
-            $('#TT_IMAGE').attr('src', data['TT_IMAGE']);
+            $('#TT_IMAGE').attr('src', '@(mapData.UrlImage?.ToHtmlString())' + data['TT_IMAGE']);
         }
         else {
             $('#TT_IMAGE').attr('src', $('#TT_IMAGE').data('defaultSrc'));
@@ -386,7 +389,7 @@
             // [TTInfo.ascx]RetrieveTTCount()
             showLoader();
             $.ajax({
-                url: '@(Url.Action("RetrieveTTCount","NewOrder")?.ToHtmlString())',
+                url: '@(mapData.UrlRetrieveTTCount?.ToHtmlString())',
                 dataType: 'json',
                 type: 'POST',
                 data: {
@@ -400,19 +403,11 @@
 
                     if (response.Success) {
                         if (response['Data'] == 'YES') {
-                            swal({
-                                text: '此項目今天已報修，請再確認是否真的要送出！',
-                                button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                                icon: 'warning'
-                            });
+                            MyApp.Alert.warning('此項目今天已報修，請再確認是否真的要送出！');
                         }
                     }
                     else {
-                        swal({
-                            text: response.Message,
-                            button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                            icon: 'error',
-                        });
+                        MyApp.Alert.error(response.Message);
                     }
                 })
                 .fail((err) => {
@@ -476,11 +471,67 @@
         }
     }
 
+    function callInitData() {
+        let data = {};
+        showLoader();
+        $.ajax({
+            url: '@(mapData.UrlGetInitData?.ToHtmlString())',
+            dataType: 'json',
+            type: 'POST',
+            data: data,
+            cache: false
+        })
+            .done((response) => {
+                if (response.Success && response.Data) {
+                    let data = response.Data || {};
+                    let dataStore = data['@(nameof(Model.StoreVO))'] || {};
+
+                    context['@(mapData.PartialIT.Id)']['reqSrc'] = data['@(Html.IdFor(m => m.ReqSrc))'];
+                    context['@(mapData.PartialIT.Id)']['acType'] = data['@(Html.IdFor(m => m.AcType))'];
+                    $('#@(Html.IdFor(m => m.CREATE_TIME))Text').text(data['@(Html.IdFor(m => m.CREATE_TIME))']);
+                    $('#@(Html.IdFor(m => m.APPROVALDATE))Text').text(data['@(Html.IdFor(m => m.APPROVALDATE))']);
+                    $('#@(Html.IdFor(m => m.WARRANTYTIME))Text').text(data['@(Html.IdFor(m => m.WARRANTYTIME))']);
+                    $('#@(Html.IdFor(m => m.Prompt))').text(data['@(Html.IdFor(m => m.Prompt))']);
+                    $('#@(Html.IdFor(m => m.IVRCODE))').val(data['@(Html.IdFor(m => m.IVRCODE))']);
+                    $('#@(Html.IdFor(m => m.EMPNAME))').val(data['@(Html.IdFor(m => m.EMPNAME))']);
+                    $('#@(Html.IdFor(m => m.EMPTEL))').val(data['@(Html.IdFor(m => m.EMPTEL))']);
+                    Object.keys(dataStore).forEach(function (key) {
+                        let id = '#StoreVO_' + key + 'Text';
+                        if ($(id).length) {
+                            $(id).text(dataStore[key]);
+                        }
+
+                        id = '#StoreVO_' + key;
+                        if ($(id).length) {
+                            $(id).text(dataStore[key]);
+                        }
+                    });
+
+                    if ($('#@(Html.IdFor(m => m.SELFCONFIG))').val() == 'Y') {
+                        // 自行尋商的報修廠商固定為登入者
+                        $('#@(Html.IdFor(m => m.TemplateItem.VENDER_ID))').val(data['@(Html.IdFor(m => m.IVRCODE))']);
+                        $('#@(Html.IdFor(m => m.TemplateItem.VENDER_NAME))').val(data['@(Html.IdFor(m => m.EMPNAME))']);
+                        $('#VENDER_NAME_DISPLAY').text(data['@(Html.IdFor(m => m.EMPNAME))']);
+                    }
+                }
+                else {
+                    MyApp.Alert.error('初始化失敗' + response['Message']);
+                }
+            })
+            .fail((err) => {
+                console.log(err);
+                MyApp.Alert.error('初始化失敗');
+            })
+            .always(() => {
+                hideLoader();
+            });
+    }
+
     $('#btnSelectVender').on('click', function (e) {
         let formData = $('#form').serializeObject();
         let valSELFCONFIG = formData['@(nameof(Model.SELFCONFIG))'];
         let valTemplateItem = formData['@(nameof(Model.TemplateItem))'];
-        let valCATEGORY_ID = valTemplateItem['@(nameof(NewOrderTTItemVM.CATEGORY_ID))'];
+        let valCATEGORY_ID = valTemplateItem['@(nameof(NewOrderTTItemVO.CATEGORY_ID))'];
 
         if (valSELFCONFIG == 'Y') {
             return;
@@ -488,11 +539,7 @@
 
         // [TTInfo.ascx]chooseVendor()
         if (!valCATEGORY_ID) {
-            swal({
-                text: '請先選取報修品項，謝謝！',
-                button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                icon: 'warning',
-            });
+            MyApp.Alert.warning('請先選取報修品項，謝謝！');
             return;
         }
 
@@ -510,20 +557,16 @@
         let valREPAIR = formData['@(nameof(Model.REPAIR))'];
         let valRESUPPLY = formData['@(nameof(Model.RESUPPLY))']
         let valTemplateItem = formData['@(nameof(Model.TemplateItem))'];
-        let valCATEGORY_ID = valTemplateItem['@(nameof(NewOrderTTItemVM.CATEGORY_ID))'];
-        let valCATEGORY_NAME = valTemplateItem['@(nameof(NewOrderTTItemVM.CATEGORY_NAME))'];
-        let valITEMNOTE = valTemplateItem['@(nameof(NewOrderTTItemVM.ITEMNOTE))'] || [];
-        let valITEMDESC = valTemplateItem['@(nameof(NewOrderTTItemVM.ITEMDESC))'] || [];
-        let valVENDER_ID = valTemplateItem['@(nameof(NewOrderTTItemVM.VENDER_ID))'];
-        let valVENDER_NAME = valTemplateItem['@(nameof(NewOrderTTItemVM.VENDER_NAME))'];
-        let valREMARK = valTemplateItem['@(nameof(NewOrderTTItemVM.REMARK))'];
+        let valCATEGORY_ID = valTemplateItem['@(nameof(NewOrderTTItemVO.CATEGORY_ID))'];
+        let valCATEGORY_NAME = valTemplateItem['@(nameof(NewOrderTTItemVO.CATEGORY_NAME))'];
+        let valITEMNOTE = valTemplateItem['@(nameof(NewOrderTTItemVO.ITEMNOTE))'] || [];
+        let valITEMDESC = valTemplateItem['@(nameof(NewOrderTTItemVO.ITEMDESC))'] || [];
+        let valVENDER_ID = valTemplateItem['@(nameof(NewOrderTTItemVO.VENDER_ID))'];
+        let valVENDER_NAME = valTemplateItem['@(nameof(NewOrderTTItemVO.VENDER_NAME))'];
+        let valREMARK = valTemplateItem['@(nameof(NewOrderTTItemVO.REMARK))'];
 
         if (!valCATEGORY_ID) {
-            swal({
-                text: '請先選擇報修品項，謝謝！',
-                button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                icon: 'warning'
-            });
+            MyApp.Alert.warning('請先選擇報修品項，謝謝！');
             return;
         }
 
@@ -534,11 +577,7 @@
 
             for (let i = 0; i < list.length; i++) {
                 if (!valITEMNOTE.includes(list[i])) {
-                    swal({
-                        text: `請先檢查項目："${list[i]}"\n\n再重新點選﹝新增資料﹞，謝謝！`,
-                        button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                        icon: 'warning'
-                    });
+                    MyApp.Alert.warning(`請先檢查項目："${list[i]}"\n\n再重新點選﹝新增資料﹞，謝謝！`);
                     return;
                 }
             }
@@ -552,38 +591,26 @@
 
                 if (valITEMDESC.length == 0) {
                     if (!valITEMDESC.includes(list[i])) {
-                        swal({
-                            text: '請選擇報修機台編號\n\n再重新點選﹝新增資料﹞，謝謝！',
-                            button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                            icon: 'warning'
-                        });
+                        MyApp.Alert.warning('請選擇報修機台編號\n\n再重新點選﹝新增資料﹞，謝謝！');
                         return;
                     }
                 }
             }
         }
         if (!valREPAIR) {
-            swal({
-                text: '請先選擇是否[一個月覆修]，謝謝！',
-                button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                icon: 'warning'
-            });
+            MyApp.Alert.warning('請先選擇是否[一個月覆修]，謝謝！');
             return;
         }
 
         if (!valRESUPPLY) {
-            swal({
-                text: '請先選擇是否[補單]，謝謝！',
-                button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                icon: 'warning'
-            });
+            MyApp.Alert.warning('請先選擇是否[補單]，謝謝！');
             return;
         }
 
         // [TTInfo.ascx]formcheckdata()
         try {
             let ret = await $.ajax({
-                url: '@(Url.Action("CheckRepairReported", "NewOrder")?.ToHtmlString())',
+                url: '@(mapData.UrlCheckRepairReported?.ToHtmlString())',
                 dataType: 'json',
                 type: 'POST',
                 data: {
@@ -593,20 +620,12 @@
 
             if (ret.Success) {
                 if (ret.Data == 'Y') {
-                    swal({
-                        text: '此報修項目已報修，尚有未結案工單！',
-                        button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                        icon: 'warning',
-                    });
+                    MyApp.Alert.warning('此報修項目已報修，尚有未結案工單！');
                     return;
                 }
             }
             else {
-                swal({
-                    text: ret.Message,
-                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                    icon: 'error',
-                });
+                MyApp.Alert.error(ret.Message);
                 return;
             }
         } catch (ex) {
@@ -616,20 +635,12 @@
 
 
         if (!valVENDER_ID) {
-            swal({
-                text: '請先選擇報修廠商，謝謝！',
-                button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                icon: 'warning'
-            });
+            MyApp.Alert.warning('請先選擇報修廠商，謝謝！');
             return;
         }
 
         if (!valREMARK) {
-            swal({
-                text: '請先填寫報修描述與備註，謝謝！',
-                button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                icon: 'warning'
-            });
+            MyApp.Alert.warning('請先填寫報修描述與備註，謝謝！');
             return;
         }
 
@@ -674,15 +685,12 @@
                     }
                 };
 
-                swal({
-                    text: '@(config.GetMessage("BeforeDeleteMsg").ToHtmlString())',
-                    buttons: ['@(config.GetMessage("BtnCancel").ToHtmlString())', '@(config.GetMessage("BtnConfirm").ToHtmlString())'],
-                    icon: 'info'
-                }).then((result) => {
-                    if (result) {
-                        callDelete();
-                    }
-                });
+                MyApp.Alert.confirm('@(config.GetMessage("BeforeDeleteMsg").ToHtmlString())')
+                    .then((result) => {
+                        if (result) {
+                            callDelete();
+                        }
+                    });
             });
         $td0.append($btnDelete);
         $tr.append($td0);
@@ -691,13 +699,13 @@
         let $categoryId = $('<input>')
             .attr({
                 type: 'hidden',
-                name: `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVM.CATEGORY_ID))`,
+                name: `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.CATEGORY_ID))`,
                 value: valCATEGORY_ID
             });
         let $categoryName = $('<input>')
             .attr({
                 type: 'hidden',
-                name: `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVM.CATEGORY_NAME))`,
+                name: `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.CATEGORY_NAME))`,
                 value: valCATEGORY_NAME
             });
         let $categoryNameDisplay = $('<span>')
@@ -711,7 +719,7 @@
         let $venderId = $('<input>')
             .attr({
                 type: 'hidden',
-                name: `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVM.VENDER_ID))`,
+                name: `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.VENDER_ID))`,
                 value: valVENDER_ID
             });
         let $venderNameDisplay = $('<span>')
@@ -726,7 +734,7 @@
             .attr({
                 type: 'hidden',
                 class: 'form-control',
-                name: `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVM.ItemNoteVal))`,
+                name: `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.ItemNoteVal))`,
                 value: valItemNoteVal
             });
         let $itemNoteValDisplay = $('<span>')
@@ -736,7 +744,7 @@
             .attr({
                 type: 'hidden',
                 class: 'form-control',
-                name: `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVM.ItemDescVal))`,
+                name: `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.ItemDescVal))`,
                 value: valItemDescVal
             });
         let $itemDescValDisplay = $('<span>')
@@ -753,7 +761,7 @@
             .attr({
                 type: 'hidden',
                 class: 'form-control',
-                name: `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVM.REMARK))`,
+                name: `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.REMARK))`,
                 value: valREMARK
             });
         let $remarkDisplay = $('<span>')
@@ -775,11 +783,7 @@
         if (data && data.length) {
             let selectedItem = data[0];
             if (selectedItem.text == '緊急(補單)') {
-                swal({
-                    text: '【除緊急故障發生，且已電話聯繫，廠商已到場處理者；否則請以「一般」報修處理】',
-                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
-                    icon: 'warning',
-                });
+                MyApp.Alert.warning('【除緊急故障發生，且已電話聯繫，廠商已到場處理者；否則請以「一般」報修處理】');
             }
         }
     });

@@ -7,6 +7,17 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\TaskTest\**" />
+    <Content Remove="Controllers\TaskTest\**" />
+    <EmbeddedResource Remove="Controllers\TaskTest\**" />
+    <None Remove="Controllers\TaskTest\**" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Controllers\FTTGroupMgt\FTTGroupMgtController.Delete.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Remove="Views\Shared\Form\_FormTable - 複製 %282%29.cshtml" />
     <Content Remove="Views\Shared\Form\_FormTable - 複製.cshtml" />
   </ItemGroup>

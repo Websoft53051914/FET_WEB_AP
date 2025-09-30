@@ -20,7 +20,7 @@ namespace FTT_API.Common.OriginClass.EntiityClass
 
         public string fieldname { get; set; }
 
-        public DateTime? updatetime { get; set; }
+        public string updatetime { get; set; }
 
         public string action { get; set; } = "CHANGE";
 

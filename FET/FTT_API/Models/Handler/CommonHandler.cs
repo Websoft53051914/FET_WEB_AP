@@ -1,9 +1,9 @@
 ﻿using Const.DTO;
+using Const.VO;
 using Core.Utility.Helper.DB;
 using Core.Utility.Helper.DB.Entity;
 using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Common.OriginClass.EntiityClass;
-using FTT_API.Models.ViewModel;
 using System.Text;
 
 namespace FTT_API.Models.Handler
@@ -70,7 +70,7 @@ WHERE EMPNO IN(SELECT UNNEST(STRING_TO_ARRAY((SELECT CONFIG_VALUE FROM MAINTAIN_
         /// </summary>
         /// <param name="ivrCode"></param>
         /// <returns></returns>
-        public List<StoreDTO> GetListStoreVM(string ivrCode)
+        public List<StoreProfileDTO> GetListStoreVM(string ivrCode)
         {
             StringBuilder condition = new();
             Dictionary<string, object> paras = new()
@@ -84,7 +84,7 @@ FROM STORE_PROFILE
 WHERE IVR_CODE = @IVR_CODE
 ";
 
-            return GetDBHelper().FindList<StoreDTO>(sql, paras);
+            return GetDBHelper().FindList<StoreProfileDTO>(sql, paras);
         }
 
         /// <summary>
@@ -92,15 +92,15 @@ WHERE IVR_CODE = @IVR_CODE
         /// </summary>
         /// <param name="ivrCode"></param>
         /// <returns></returns>
-        public StoreVM? GetStoreData(string ivrCode)
+        public StoreVO? GetStoreData(string ivrCode)
         {
-            StoreVM? result = null;
+            StoreVO? result = null;
             if (string.IsNullOrEmpty(ivrCode))
             {
                 return result;
             }
 
-            List<StoreDTO> dataList = GetListStoreVM(ivrCode);
+            List<StoreProfileDTO> dataList = GetListStoreVM(ivrCode);
             if (dataList.Count == 0)
             {
                 return result;
@@ -111,8 +111,8 @@ WHERE IVR_CODE = @IVR_CODE
                 return result;
             }
 
-            StoreDTO dto = dataList.First();
-            result = new StoreVM(dto);
+            StoreProfileDTO dto = dataList.First();
+            result = new StoreVO(dto);
 
             return result;
         }
@@ -120,32 +120,140 @@ WHERE IVR_CODE = @IVR_CODE
         /// <summary>
         /// 
         /// </summary>
-        /// <param name="parentSid"></param>
-        /// <param name="reqSrc"></param>
         /// <returns></returns>
-        public List<CIRelationsDTO> GetListCIRelations(int parentSid, string reqSrc)
+        public List<CIRelationsDTO> GetListCIRelations(int parentSid, string reqSrc, string acType = "")
         {
             StringBuilder condition = new();
             Dictionary<string, object> paras = new()
             {
-                {"PARENTSID", parentSid },
-                {"REQSRC", reqSrc },
+                {"parentsid", parentSid },
+                {"reqsrc", reqSrc },
             };
+
+            condition.Append(@"AND parentsid = @parentsid ");
+
+            condition.Append(@"AND ( DECODE(disable, '', NULL, disable) IS NULL
+OR disable = 'N' ) ");
+
+            if (reqSrc == "ALL")
+            {
+                condition.Append(@"AND ( INSTR(',' || reqsrc || ',', @reqsrc) > 0
+OR INSTR(reqsrc, 'ALL,') > 0 ) ");
+            }
+            else
+            {
+                condition.Append("AND ( INSTR(',' || reqsrc || ',', @reqsrc) > 0 ) ");
+            }
+
+            if (!string.IsNullOrWhiteSpace(acType))
+            {
+                condition.Append(@"AND ci.cisid IN (SELECT cisid
+FROM   ci_relations_category
+WHERE  INSTR(actype, @actype) > 0) ");
+                paras.Add("@actype", acType);
+            }
 
             string sql = $@"
 SELECT ci.*
-, circ.NOTES
-, circ.DESCR
-, (SELECT CINAME FROM CI_RELATIONS ci3 WHERE ci3.CISID = ci.PARENTSID AND ROWNUM=1)||'-'||ci.CINAME AS FULLNAME
-, EXISTS(
-    SELECT 1
-    FROM CI_RELATIONS ci2
-    WHERE ci2.PARENTSID = ci.CISID AND (DECODE(ci2.DISABLE,'',NULL,ci2.DISABLE) IS NULL OR ci2.DISABLE='N') AND (INSTR(','||ci2.REQSRC||',',@REQSRC) > 0 OR INSTR(ci2.REQSRC,'ALL,') > 0) 
-) AS HasChildren
-FROM CI_RELATIONS ci
-LEFT JOIN CI_RELATIONS_CATEGORY circ ON circ.CISID  = ci.CISID
-WHERE PARENTSID=@PARENTSID AND (DECODE(DISABLE,'',NULL,DISABLE) IS NULL OR DISABLE='N') AND (INSTR(','||REQSRC||',',@REQSRC) > 0 OR INSTR(REQSRC,'ALL,') > 0) 
-ORDER BY CINAME
+       , circ.notes
+       , circ.descr
+       , (SELECT ciname
+          FROM   ci_relations ci3
+          WHERE  ci3.cisid = ci.parentsid
+                 AND rownum = 1) || '-' || ci.ciname AS fullname
+       , EXISTS(SELECT 1
+                FROM   ci_relations ci2
+                WHERE  ci2.parentsid = ci.cisid
+            ) AS HasChildren
+FROM   ci_relations ci
+       LEFT JOIN ci_relations_category circ
+              ON circ.cisid = ci.cisid
+WHERE  1 = 1
+{condition}
+ORDER  BY ciname 
+";
+
+            return GetDBHelper().FindList<CIRelationsDTO>(sql, paras);
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public List<CIRelationsDTO> GetListCIRelations(List<int> idList, string reqSrc, string acType = "")
+        {
+            StringBuilder condition = new();
+            Dictionary<string, object> paras = new()
+            {
+                {"IdIn", idList },
+                {"reqsrc", reqSrc },
+            };
+
+            condition.Append(@"AND ci.cisid IN @IdIn ");
+            condition.Append(@"AND ( DECODE(disable, '', NULL, disable) IS NULL
+OR disable = 'N' ) ");
+
+            if (reqSrc == "ALL")
+            {
+                condition.Append(@"AND ( INSTR(',' || reqsrc || ',', @reqsrc) > 0
+OR INSTR(reqsrc, 'ALL,') > 0 ) ");
+            }
+            else
+            {
+                condition.Append("AND ( INSTR(',' || reqsrc || ',', @reqsrc) > 0 ");
+            }
+
+            if (!string.IsNullOrWhiteSpace(acType))
+            {
+                condition.Append(@"AND cisid IN (SELECT cisid
+FROM   ci_relations_category
+WHERE  INSTR(actype, @actype) > 0) ");
+                paras.Add("@actype", acType);
+            }
+
+            string sql = $@"
+WITH recursive path_cte AS
+(
+       SELECT cisid,
+              parentsid,
+              cisid                   AS leaf_id,
+              ARRAY[cisid]::NUMERIC[] AS path_ids
+       FROM   ci_relations
+       WHERE  cisid IN @IdIn
+       UNION ALL
+       SELECT tn.cisid,
+              tn.parentsid,
+              cte.leaf_id,
+              ARRAY[tn.cisid]::NUMERIC[]
+                     || cte.path_ids
+       FROM   ci_relations tn
+       join   path_cte cte
+       ON     tn.cisid = cte.parentsid )
+SELECT ci.*
+       , circ.notes
+       , circ.descr
+       , t_path.path_csv
+       , (SELECT ciname
+          FROM   ci_relations ci3
+          WHERE  ci3.cisid = ci.parentsid
+                 AND rownum = 1) || '-' || ci.ciname AS fullname
+       , EXISTS(SELECT 1
+                FROM   ci_relations ci2
+                WHERE  ci2.parentsid = ci.cisid
+            ) AS HasChildren
+FROM   ci_relations ci
+LEFT JOIN ci_relations_category circ
+        ON circ.cisid = ci.cisid
+LEFT JOIN (
+SELECT leaf_id,
+       array_to_string(path_ids, ',') AS path_csv
+FROM   path_cte
+WHERE  parentsid = 1006
+) t_path 
+        ON t_path.leaf_id = ci.cisid
+WHERE  1 = 1
+{condition}
+ORDER  BY ciname 
 ";
 
             return GetDBHelper().FindList<CIRelationsDTO>(sql, paras);
@@ -412,6 +520,48 @@ FROM   store_profile
 ";
 
             return GetDBHelper().FindList<StoreProfileDTO>(sql, paras);
+        }
+
+        /// <summary>
+        /// [common/group.asp]
+        /// </summary>
+        /// <returns></returns>
+        public List<StoreProfileDTO> GetListCommonGroup()
+        {
+            //StringBuilder condition = new();
+            Dictionary<string, object> paras = [];
+
+            string sql = $@"
+SELECT area
+       , shop_name
+       , ivr_code
+FROM   store_profile
+ORDER  BY area    
+";
+
+            return GetDBHelper().FindList<StoreProfileDTO>(sql, paras);
+        }
+
+        /// <summary>
+        /// [common/vender.asp]/[/Storemgt/CIConfig.aspx.cs]GetVendorData()
+        /// </summary>
+        /// <returns></returns>
+        public List<StoreVenderProfileDTO> GetListCommonVender()
+        {
+            //StringBuilder condition = new();
+            Dictionary<string, object> paras = [];
+
+            string sql = $@"
+SELECT merchant_name
+       , order_id
+       , cp_name
+       , cp_tel
+       , email
+FROM   store_vender_profile
+ORDER  BY order_id    
+";
+
+            return GetDBHelper().FindList<StoreVenderProfileDTO>(sql, paras);
         }
     }
 }

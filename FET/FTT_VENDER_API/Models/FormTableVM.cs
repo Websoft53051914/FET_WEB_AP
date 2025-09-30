@@ -1,4 +1,5 @@
-﻿using FTT_VENDER_API.Common.OriginClass;
+﻿using Const.VO;
+using FTT_VENDER_API.Common.OriginClass;
 using FTT_VENDER_API.Common.OriginClass.EntiityClass;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Drawing;
@@ -26,7 +27,9 @@ namespace FTT_VENDER_API.Models
         public string Status { get; set; }
         public string Status_Desc { get; set; }
 
-
+        /// <summary>
+        /// 是否顯示
+        /// </summary>
         public bool ShowApproveCommon { get; set; }
         public bool ShowPriorStatus { get; set; }
         public string StatusWording { get; set; }
@@ -40,7 +43,6 @@ namespace FTT_VENDER_API.Models
         public string Approve { get; set; }
 
         public bool ApproveY { get; set; }
-        public bool ShowSubmitButton { get; set; }
         //public bool ShowTicketInfo { get; set; }
         public bool ShowOriginSubmitForm { get; set; }
 
@@ -90,5 +92,10 @@ namespace FTT_VENDER_API.Models
         /// 延遲原因選項清單
         /// </summary>
         public List<SelectListItem> SelectListDelayReason { get; set; } = [];
+
+        /// <summary>
+        /// 按鈕設定
+        /// </summary>
+        public List<FormTableButtonVO> FormTableButtons { get; set; } = [];
     }
 }

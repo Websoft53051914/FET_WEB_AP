@@ -21,7 +21,7 @@
         UrlUpdateStatusToTicket = $"{config.GetBackendUrl()}/OnsitePrint/UpdateStatusToTicket",
         UrlUpdateStatusToPrwp = $"{config.GetBackendUrl()}/OnsitePrint/UpdateStatusToPrwp",
         UrlUpdateStatusToConfirm = $"{config.GetBackendUrl()}/OnsitePrint/UpdateStatusToConfirm",
-        UrlDetail = Url.Action("Detail", "Pending", new { formNo = "tempId" }),
+        UrlDetail = Url.Action("Detail", "OnsitePrint", new { formNo = "tempId" }),
     };
 }
 

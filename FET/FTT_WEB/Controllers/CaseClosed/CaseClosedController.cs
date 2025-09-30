@@ -8,5 +8,11 @@ namespace FTT_WEB.Controllers.CaseClosed
         {
             return View();
         }
+        public IActionResult Detail(string formNo)
+        {
+            ViewData["form_no"] = formNo; ;
+
+            return View();
+        }
     }
 }

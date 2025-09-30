@@ -1,0 +1,200 @@
+﻿@model DialogVenderGridVO
+@{
+    // 舊版頁面： "/Storemgt/Store.aspx"
+    var mapData = new
+    {
+        IdModal = Model.Id,
+        IdBtnOk = Guid.NewGuid(),
+        FormSearch = new
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            IdBtnSearch = Guid.NewGuid().ToString("N"),
+        },
+        Grid = new
+        {
+            Id = Guid.NewGuid().ToString("N"),
+            IdPageSelect = Guid.NewGuid().ToString("N"),
+            IdPagers = Guid.NewGuid().ToString("N"),
+            UrlGetPageList = $"{config.GetBackendUrl()}/Api/GetPageListVender",
+            CbGroup = Guid.NewGuid().ToString("N"),
+        },
+    };
+}
+
+<div class="modal fade max100vh" id="@(mapData.IdModal)" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-header text-center">
+                <h5>選擇廠商</h5>
+                <button class="btn-close" type="button" aria-label="Close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <form id="@(mapData.FormSearch.Id)">
+                    <div class="card mb-2">
+                        <div class="card-body py-3 card-body-reduction">
+                            <div class="row none_hover row-cols-1 row-cols-md-2 row-cols-xl-3 gy-2 mb-2">
+                                <div class="col">
+                                    <label class="col-form-label websoft-form-label pt-2">廠商名稱</label>
+                                    <input name="@(nameof(Model.MerchantNameLike))" type="text" class="form-control" placeholder="">
+                                </div>
+                                <div class="col">
+                                    <label class="col-form-label websoft-form-label pt-2">聯絡人</label>
+                                    <input name="@(nameof(Model.CpNameLike))" type="text" class="form-control" placeholder="">
+                                </div>
+                            </div>
+                            <button id="@(mapData.FormSearch.IdBtnSearch)" type="button" class="btn btn-primary">送出查詢</button>
+                        </div>
+                    </div>
+                </form>
+                <div id="@(mapData.Grid.Id)"></div>
+                <div class="d-block d-md-flex justify-content-md-end align-items-center pagination">
+                    <div id="pageResizer" class="jsgrid-pager-page">
+                        <span>每頁筆數:</span>
+                        <select id="@(mapData.Grid.IdPageSelect)">
+                        </select>
+                    </div>
+                    <div id="@(mapData.Grid.IdPagers)">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-primary" type="button" id="@(mapData.IdBtnOk)">確認</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    var context = context || {};
+
+    $(function () {
+        if (!context['@(mapData.IdModal)']) {
+            context['@(mapData.IdModal)'] = {};
+        }
+
+        var ctxModal = context['@(mapData.IdModal)'];
+        ctxModal.selectedItem = null;
+        ctxModal.result = '';
+
+        const initGrid = function () {
+            ctxModal['@(mapData.Grid.Id)'] = {};
+            var ctxGrid = ctxModal['@(mapData.Grid.Id)'];
+            ctxGrid.$Grid = $('#@(mapData.Grid.Id)');
+            ctxGrid.$Grid.jsGrid({
+                pageIndex: 1,
+                paging: true,
+                pageSize: pageDataSource[0].id,
+                pageLoading: true,
+                pagerContainer: '#@(mapData.Grid.IdPagers)',
+                autoload:true,
+                rowClass: function (item, itemIndex) {
+                    // 設定行class
+                    return itemIndex % 2 === 0 ? 'even' : 'odd';
+                },
+                rowClick: function (args) {
+                    ctxModal.selectedItem = args.item;
+                    // 點擊行時，選中checkbox 單選
+                    $('input[data-group="@(mapData.Grid.CbGroup)"]').prop("checked", false);
+                    $(args.event.target).closest("tr").find('input[data-group="@(mapData.Grid.CbGroup)"]').prop("checked", true);
+                },
+                controller: {
+                    loadData: function (filter) {
+                        var d = $.Deferred();
+                        filter.vm = {};
+                        $.extend(filter.vm, $('#@(mapData.FormSearch.Id)').serializeObject());
+
+                        $.ajax({
+                            type: 'POST',
+                            url: '@(mapData.Grid.UrlGetPageList?.ToHtmlString())',
+                            data: filter,
+                            dataType: 'json',
+                            success: function (res) {
+                                if (res.Success === false) {
+                                    swal({
+                                        text: res.Message,
+                                        button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                                        icon: 'error'
+                                    });
+                                    d.reject();
+                                    return;
+                                }
+                                var da = {
+                                    data: res.Data,
+                                    itemsCount: res.Total
+                                }
+                                d.resolve(da);
+                            }
+                        });
+
+                        return d.promise();
+                    }
+                },
+                fields: [
+                    {
+                        type: 'control', align: 'center',
+                        width: 80,
+                        editButton: false,
+                        deleteButton: false,
+                        title: '',
+                        itemTemplate: (value, item) => {
+                            let $cb = buildCheckboxSingle({
+                                id: item['@(nameof(DialogVenderGridGridVO.OrderId))'],
+                                text: ' ',
+                                inputClassNames: 'cb-item',
+                                dataGroup: '@(mapData.Grid.CbGroup)',
+                            });
+
+                            return $cb;
+                        }
+                    },
+                    { name: '@(nameof(DialogVenderGridGridVO.OrderId))', title: '編號', type: 'text', width: 100, align: 'center' },
+                    { name: '@(nameof(DialogVenderGridGridVO.MerchantName))', title: '廠商名稱', type: 'text', width: 150, align: 'center' },
+                    { name: '@(nameof(DialogVenderGridGridVO.CpName))', title: '聯絡人', type: 'text', width: 150, align: 'center' },
+                    { name: '@(nameof(DialogVenderGridGridVO.CpTel))', title: '聯絡電話', type: 'text', width: 150, align: 'center' },
+                    { name: '@(nameof(DialogVenderGridGridVO.Email))', title: 'Email', type: 'text', width: 180, align: 'center' },
+                    { name: '@(nameof(DialogVenderGridGridVO.MerchantLogin))', title: '登入帳號', type: 'text', width: 180, align: 'center' },
+                    { width: 'auto' }
+                ],
+            });
+
+            $('#@(mapData.Grid.IdPageSelect)').select2({
+                minimumResultsForSearch: -1,
+                data: pageDataSource
+            });
+            $('#@(mapData.Grid.IdPageSelect)').data('select2').$container.addClass('w-auto');
+            $('#@(mapData.Grid.IdPageSelect)').on('change', (e) => {
+                onPageLenghtSelect(e.currentTarget.value, ctxGrid.$Grid);
+            });
+            ctxGrid.reload = function () {
+                ctxGrid.$Grid.jsGrid('search');
+            };
+        };
+        // Modal 開啟事件
+        $('#@(mapData.IdModal)').on('show.bs.modal', function (e) {
+            // 清空checkbox
+            $('input[data-group="@(mapData.Grid.CbGroup)"]').prop("checked", false);
+            ctxModal.selectedItem = null;
+            ctxModal.result = '';
+        });
+
+        $('#@(mapData.IdBtnOk)').on('click', function (e) {
+            if (ctxModal.selectedItem) {
+                ctxModal.result = '1';
+                $('#@mapData.IdModal').modal('hide'); // 關閉模態框
+            }
+            else {
+                swal({
+                    text: '請選擇一個廠商',
+                    button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
+                    icon: 'warning'
+                });
+            }
+        });
+
+        $('#@(mapData.FormSearch.IdBtnSearch)').on('click', function (e) {
+            ctxModal['@(mapData.Grid.Id)'].reload();
+        });
+
+        initGrid();
+    });
+</script>

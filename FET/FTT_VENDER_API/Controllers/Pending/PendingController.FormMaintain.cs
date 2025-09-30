@@ -10,6 +10,11 @@ namespace FTT_VENDER_API.Controllers.Pending
 {
     public partial class PendingController : BaseProjectController
     {
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="vm"></param>
+        /// <returns></returns>
         [HttpPost("[action]")]
         public IActionResult UpdateEmpnoDeptCode(FormMaintainVM vm)
         {
@@ -38,14 +43,22 @@ namespace FTT_VENDER_API.Controllers.Pending
                     }
                 }
 
+                this.LogError("更新Access_Role 成功");
                 return JsonSuccess("更新Access_Role 成功");
             }
             catch (Exception ex)
             {
+                this.LogError(ex.ToString());
                 return JsonValidFail("更新Access_Role 失敗 !!,錯誤訊息為" + ex.Message);
             }
         }
 
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="vm"></param>
+        /// <returns></returns>
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_V_ACCESS_ROLE(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -67,6 +80,7 @@ namespace FTT_VENDER_API.Controllers.Pending
                     item.No = (request.pageIndex - 1) * request.pageSize + i + 1;
                 }
 
+                    this.LogSuccess();
                 return Json(new DataSourceResult
                 {
                     Data = list.Results,
@@ -75,9 +89,17 @@ namespace FTT_VENDER_API.Controllers.Pending
             }
             catch (Exception ex)
             {
+                this.LogError(ex.ToString());
                 return JsonValidFail("系統錯誤");
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="vm"></param>
+        /// <returns></returns>
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_Access(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -99,6 +121,7 @@ namespace FTT_VENDER_API.Controllers.Pending
                     item.No = (request.pageIndex - 1) * request.pageSize + i + 1;
                 }
 
+                    this.LogSuccess();
                 return Json(new DataSourceResult
                 {
                     Data = list.Results,
@@ -107,9 +130,17 @@ namespace FTT_VENDER_API.Controllers.Pending
             }
             catch (Exception ex)
             {
+                this.LogError(ex.ToString());
                 return JsonValidFail("系統錯誤");
             }
         }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="request"></param>
+        /// <param name="vm"></param>
+        /// <returns></returns>
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_Vender(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -131,6 +162,7 @@ namespace FTT_VENDER_API.Controllers.Pending
                     item.No = (request.pageIndex - 1) * request.pageSize + i + 1;
                 }
 
+                    this.LogSuccess();
                 return Json(new DataSourceResult
                 {
                     Data = list.Results,
@@ -139,6 +171,7 @@ namespace FTT_VENDER_API.Controllers.Pending
             }
             catch (Exception ex)
             {
+                this.LogError(ex.ToString());
                 return JsonValidFail("系統錯誤");
             }
         }

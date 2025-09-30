@@ -229,8 +229,14 @@
                 $Loder.show();
 
                 $.ajax({
-                    url: '@Url.Action("Login", "Login")',
+                    url: '@(config.GetBackendUrl() + Url.Action("Login", "Login"))',
                     type: 'POST',
+                    xhrFields: {
+                        withCredentials: true // ← 這個讓瀏覽器攜帶 Cookie
+                    },
+                    headers: {
+                        "Content-From": "Login"
+                    },
                     data: {
                         Role: role,
                         AC: ac,

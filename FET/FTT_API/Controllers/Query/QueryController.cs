@@ -73,11 +73,12 @@ namespace FTT_API.Controllers.Query
                         .ToList(),
                 };
 
+                this.LogSuccess();
                 return JsonSuccess(result);
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                this.LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
@@ -157,6 +158,7 @@ namespace FTT_API.Controllers.Query
                     dataList.Add(item);
                 }
 
+                this.LogSuccess();
                 return JsonPage(new DataSourceResult
                 {
                     Data = dataList,
@@ -165,7 +167,7 @@ namespace FTT_API.Controllers.Query
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                this.LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
@@ -367,11 +369,12 @@ namespace FTT_API.Controllers.Query
 
                 writer.GetWorkBook().Close();
 
+                this.LogSuccess();
                 return File(memoryStream, "application/vnd.ms-excel", "CodeList.xls");
             }
             catch (Exception ex)
             {
-                LogError(ex);
+                this.LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }

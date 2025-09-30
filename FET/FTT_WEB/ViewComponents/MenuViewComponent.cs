@@ -1,8 +1,8 @@
 ﻿using Const;
+using DocumentFormat.OpenXml.Drawing.Charts;
 using FTT_WEB.Common;
 using FTT_WEB.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Graph.Models.Security;
 
 namespace FTT_WEB.ViewComponents
 {
@@ -12,13 +12,13 @@ namespace FTT_WEB.ViewComponents
         {
         }
 
-        public async Task<IViewComponentResult> InvokeAsync()
+        public async Task<IViewComponentResult> InvokeAsync(string userRole)
         {
             var roleFunc = RoleFunc.AdminMax;
             try
             {
-                if (LoginSession.Current != null && !string.IsNullOrEmpty(LoginSession.Current.userrole))
-                    switch (LoginSession.Current.userrole.ToUpper())
+                if (false)
+                    switch (userRole.ToUpper())
                     {
                         case "ADMIN":
                             roleFunc = RoleFunc.ADMIN;
@@ -42,12 +42,13 @@ namespace FTT_WEB.ViewComponents
                             roleFunc = RoleFunc.EMPLOYEE;
                             break;
                         default:
+                            roleFunc = RoleFunc.OTHER;
                             break;
                     }
 
                 var vm = new HomeMenuVM();
 
-                var filteredTreeData = RoleFunc.GetMenuByFuncIds(RoleFunc.AdminMax);
+                var filteredTreeData = RoleFunc.GetMenuByFuncIds(roleFunc);
                 vm.TreeData = filteredTreeData;
 
                 //檢查目前在哪個頁面

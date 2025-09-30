@@ -1,6 +1,7 @@
 ﻿/**
  * 舊版頁面： "/pool/printwp.aspx",
  */
+using FTT_VENDER_WEB.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FTT_VENDER_WEB.Controllers.Dispatched
@@ -17,6 +18,17 @@ namespace FTT_VENDER_WEB.Controllers.Dispatched
         public IActionResult Index()
         {
             return View();
+        }
+
+        /// <summary>
+        /// 維修單明細頁
+        /// </summary>
+        /// <returns></returns>
+        public IActionResult Detail(string formNo)
+        {
+            ViewData["form_no"] = formNo;
+
+            return View(new FormTableVM());
         }
     }
 }
