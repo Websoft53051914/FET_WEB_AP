@@ -17,34 +17,35 @@ namespace FTT_WEB.ViewComponents
             var roleFunc = RoleFunc.AdminMax;
             try
             {
-                if (false)
-                    switch (userRole.ToUpper())
-                    {
-                        case "ADMIN":
-                            roleFunc = RoleFunc.ADMIN;
-                            break;
-                        case "ASSETER":
-                            roleFunc = RoleFunc.ASSETER;
-                            break;
-                        case "SECURITY":
-                            roleFunc = RoleFunc.SECURITY;
-                            break;
-                        case "ASSISTANT":
-                            roleFunc = RoleFunc.ASSISTANT;
-                            break;
-                        case "MANAGER":
-                            roleFunc = RoleFunc.MANAGER;
-                            break;
-                        case "VENDOR":
-                            roleFunc = RoleFunc.VENDOR;
-                            break;
-                        case "EMPLOYEE":
-                            roleFunc = RoleFunc.EMPLOYEE;
-                            break;
-                        default:
-                            roleFunc = RoleFunc.OTHER;
-                            break;
-                    }
+                List<string> userRoleList = userRole?.Split(',', StringSplitOptions.RemoveEmptyEntries).Select(x => x.ToUpper()).ToList() ?? [];
+                if (userRoleList.Contains("ADMIN"))
+                {
+                    roleFunc = RoleFunc.ADMIN;
+                }
+                else if (userRoleList.Contains("ASSETER"))
+                {
+                    roleFunc = RoleFunc.ASSETER;
+                }
+                else if (userRoleList.Contains("SECURITY"))
+                {
+                    roleFunc = RoleFunc.SECURITY;
+                }
+                else if (userRoleList.Contains("ASSISTANT"))
+                {
+                    roleFunc = RoleFunc.ASSISTANT;
+                }
+                else if (userRoleList.Contains("MANAGER"))
+                {
+                    roleFunc = RoleFunc.MANAGER;
+                }
+                else if (userRoleList.Contains("SUBMITTER") || userRoleList.Contains("EMP") || userRoleList.Contains("STORE"))
+                {
+                    roleFunc = RoleFunc.EMPLOYEE;
+                }
+                else
+                {
+                    roleFunc = RoleFunc.OTHER;
+                }
 
                 var vm = new HomeMenuVM();
 

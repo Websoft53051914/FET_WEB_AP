@@ -3,6 +3,7 @@ using Core.Utility.Helper.Message;
 using Core.Utility.Web.Base;
 using FEE_VENDER_API.Common;
 using FTT_VENDER_API.Common;
+using FTT_VENDER_API.Common.OriginClass;
 using FTT_VENDER_API.Common.OriginClass.EntiityClass;
 using FTT_VENDER_API.Models;
 using FTT_VENDER_API.Models.Handler;
@@ -66,7 +67,7 @@ namespace FTT_VENDER_API.Controllers
                 string errorMsg = string.Empty;
                 SessionVO? sessionVO = null;
 
-                if (headerValue_usertype == "VENDER")
+                if (headerValue_usertype == "VENDOR")
                 {
                     BaseDBHandler _BaseDBHandler = new BaseDBHandler();
 
@@ -107,6 +108,7 @@ namespace FTT_VENDER_API.Controllers
                                         usertype = headerValue_usertype,
                                         ivrcode = storeVenderProfileVM.order_id?.ToString(),
                                     };
+                                    sessionVO.userrole = SystemModelClass.GetUserRole(sessionVO.empno ?? string.Empty, sessionVO);
                                 }
                                 else
                                 {
@@ -149,6 +151,7 @@ namespace FTT_VENDER_API.Controllers
                             usertype = headerValue_usertype,
                             ivrcode = storeVenderProfileVM.order_id?.ToString(),
                         };
+                        sessionVO.userrole = SystemModelClass.GetUserRole(sessionVO.empno ?? string.Empty, sessionVO);
                     }
                 }
 
@@ -202,7 +205,7 @@ namespace FTT_VENDER_API.Controllers
         /// </summary>
         /// <returns></returns>
         [ApiExplorerSettings(IgnoreApi = true)]
-        public void RefreshToken(TokenInfoVO tokenInfoVO,string oldToken)
+        public void RefreshToken(TokenInfoVO tokenInfoVO, string oldToken)
         {
             BaseDBHandler _BaseDBHandler = new BaseDBHandler();
             string sql = $"UPDATE tb_token SET Status = {(int)StatusEnum.Cancel},UpdateTime = @NOW WHERE tokenid = @TokenId";
@@ -359,8 +362,8 @@ namespace FTT_VENDER_API.Controllers
                 ControllerName = ControllerContext.ActionDescriptor?.ControllerName ?? string.Empty,
                 ActionName = ControllerContext.ActionDescriptor?.ActionName ?? string.Empty,
                 Exception = description,
-                Account = LoginSession.Current?.username ?? "",
-                Name = LoginSession.Current?.empname ?? "",
+                Account = _sessionVO?.username ?? "",
+                Name = _sessionVO?.empname ?? "",
                 LogTime = DateTime.Now,
                 Token = Request.Cookies["Token"] ?? string.Empty,
             };

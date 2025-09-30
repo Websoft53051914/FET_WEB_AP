@@ -10,26 +10,47 @@ namespace FTT_API.Common.OriginClass
         /// 取得特定人員的角色權限
         /// </summary>
         /// <param name="EmpNo">員工編號或識別帳號</param>
+        /// <param name="sessionVO"></param>
         /// <returns>角色</returns>
-        public static string GetUserRole(string EmpNo, SessionVO _sessionVO)
+        public static string GetUserRole(string EmpNo, SessionVO sessionVO)
         {
             string m_Result;
 
-            if (_sessionVO != null && !_sessionVO.userrole.IsNullOrEmpty())
-            {   // 直接套用存在 Session 中的資料
-                m_Result = _sessionVO.userrole;
-            }
-            else
-            {   // 重新取得資料
-
-                BaseDBHandler handler = new BaseDBHandler();
-                string sql = "SELECT DISTINCT FTT_GROUP FROM FTT_GROUP WHERE EMPNO = @EMPNO";
-                Dictionary<string, object> parameters = new Dictionary<string, object>
+            // 重新取得資料
+            BaseDBHandler handler = new BaseDBHandler();
+            string sql = "SELECT DISTINCT FTT_GROUP FROM FTT_GROUP WHERE EMPNO = @EMPNO";
+            Dictionary<string, object> parameters = new Dictionary<string, object>
                 {
                     { "EMPNO", EmpNo }
                 };
-                List<string> results = handler.GetDBHelper().FindList<string>(sql, parameters);
-                m_Result = string.Join(",", results);
+            List<string> results = handler.GetDBHelper().FindList<string>(sql, parameters);
+            m_Result = string.Join(",", results);
+
+            if (results.IsNullOrEmpty())
+            {
+                string sqlFindManager = "SELECT AS_EMPNO FROM STORE_PROFILE WHERE AS_EMPNO = @EMPNO";
+                List<string> retFindManager = handler.GetDBHelper().FindList<string>(sqlFindManager, parameters);
+
+                if (!retFindManager.IsNullOrEmpty())
+                {
+                    return "MANAGER";
+                }
+
+                if (!string.IsNullOrEmpty(sessionVO?.usertype))
+                {
+                    if (sessionVO.usertype == "VENDOR")
+                    {
+                        return "VENDOR";
+                    }
+                    else if (sessionVO.usertype == "EMPLOYEE")
+                    {
+                        return "EMP";
+                    }
+                    else
+                    {
+                        return "STORE";
+                    }
+                }
             }
 
             return m_Result;

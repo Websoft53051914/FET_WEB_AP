@@ -117,7 +117,7 @@ namespace FTT_API.Controllers.Query
                     AsEmpNoEq = vm.AsEmpNoEq,
                     SelfConfigEq = vm.SelfConfigEq,
                 };
-                if (_sessionVO.userrole == "Vender")
+                if (_sessionVO.userrole == "VENDOR")
                 {
                     searchVO.UserRoleVenderFilter = true;
                 }
@@ -210,7 +210,7 @@ namespace FTT_API.Controllers.Query
                     AsEmpNoEq = vm.AsEmpNoEq,
                     SelfConfigEq = vm.SelfConfigEq,
                 };
-                if (_sessionVO.userrole == "Vender")
+                if (_sessionVO.userrole == "VENDOR")
                 {
                     searchVO.UserRoleVenderFilter = true;
                 }

@@ -47,7 +47,6 @@ namespace FTT_API.Controllers.Login
                     return JsonValidFail(resultVO.ErrorMsg);
                 }
 
-                this.LogSuccess("登入成功");
                 if (!string.IsNullOrEmpty(resultVO.Token.TokenId))
                 {
                     Response.Cookies.Append(FTT_API.Common.Const.TOKEN_NAME, resultVO.Token.TokenId, new CookieOptions
@@ -85,8 +84,9 @@ namespace FTT_API.Controllers.Login
                 }
                 Response.Cookies.Append(FTT_API.Common.Const.USER_LOGIN_NAME, userLoginName, new CookieOptions { Secure = true, SameSite = SameSiteMode.None });
                 Response.Cookies.Append(FTT_API.Common.Const.USER_ROLE, sessionVO?.userrole ?? string.Empty, new CookieOptions { Secure = true, SameSite = SameSiteMode.None });
+                _sessionVO = sessionVO ?? new();
 
-                this.LogSuccess();
+                this.LogSuccess("登入成功");
                 return JsonOK();
             }
             catch (Exception ex)

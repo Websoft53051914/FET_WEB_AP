@@ -9,6 +9,7 @@ using FTT_VENDER_API.Common.OriginClass.EntiityClass;
 using FTT_VENDER_API.Models.ViewModel;
 using FTT_VENDER_API.Models.ViewModel.Login;
 using FTT_VENDER_API.Models.ViewModel.StoreVenderProfile;
+using NPOI.SS.Formula.Functions;
 using System.Data;
 using System.Data.Common;
 using System.Web;
@@ -20,7 +21,7 @@ namespace FTT_VENDER_API.Models.Handler
     {
         private readonly ConfigurationHelper _configHelper;
         private readonly Microsoft.AspNetCore.Http.HttpContext _httpContext;
-        public LoginHanlder(ConfigurationHelper confighelper  , Microsoft.AspNetCore.Http.HttpContext httpContext) 
+        public LoginHanlder(ConfigurationHelper confighelper, Microsoft.AspNetCore.Http.HttpContext httpContext)
         {
             _configHelper = confighelper;
             _httpContext = httpContext;
@@ -35,7 +36,7 @@ namespace FTT_VENDER_API.Models.Handler
         {
             bool logLoginStatus = false;
             bool boolIsAuthenticated = false;
-            string logAccount = vm.AC; 
+            string logAccount = vm.AC;
             string logFromIP = _httpContext.Connection.RemoteIpAddress?.ToString();
             string logUserType = vm.Role;
             bool checkUserAuthenticated = _configHelper.Config.GetValue<bool>("CheckUserAuthenticated", true);
@@ -49,7 +50,7 @@ namespace FTT_VENDER_API.Models.Handler
 
             JwtConfigVO jwtConfigVO = new();
 
-            if (vm.Role == "VENDER")
+            if (vm.Role == "VENDOR")
             {
                 if (checkUserAuthenticated == true)
                 {
@@ -62,15 +63,15 @@ namespace FTT_VENDER_API.Models.Handler
                             { "MERCHANT_LOGIN", vm.AC },
                         };
                         string Locked = base.dbHelper.Find<string>("SELECT LOCKED FROM STORE_VENDER_PROFILE WHERE MERCHANT_LOGIN = @MERCHANT_LOGIN", paras);
-                        if( Locked == "N")
+                        if (Locked == "N")
                         {
                             isLocked = false;
                         }
 
                         if (isLocked == false)
                         {
-                            StoreVenderProfileVM storeVenderProfileVM  = GetStoreVenderProfile(vm.AC, vm.PD);
-                            if(storeVenderProfileVM != null)
+                            StoreVenderProfileVM storeVenderProfileVM = GetStoreVenderProfile(vm.AC, vm.PD);
+                            if (storeVenderProfileVM != null)
                             {
                                 boolIsAuthenticated = true;
                                 logLoginStatus = true;
@@ -88,6 +89,7 @@ namespace FTT_VENDER_API.Models.Handler
                                     usertype = vm.Role,
                                     ivrcode = storeVenderProfileVM.order_id?.ToString(),
                                 };
+                                sessionVO.userrole = SystemModelClass.GetUserRole(sessionVO.empno, sessionVO);
                                 token = Method.GenerateJwtToken(sessionVO, jwtConfigVO);
                             }
                             else
@@ -138,6 +140,7 @@ namespace FTT_VENDER_API.Models.Handler
                             usertype = vm.Role,
                             ivrcode = storeVenderProfileVM.order_id?.ToString(),
                         };
+                        sessionVO.userrole = SystemModelClass.GetUserRole(sessionVO.empno, sessionVO);
                         token = Method.GenerateJwtToken(sessionVO, jwtConfigVO);
                     }
                     else
@@ -226,7 +229,7 @@ namespace FTT_VENDER_API.Models.Handler
             return result;
         }
 
-        public StoreVenderProfileVM GetStoreVenderProfile(string AC , string PD)
+        public StoreVenderProfileVM GetStoreVenderProfile(string AC, string PD)
         {
             string sql = @"SELECT * FROM STORE_VENDER_PROFILE WHERE MERCHANT_LOGIN= @AC AND MERCHANT_PASSWORD= @PD";
             Dictionary<string, object> parameters = new Dictionary<string, object>

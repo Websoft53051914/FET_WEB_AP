@@ -24,15 +24,15 @@ namespace FTT_VENDER_API.Controllers.Pending
             {
                 FormTableVM vm = new FormTableVM();
                 vm.Form_Type = "FTT_FORM";
-                vm.ActionName = LoginSession.Current.empname;
-                if (LoginSession.Current.empname != LoginSession.Current.engname)
-                    vm.ActionName = LoginSession.Current.empname + "(" + LoginSession.Current.engname + ")";
+                vm.ActionName = _sessionVO.empname;
+                if (_sessionVO.empname != _sessionVO.engname)
+                    vm.ActionName = _sessionVO.empname + "(" + _sessionVO.engname + ")";
 
                 vm.PreHandleDesc = GetPreHandleDesc("TT_LAST_DESC", form_no, "", "");
 
                 HandleForm_Load(vm, form_no);
 
-                if (LoginSession.Current.userrole.ToLower() == "admin")
+                if (_sessionVO.userrole.ToLower() == "admin")
                 {
                     vm.IsAdmin = true;
                 }
@@ -312,7 +312,7 @@ namespace FTT_VENDER_API.Controllers.Pending
 
                 var mIVRCode = _PenddingHanlder.GetIVRCode(form_No);
                 //var mSTOREName = _PenddingHanlder.GetShopName(mIVRCode);
-                //LoginSession.Current.shop_name = mSTOREName;
+                //_sessionVO.shop_name = mSTOREName;
 
                 mStoreData = new StoreClass(mIVRCode);
                 if (mStoreData.hasData() == true)
@@ -334,10 +334,10 @@ namespace FTT_VENDER_API.Controllers.Pending
                 }
                 //mRunScript += "isNewTT = false;\r\n";
             }
-            else if (!string.IsNullOrEmpty(LoginSession.Current.ivrcode))
+            else if (!string.IsNullOrEmpty(_sessionVO.ivrcode))
             {
                 vm.Create_Time = System.DateTime.Now.ToString("yyyy/MM/dd");
-                mStoreData = new StoreClass(LoginSession.Current.ivrcode);
+                mStoreData = new StoreClass(_sessionVO.ivrcode);
                 if (mStoreData.hasData() == true)
                 {
                     vm.ApprovalDate = mStoreData.ApprovalDate;

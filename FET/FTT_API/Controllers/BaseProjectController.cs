@@ -114,8 +114,8 @@ namespace FTT_API.Controllers
                                 deptcode = emp.DeptCode,
                                 usertype = role,
                                 ivrcode = string.IsNullOrEmpty(ivrCode) ? "NULL" : ivrCode,
-                                userrole = SystemModelClass.GetUserRole(emp.EmpNO, null)
                             };
+                            sessionVO.userrole = SystemModelClass.GetUserRole(sessionVO.empno, sessionVO);
                         }
                         else
                         {
@@ -173,9 +173,8 @@ namespace FTT_API.Controllers
                                 deptcode = info.area,
                                 usertype = role,
                                 ivrcode = ivrCode,
-                                userrole = SystemModelClass.GetUserRole(info.ivr_code, null)
                             };
-                            Method.SetToSession(sessionVO);
+                            sessionVO.userrole = SystemModelClass.GetUserRole(sessionVO.empno ?? string.Empty, sessionVO);
                         }
                         else
                         {

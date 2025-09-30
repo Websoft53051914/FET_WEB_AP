@@ -41,15 +41,14 @@ namespace Const
             FuncID.CIConfig_View,
             FuncID.SecurityMgt_View,
             FuncID.FTTGroupMgt_View,
-
         };
-        public static List<FuncID> ASSETER = new List<FuncID> { FuncID.Home_View, FuncID.Pending_View, FuncID.InProcess_View, FuncID.CaseClosed_View, FuncID.Query_View, };
+        public static List<FuncID> ASSETER = new List<FuncID> { FuncID.Home_View, FuncID.Pending_View, FuncID.InProcess_View, FuncID.CaseClosed_View, FuncID.Query_View, FuncID.CIMgt_View };
         public static List<FuncID> SECURITY = new List<FuncID> { FuncID.Home_View, FuncID.Pending_View, FuncID.InProcess_View, FuncID.CaseClosed_View, FuncID.Query_View, FuncID.CIMgt_View, FuncID.SecurityMgt_View };
-        public static List<FuncID> ASSISTANT = new List<FuncID> { FuncID.Home_View, FuncID.Query_View, FuncID.StoreMgt_View, FuncID.SupplierMgt_View, };
+        public static List<FuncID> ASSISTANT = new List<FuncID> { FuncID.Home_View, FuncID.Query_View, FuncID.StoreMgt_View, };
         public static List<FuncID> MANAGER = new List<FuncID> { FuncID.Home_View, FuncID.Pending_View, FuncID.InProcess_View, FuncID.CaseClosed_View, FuncID.Query_View, };
         public static List<FuncID> VENDOR = new List<FuncID> { FuncID.Home_View, FuncID.InProcess_View, FuncID.CaseClosed_View, FuncID.Query_View, FuncID.Dispatching_View, FuncID.Dispatched_View };
-        public static List<FuncID> EMPLOYEE = new List<FuncID> { FuncID.Home_View, FuncID.Pending_View, FuncID.InProcess_View, FuncID.CaseClosed_View, FuncID.Query_View, };
-        public static List<FuncID> OTHER = new List<FuncID> { FuncID.NewOrder_View, FuncID.NewOrderSelfVendor_View, FuncID.OnsitePrint_View};
+        public static List<FuncID> EMPLOYEE = new List<FuncID> { FuncID.Home_View, FuncID.NewOrder_View, FuncID.NewOrderSelfVendor_View, FuncID.OnsitePrint_View, FuncID.Pending_View, FuncID.InProcess_View, FuncID.CaseClosed_View, FuncID.Query_View, };
+        public static List<FuncID> OTHER = new List<FuncID> { FuncID.Home_View, };
 
         // 全部功能的定義
         public static Dictionary<string, List<MenuModel>> allTreeData = new Dictionary<string, List<MenuModel>>

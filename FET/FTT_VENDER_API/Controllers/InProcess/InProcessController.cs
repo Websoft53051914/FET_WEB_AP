@@ -38,9 +38,9 @@ namespace FTT_VENDER_API.Controllers.InProcess
             {
                 PageEntity pageEntity = base.GetPageEntity(request);
 
-                vm.USERROLE = LoginSession.Current.userrole;
-                vm.IVRCODE = LoginSession.Current.ivrcode;
-                vm.EMPNO = LoginSession.Current.empno;
+                vm.USERROLE = _sessionVO.userrole;
+                vm.IVRCODE = _sessionVO.ivrcode;
+                vm.EMPNO = _sessionVO.empno;
 
                 var _InProcessHanlder = new InProcessHandler(_config, HttpContext);
                 var pageList = _InProcessHanlder.FindPageList(pageEntity, vm);
@@ -53,7 +53,7 @@ namespace FTT_VENDER_API.Controllers.InProcess
                     item.IsTicket = item.StatusId == "TICKET";
                 }
 
-                    this.LogSuccess();
+                this.LogSuccess();
                 return Json(new DataSourceResult
                 {
                     Data = pageList.Results,

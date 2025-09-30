@@ -27,7 +27,7 @@ namespace FTT_VENDER_API.Controllers.Pending
                         PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
                         foreach (var item in vm.vms)
                         {
-                            _PenddingHanlder.UpdateAccessRole(item.form_no, item.user_type, item.empno, item.deptcode, LoginSession.Current.empno);
+                            _PenddingHanlder.UpdateAccessRole(item.form_no, item.user_type, item.empno, item.deptcode, _sessionVO.empno);
                             if (item.user_type == "VENDOR")
                             {
                                 _PenddingHanlder.UpdateFttForm_VENDOR(item.form_no, item.deptcode);
@@ -36,7 +36,7 @@ namespace FTT_VENDER_API.Controllers.Pending
 
                         if (!string.IsNullOrEmpty(vm.StatusId))
                         {
-                            _PenddingHanlder.UpdateApproveForm(vm.form_no, vm.StatusId, LoginSession.Current.empno);
+                            _PenddingHanlder.UpdateApproveForm(vm.form_no, vm.StatusId, _sessionVO.empno);
                         }
 
                         _PenddingHanlder.GetDBHelper().Commit();
@@ -68,9 +68,9 @@ namespace FTT_VENDER_API.Controllers.Pending
 
                 PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
 
-                vm.USERROLE = LoginSession.Current.userrole;
-                vm.IVRCODE = LoginSession.Current.ivrcode;
-                vm.EMPNO = LoginSession.Current.empno;
+                vm.USERROLE = _sessionVO.userrole;
+                vm.IVRCODE = _sessionVO.ivrcode;
+                vm.EMPNO = _sessionVO.empno;
 
                 var list = _PenddingHanlder.GetPageList_V_ACCESS_ROLE(pageEntity, vm);
 
@@ -80,7 +80,7 @@ namespace FTT_VENDER_API.Controllers.Pending
                     item.No = (request.pageIndex - 1) * request.pageSize + i + 1;
                 }
 
-                    this.LogSuccess();
+                this.LogSuccess();
                 return Json(new DataSourceResult
                 {
                     Data = list.Results,
@@ -109,9 +109,9 @@ namespace FTT_VENDER_API.Controllers.Pending
 
                 PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
 
-                vm.USERROLE = LoginSession.Current.userrole;
-                vm.IVRCODE = LoginSession.Current.ivrcode;
-                vm.EMPNO = LoginSession.Current.empno;
+                vm.USERROLE = _sessionVO.userrole;
+                vm.IVRCODE = _sessionVO.ivrcode;
+                vm.EMPNO = _sessionVO.empno;
 
                 var list = _PenddingHanlder.GetPageList_Access(pageEntity, vm);
 
@@ -121,7 +121,7 @@ namespace FTT_VENDER_API.Controllers.Pending
                     item.No = (request.pageIndex - 1) * request.pageSize + i + 1;
                 }
 
-                    this.LogSuccess();
+                this.LogSuccess();
                 return Json(new DataSourceResult
                 {
                     Data = list.Results,
@@ -150,9 +150,9 @@ namespace FTT_VENDER_API.Controllers.Pending
 
                 PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
 
-                vm.USERROLE = LoginSession.Current.userrole;
-                vm.IVRCODE = LoginSession.Current.ivrcode;
-                vm.EMPNO = LoginSession.Current.empno;
+                vm.USERROLE = _sessionVO.userrole;
+                vm.IVRCODE = _sessionVO.ivrcode;
+                vm.EMPNO = _sessionVO.empno;
 
                 var list = _PenddingHanlder.GetPageList_Vender(pageEntity, vm);
 
@@ -162,7 +162,7 @@ namespace FTT_VENDER_API.Controllers.Pending
                     item.No = (request.pageIndex - 1) * request.pageSize + i + 1;
                 }
 
-                    this.LogSuccess();
+                this.LogSuccess();
                 return Json(new DataSourceResult
                 {
                     Data = list.Results,

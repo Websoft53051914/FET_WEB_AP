@@ -27,7 +27,7 @@ namespace FTT_API.Models.Handler
         /// </summary>
         /// <param name="vm">登入資訊</param>
         /// <returns>錯誤訊息</returns>
-        public (LoginResultVO,SessionVO?) Login(LoginVM vm)
+        public (LoginResultVO, SessionVO?) Login(LoginVM vm)
         {
             bool logLoginStatus = false;
             bool boolIsAuthenticated = false;
@@ -100,8 +100,8 @@ namespace FTT_API.Models.Handler
                             deptcode = emp.DeptCode,
                             usertype = vm.Role,
                             ivrcode = vm.IVR_Code.IsNullOrEmpty() ? "NULL" : vm.IVR_Code,
-                            userrole = SystemModelClass.GetUserRole(emp.EmpNO, null)
                         };
+                        sessionVO.userrole = SystemModelClass.GetUserRole(sessionVO.empno, sessionVO);
                         token = Method.GenerateJwtToken(sessionVO, jwtConfigVO);
                     }
                     else
@@ -158,9 +158,8 @@ namespace FTT_API.Models.Handler
                             deptcode = info.area,
                             usertype = vm.Role,
                             ivrcode = vm.IVR_Code,
-                            userrole = SystemModelClass.GetUserRole(info.ivr_code, null)
                         };
-                        //Method.SetToSession(sessionVO);
+                        sessionVO.userrole = SystemModelClass.GetUserRole(sessionVO.empno ?? string.Empty, sessionVO);
                         token = Method.GenerateJwtToken(sessionVO, jwtConfigVO);
                     }
                     else
@@ -238,10 +237,11 @@ namespace FTT_API.Models.Handler
             {
 
             }
-            return (new LoginResultVO() {
+            return (new LoginResultVO()
+            {
                 ErrorMsg = errorMsg,
                 Token = token
-            },sessionVO);
+            }, sessionVO);
         }
 
         public StoreProfileVM GetStoreInfo(string ivr_code, string pd)

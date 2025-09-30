@@ -24,9 +24,9 @@ namespace FTT_VENDER_API.Controllers.Pending
 
                 PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
 
-                vm.USERROLE = LoginSession.Current.userrole;
-                vm.IVRCODE = LoginSession.Current.ivrcode;
-                vm.EMPNO = LoginSession.Current.empno;
+                vm.USERROLE = _sessionVO.userrole;
+                vm.IVRCODE = _sessionVO.ivrcode;
+                vm.EMPNO = _sessionVO.empno;
 
                 var list = _PenddingHanlder.GetPageList_Log(pageEntity, vm);
 
@@ -36,7 +36,7 @@ namespace FTT_VENDER_API.Controllers.Pending
                     item.No = (request.pageIndex - 1) * request.pageSize + i + 1;
                 }
 
-                    this.LogSuccess();
+                this.LogSuccess();
                 return Json(new DataSourceResult
                 {
                     Data = list.Results,
@@ -65,9 +65,9 @@ namespace FTT_VENDER_API.Controllers.Pending
 
                 PendingHanlder _PenddingHanlder = new PendingHanlder(_config, HttpContext);
 
-                vm.USERROLE = LoginSession.Current.userrole;
-                vm.IVRCODE = LoginSession.Current.ivrcode;
-                vm.EMPNO = LoginSession.Current.empno;
+                vm.USERROLE = _sessionVO.userrole;
+                vm.IVRCODE = _sessionVO.ivrcode;
+                vm.EMPNO = _sessionVO.empno;
 
                 var list = _PenddingHanlder.GetPageList_Desc(pageEntity, vm);
 
@@ -77,7 +77,7 @@ namespace FTT_VENDER_API.Controllers.Pending
                     item.No = (request.pageIndex - 1) * request.pageSize + i + 1;
                 }
 
-                    this.LogSuccess();
+                this.LogSuccess();
                 return Json(new DataSourceResult
                 {
                     Data = list.Results,

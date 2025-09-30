@@ -21,9 +21,6 @@ namespace FTT_WEB.Controllers.Login
         }
         public IActionResult Index(string goalURL = "")
         {
-
-            var LoginHanlder = new LoginHanlder(_configHelper, HttpContext);
-
             if (LoginSession.Current != null && LoginSession.Current.empno != null)
             {
                 if (!string.IsNullOrEmpty(goalURL))
