@@ -61,7 +61,7 @@ namespace FTT_VENDER_API.Controllers.Login
 
                     userLoginName = sessionVO.engname;
                 }
-                Response.Cookies.Append("userLoginName", userLoginName, new CookieOptions { Secure = true, SameSite = SameSiteMode.None });
+                Response.Cookies.Append("userLoginName", userLoginName ?? string.Empty, new CookieOptions { Secure = true, SameSite = SameSiteMode.None });
                 Response.Cookies.Append("userrole", sessionVO?.userrole ?? string.Empty, new CookieOptions { Secure = true, SameSite = SameSiteMode.None });
                 _sessionVO = sessionVO ?? new();
 

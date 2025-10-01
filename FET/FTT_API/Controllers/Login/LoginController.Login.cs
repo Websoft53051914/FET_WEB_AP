@@ -67,7 +67,7 @@ namespace FTT_API.Controllers.Login
                         case "RETAIL":
                         case "EMPLOYEE":
                             CEDS ceds = new CEDS();
-                            userLoginName = ceds.GetEmpName(Employee.RefType.EmpNo, User.Identity.Name);
+                            userLoginName = ceds.GetEmpName(Employee.RefType.EmpNo, sessionVO.empno);
                             if (userType == "RETAIL")
                                 userLoginName += $"IVR Code：{sessionVO.ivrcode} ";
                             ceds.Dispose();
@@ -82,7 +82,7 @@ namespace FTT_API.Controllers.Login
                             break;
                     }
                 }
-                Response.Cookies.Append(FTT_API.Common.Const.USER_LOGIN_NAME, userLoginName, new CookieOptions { Secure = true, SameSite = SameSiteMode.None });
+                Response.Cookies.Append(FTT_API.Common.Const.USER_LOGIN_NAME, userLoginName ?? string.Empty, new CookieOptions { Secure = true, SameSite = SameSiteMode.None });
                 Response.Cookies.Append(FTT_API.Common.Const.USER_ROLE, sessionVO?.userrole ?? string.Empty, new CookieOptions { Secure = true, SameSite = SameSiteMode.None });
                 _sessionVO = sessionVO ?? new();
 
