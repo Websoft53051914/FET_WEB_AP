@@ -297,6 +297,7 @@
 
 <script>
     var context = context || {};
+    context['IfWarrant'] = 'Y';
     $(function () {
         context.TTItemList = {
             count: 0
@@ -513,6 +514,10 @@
                         $('#@(Html.IdFor(m => m.TemplateItem.VENDER_NAME))').val(data['@(Html.IdFor(m => m.EMPNAME))']);
                         $('#VENDER_NAME_DISPLAY').text(data['@(Html.IdFor(m => m.EMPNAME))']);
                     }
+
+                    if (data['@(nameof(Model.IfWarrant))']) {
+                        context['IfWarrant'] = data['@(nameof(Model.IfWarrant))'];
+                    }
                 }
                 else {
                     MyApp.Alert.error('初始化失敗' + response['Message']);
@@ -546,7 +551,7 @@
         let ctx = context['@(DialogVenderModalId)'];
         ctx['IVRCODE'] = formData['@(nameof(Model.IVRCODE))'];
         ctx['CATEGORY_ID'] = valCATEGORY_ID;
-        ctx['IFWARRANT'] = 'Y';
+        ctx['IFWARRANT'] = context['IfWarrant'];
 
         $('#@(DialogVenderModalId)').modal('show');
     });

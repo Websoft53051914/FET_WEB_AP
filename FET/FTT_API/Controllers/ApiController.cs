@@ -1,5 +1,7 @@
-﻿using Const.DTO;
+﻿using Const;
+using Const.DTO;
 using Const.VO;
+using Core.Utility.Extensions;
 using Core.Utility.Helper.DB.Entity;
 using Core.Utility.Utility;
 using Core.Utility.Web.EX;
@@ -299,6 +301,66 @@ namespace FTT_API.Controllers
                     Data = dataList,
                     Total = pageList.DataCount,
                 });
+            }
+            catch (Exception ex)
+            {
+                LogError(ex.ToString());
+                return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
+            }
+        }
+
+        /// <summary>
+        /// 取得選單待處理筆數資料
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("[action]")]
+        public IActionResult GetMenuDataCount(List<int> funcIdList)
+        {
+            try
+            {
+                funcIdList ??= [];
+                PageEntity pageEntity = new PageEntity
+                {
+                    CurrentPage = 1,
+                    PageDataSize = 1,
+                };
+
+                Dictionary<string, int> result = [];
+                foreach (int funcId in funcIdList)
+                {
+                    if (funcId == Enums.FuncID.Pending_View.ToInt())
+                    {
+                        v_ftt_form2SQL v_Ftt_Form2SQL = new();
+                        PageResult<v_ftt_form2DTO> pageResult = v_Ftt_Form2SQL.FindPageList(pageEntity, new v_ftt_form2DTO
+                        {
+                            USERROLE = _sessionVO.userrole,
+                            IVRCODE = _sessionVO.ivrcode,
+                            EMPNO = _sessionVO.empno,
+                        });
+                        result.Add(funcId.ToString(), pageResult.DataCount);
+                    }
+                    else if (funcId == Enums.FuncID.InProcess_View.ToInt())
+                    {
+                        InProcessHandler handler = new(_configHelper, HttpContext);
+                        PageResult<v_ftt_form2DTO> pageResult = handler.FindPageList(pageEntity, new v_ftt_form2DTO
+                        {
+                            USERROLE = _sessionVO.userrole,
+                            IVRCODE = _sessionVO.ivrcode,
+                            EMPNO = _sessionVO.empno,
+                        });
+                        result.Add(funcId.ToString(), pageResult.DataCount);
+                    }
+                    else if (funcId == Enums.FuncID.OnsitePrint_View.ToInt())
+                    {
+                        OnsitePrintHandler handler = new(_configHelper);
+                        PageResult<VFttForm2DTO> pageResultPrwp = handler.GetPageListPrwp(pageEntity, _sessionVO.ivrcode);
+                        PageResult<VFttForm2DTO> pageResultConfirm = handler.GetPageListConfirm(pageEntity, _sessionVO.ivrcode);
+                        result.Add(funcId.ToString(), pageResultPrwp.DataCount + pageResultConfirm.DataCount);
+                    }
+                }
+
+                this.LogSuccess();
+                return JsonSuccess(result);
             }
             catch (Exception ex)
             {

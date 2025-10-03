@@ -31,6 +31,10 @@
         /// 
         /// </summary>
         public string? AcType { get; set; }
+        /// <summary>
+        /// 
+        /// </summary>
+        public string? IfWarrant { get; set; }
     }
 
     public class NewOrderTTItemVO

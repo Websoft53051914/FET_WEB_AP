@@ -471,6 +471,7 @@
                 $('#STATUSWORDING').val($('#SELECTSTATUS').select2('data'));
                 $('#STATUS').val($('#SELECTSTATUS').val());
                 $('#TICKET_INFO').val($('#SELECTSTATUS').val());
+                disable_field($('#VENDOR_ARRIVE_DATE')[0]);
 
                 var RequireField = '';
                 switch ($('#SELECTSTATUS').val()) {
@@ -479,6 +480,7 @@
                         $('#COMPLETE_PANEL').show();
                         $('#VENDOR_ARRIVE_DATE_PANEL').show();
                         $('#AMOUNT_PANEL').show();
+                        enable_field($('#VENDOR_ARRIVE_DATE')[0]);
                         iFrameIsSubmit = false;
                         break;
                     case "PENDING":

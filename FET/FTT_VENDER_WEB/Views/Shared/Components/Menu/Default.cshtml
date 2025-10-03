@@ -3,6 +3,10 @@
 @{
 
     var account = ViewData["account"];
+    var mapData = new
+    {
+        UrlGetMenuDataCount = $"{config.GetBackendUrl()}/Api/GetMenuDataCount"
+    };
 
 }
 @functions {
@@ -41,7 +45,7 @@
                                         @Html.Raw(item.FuncName)
                                         @if (item.DataCount != null)
                                         {
-                                            <span class="txt-cnt">(@item.DataCount)</span>
+                                            <span class="txt-cnt" data-func-id="@((int)item.FuncId)">(@item.DataCount)</span>
                                         }
                                     </a>
                                 </li>
@@ -112,3 +116,40 @@
         </div>
     </nav>
 </header>
+<script>
+    $(function () {
+        let funcIdList = $.map($('.txt-cnt'), function (value, index) {
+            return $(value).data('funcId');
+        });
+
+        let data = {
+            funcIdList
+        };
+        $.ajax({
+            url: '@(mapData.UrlGetMenuDataCount?.ToHtmlString())',
+            dataType: 'json',
+            type: 'POST',
+            data: data,
+            cache: false
+        })
+            .done((response) => {
+                if (response.Success) {
+                    let data = response['Data'];
+                    if (data) {
+                        $.each($('.txt-cnt'), function (index, value) {
+                            let $control = $(value);
+                            let dataCount = data[`${$control.data('funcId')}`] || 0;
+
+                            return $control.text('(' + dataCount + ')');
+                        });
+                    }
+                }
+                else {
+                    console.log(response['Message']);
+                }
+            })
+            .fail((err) => {
+                console.log(err);
+            });
+    });
+</script>

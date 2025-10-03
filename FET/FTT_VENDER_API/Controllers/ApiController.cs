@@ -1,9 +1,12 @@
-﻿using Const.DTO;
+﻿using Const;
+using Const.DTO;
 using Const.VO;
+using Core.Utility.Extensions;
 using Core.Utility.Helper.DB.Entity;
 using Core.Utility.Web.EX;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_VENDER_API.Common.ConfigurationHelper;
+using FTT_VENDER_API.Common.OriginClass.EntiityClass;
 using FTT_VENDER_API.Models.Handler;
 using Microsoft.AspNetCore.Mvc;
 
@@ -190,6 +193,66 @@ namespace FTT_VENDER_API.Controllers
                     Data = dataList,
                     Total = pageList.DataCount,
                 });
+            }
+            catch (Exception ex)
+            {
+                LogError(ex.ToString());
+                return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
+            }
+        }
+
+        /// <summary>
+        /// 取得選單待處理筆數資料
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost("[action]")]
+        public IActionResult GetMenuDataCount(List<int> funcIdList)
+        {
+            try
+            {
+                funcIdList ??= [];
+                PageEntity pageEntity = new PageEntity
+                {
+                    CurrentPage = 1,
+                    PageDataSize = 1,
+                };
+
+                Dictionary<string, int> result = [];
+                foreach (int funcId in funcIdList)
+                {
+                    if (funcId == Enums.FuncID.InProcess_View.ToInt())
+                    {
+                        InProcessHandler handler = new(_configHelper, HttpContext);
+                        PageResult<v_ftt_form2DTO> pageResult = handler.FindPageList(pageEntity, new v_ftt_form2DTO
+                        {
+                            USERROLE = _sessionVO.userrole,
+                            IVRCODE = _sessionVO.ivrcode,
+                            EMPNO = _sessionVO.empno,
+                        });
+                        result.Add(funcId.ToString(), pageResult.DataCount);
+                    }
+                    else if (funcId == Enums.FuncID.Dispatching_View.ToInt())
+                    {
+                        DispatchingHandler handler = new(_configHelper)
+                        {
+                            SessionVO = _sessionVO
+                        };
+                        PageResult<VFttForm2DTO> pageResult = handler.GetPageList(pageEntity);
+                        result.Add(funcId.ToString(), pageResult.DataCount);
+                    }
+                    else if (funcId == Enums.FuncID.Dispatched_View.ToInt())
+                    {
+                        DispatchedHandler handler = new(_configHelper)
+                        {
+                            SessionVO = _sessionVO
+                        };
+                        PageResult<VFttForm2DTO> pageResult = handler.GetPageList(pageEntity);
+                        result.Add(funcId.ToString(), pageResult.DataCount);
+                    }
+                }
+
+                this.LogSuccess();
+                return JsonSuccess(result);
             }
             catch (Exception ex)
             {

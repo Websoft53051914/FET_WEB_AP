@@ -1,6 +1,5 @@
 ﻿using Core.Utility.Helper.DB.Entity;
 using Core.Utility.Web.EX;
-using FTT_API.Common;
 using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models.Handler;
@@ -31,6 +30,7 @@ namespace FTT_API.Controllers.CaseClosed
                 vm.USERROLE = _sessionVO.userrole;
                 vm.IVRCODE = _sessionVO.ivrcode;
                 vm.EMPNO = _sessionVO.empno;
+                _PenddingHanlder.SessionVO = _sessionVO;
 
                 var list = _PenddingHanlder.FindPageList(pageEntity, vm);
 

@@ -1,13 +1,6 @@
-﻿using Core.Utility.Extensions;
-using Core.Utility.Helper.DB.Entity;
-using FTT_VENDER_API.Common;
+﻿using Core.Utility.Helper.DB.Entity;
 using FTT_VENDER_API.Common.ConfigurationHelper;
-using FTT_VENDER_API.Common.OriginClass;
 using FTT_VENDER_API.Common.OriginClass.EntiityClass;
-using FTT_VENDER_API.Models.ViewModel;
-using FTT_VENDER_API.Common.ConfigurationHelper;
-using System.Text;
-using static Const.Enums;
 
 namespace FTT_VENDER_API.Models.Handler
 {
@@ -44,8 +37,8 @@ WHERE  statusid IN ( 'CLOSE', 'CANCEL', 'REJECT' )
        AND form_no IN (SELECT form_no
                        FROM   access_role
                        WHERE  User_Type = @USERROLE
-                               OR empno = @EMPNO
-                               OR deptcode = @IVRCODE)
+                               AND deptcode = @IVRCODE
+                               AND @EMPNO IS NOT NULL)
 
 ";
              

@@ -57,10 +57,10 @@ namespace Const
             {
                 new MenuModel { FuncId=FuncID.NewOrder_View, FuncName="新開單", Url="/NewOrder" },
                 new MenuModel { FuncId=FuncID.NewOrderSelfVendor_View, FuncName="自行尋商開單", Url="/NewOrderSelfVendor" },
-                new MenuModel { FuncId=FuncID.Pending_View, FuncName="待處理", Url="/Pending", DataCount = 1 },
-                new MenuModel { FuncId=FuncID.OnsitePrint_View, FuncName="列印維修單", Url="/OnsitePrint", DataCount = 1 },
-                new MenuModel { FuncId=FuncID.InProcess_View, FuncName="處理中", Url="/InProcess", DataCount = 1 },
-                new MenuModel { FuncId=FuncID.CaseClosed_View, FuncName="已結案", Url="/CaseClosed", DataCount = 1 },
+                new MenuModel { FuncId=FuncID.Pending_View, FuncName="待處理", Url="/Pending", DataCount = 0 },
+                new MenuModel { FuncId=FuncID.OnsitePrint_View, FuncName="列印維修單", Url="/OnsitePrint", DataCount = 0 },
+                new MenuModel { FuncId=FuncID.InProcess_View, FuncName="處理中", Url="/InProcess", DataCount = 0 },
+                new MenuModel { FuncId=FuncID.CaseClosed_View, FuncName="已結案", Url="/CaseClosed" },
                 new MenuModel { FuncId=FuncID.Query_View, FuncName="查詢", Url="/Query" }
             },
             ["報價維護"] = new List<MenuModel>
@@ -69,8 +69,8 @@ namespace Const
             },
             ["廠商派工管理"] = new List<MenuModel>
             {
-                new MenuModel { FuncId=FuncID.Dispatching_View, FuncName="派工中", Url="/Dispatching" },
-                new MenuModel { FuncId=FuncID.Dispatched_View, FuncName="已派工", Url="/Dispatched" },
+                new MenuModel { FuncId=FuncID.Dispatching_View, FuncName="派工中", Url="/Dispatching", DataCount = 0 },
+                new MenuModel { FuncId=FuncID.Dispatched_View, FuncName="已派工", Url="/Dispatched", DataCount = 0 },
             },
             ["後端管理"] = new List<MenuModel>
             {

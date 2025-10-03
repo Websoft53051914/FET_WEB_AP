@@ -146,13 +146,13 @@
                         <input asp-for="IvrCodeEq" type="hidden" />
                         <input asp-for="StoreName" type="text" class="form-control" placeholder="" readonly>
                     </div>
-                    <div class="col">
+                    <div class="col hide-if-role-store">
                         <label class="col-form-label websoft-form-label pt-2">公司別</label>
                         <select asp-for="CompanyEq" class="form-control initSelect2Clearable">
                             <option></option>
                         </select>
                     </div>
-                    <div class="col">
+                    <div class="col hide-if-role-store">
                         <label class="col-form-label websoft-form-label pt-2">店格</label>
                         <select asp-for="StoreTypeEq" class="form-control initSelect2Clearable">
                             <option></option>
@@ -164,13 +164,13 @@
                             <option></option>
                         </select>
                     </div>
-                    <div class="col">
+                    <div class="col hide-if-role-store">
                         <label class="col-form-label websoft-form-label pt-2">區域</label>
                         <select asp-for="AreaEq" class="form-control initSelect2Clearable">
                             <option></option>
                         </select>
                     </div>
-                    <div class="col">
+                    <div class="col hide-if-role-store">
                         <label class="col-form-label websoft-form-label pt-2">區經理/業務</label>
                         <select asp-for="AsEmpNoEq" class="form-control initSelect2Clearable">
                             <option></option>
@@ -217,7 +217,8 @@
         var cookieName = 'QueryGridInfo';
 
         $(function () {
-            context.userRole = (Cookies.get('userrole') || '').toLowerCase();
+            context.userRole = (Cookies.get('FTT_userrole') || '').toLowerCase();
+            console.log(context.userRole);
 
             if (context.userRole === 'store') {
                 $('.hide-if-role-store').addClass('d-none');

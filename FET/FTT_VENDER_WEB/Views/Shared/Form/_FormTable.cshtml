@@ -180,9 +180,9 @@
                         <td colspan="2"></td>
                         @*廠商無顯示*@
                         @*<th class="table-header">門市自行尋商</th>
-                        <td id="SELFCONFIG_NOTE">
-                        N
-                        </td>*@
+                            <td id="SELFCONFIG_NOTE">
+                            N
+                            </td>*@
                     </tr>
 
                     <tr>
@@ -521,6 +521,7 @@
                 $('#STATUSWORDING').val($('#SELECTSTATUS').select2('data'));
                 $('#STATUS').val($('#SELECTSTATUS').val());
                 $('#TICKET_INFO').val($('#SELECTSTATUS').val());
+                disable_field($('#VENDOR_ARRIVE_DATE')[0]);
 
                 var RequireField = '';
                 switch ($('#SELECTSTATUS').val()) {
@@ -529,6 +530,7 @@
                         $('#COMPLETE_PANEL').show();
                         $('#VENDOR_ARRIVE_DATE_PANEL').show();
                         $('#AMOUNT_PANEL').show();
+                        enable_field($('#VENDOR_ARRIVE_DATE')[0]);
                         iFrameIsSubmit = false;
                         break;
                     case "PENDING":

@@ -74,6 +74,7 @@ namespace FTT_API.Controllers.NewOrder
                     {
                         { "CONFIG_NAME", "MARQUEE" }
                     }),
+                    IfWarrant = "Y",
                 };
 
                 if (storeVM != null)
@@ -83,6 +84,7 @@ namespace FTT_API.Controllers.NewOrder
                     DateTime? warrantyTime = approvalDate?.AddYears(1);
                     result.APPROVALDATE = approvalDate?.ToString(DbConst.FORMAT_DATE2) ?? string.Empty;
                     result.WARRANTYTIME = warrantyTime?.ToString(DbConst.FORMAT_DATE2) ?? string.Empty;
+
                     if (warrantyTime.HasValue && now > warrantyTime.Value)
                     {
                         if (storeVM.Channel == "FRANCHISE")
@@ -91,9 +93,10 @@ namespace FTT_API.Controllers.NewOrder
                         }
 
                         result.WarrantyTimeFlag1 = true;
+                        result.IfWarrant = "N";
                     }
                     result.ReqSrc = storeVM.StoreType;
-                    if(result.IVRCODE.Length > 4)
+                    if (result.IVRCODE.Length > 4)
                     {
                         result.AcType = "FRANCHISE";
                         if (result.WarrantyTimeFlag2)
