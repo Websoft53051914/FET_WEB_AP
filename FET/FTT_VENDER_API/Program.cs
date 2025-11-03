@@ -46,7 +46,7 @@ builder.Services.AddAuthentication(options =>
  .AddCookie(options =>
  {
      options.Cookie.HttpOnly = true;
-     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+     //options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解
  });
 
 builder.Services.AddSession(options =>

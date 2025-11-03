@@ -39,7 +39,7 @@ namespace FTT_API.Models.Handler
                         _MailHelper = new MailHelper(mailServerSettingEntity.Server, SmtpPort, mailServerSettingEntity.SenderAddress, mailServerSettingEntity.Password);
                         _MailHelper.MailFrom = mailServerSettingEntity.SenderAddress;
                     }
-                }               
+                }
             }
             return _MailHelper;
         }
@@ -54,7 +54,7 @@ namespace FTT_API.Models.Handler
             {
                 return;
             }
-            List<MailPool> UnSentMails = GetUnSentMails();
+            List<MailPoolEntity> UnSentMails = GetUnSentMails();
             string updateCommand = @"UPDATE tb_mailpool SET Status = @Status, SendStatus = @SendStatus, RealSendTime = @RealSendTime
 , ErrorMsg = @ErrorMsg, updatetime = @UpdateTime, updater = @Updater
                                          WHERE Id = @Id";
@@ -63,8 +63,14 @@ namespace FTT_API.Models.Handler
                 try
                 {
                     //todo send
-                    
+
                     mailHelper.MailTos = new string[] { UnSentMails[i].DestinationEmail };
+
+                    if (!string.IsNullOrEmpty(UnSentMails[i].DestinationEmail_CC))
+                    {
+                        mailHelper.Ccs = UnSentMails[i].DestinationEmail_CC.Split(',');
+                    }
+
                     mailHelper.EnableSsl = true;
                     mailHelper.Subject = UnSentMails[i].Subject;
                     mailHelper.Body = UnSentMails[i].Content;
@@ -104,25 +110,25 @@ namespace FTT_API.Models.Handler
 
         }
 
-        public List<MailPool> GetUnSentMails()
+        public List<MailPoolEntity> GetUnSentMails()
         {
-            List<MailPool> list = new();
+            List<MailPoolEntity> list = new();
 
             var parameters = new Dictionary<string, object>
                         {
                             { "@Status", StatusEnum.Enabled.ToInt() },
                             { "@SendStatus", (int)MailSendStatusEnum.UnSent },
                             { "@estimatesendtime", DateTime.Now },
-                           
+
                         };
 
             string sql = $@"Select * from tb_mailpool where 1=1 AND status = @Status AND estimatesendtime < @estimatesendtime  AND sendstatus = @SendStatus";
 
-            list = this.dbHelper.FindList<MailPool>(sql, parameters);
+            list = this.dbHelper.FindList<MailPoolEntity>(sql, parameters);
             return list;
         }
 
-        
+
 
     }
 }

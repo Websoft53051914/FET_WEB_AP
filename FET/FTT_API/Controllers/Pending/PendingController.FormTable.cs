@@ -558,7 +558,6 @@ namespace FTT_API.Controllers.Pending
                 dic.Add("completetime", vm.completetime);
                 dic.Add("precompletetime", vm.precompletetime);
 
-                //dic.Add("selfconfig", vm.selfconfig);
                 dic.Add("remark", vm.remark);
 
                 dic.Add("form_no", vm.form_no);
@@ -568,6 +567,9 @@ namespace FTT_API.Controllers.Pending
 
                 if (vm.updatePRECOMPLETETIME == true)
                     updateSQL += " precompletetime=@precompletetime, ";
+
+                //先取得當下的狀態
+                var oldEntity = baseHandler.GetDBHelper().Find<approve_formEntity>("select * from approve_form where form_no=@form_no ", dic);
 
                 baseHandler.GetDBHelper().Execute($@" 
 update ftt_form set 
@@ -594,16 +596,6 @@ form_no=@form_no
 
                 string temp = baseHandler.GetDBHelper().FindScalar<string>("select form_no from FTT_FORM_DESC where FORM_NO=@form_no", dic2);
 
-                //if (string.IsNullOrEmpty(temp))
-                //{
-                //    string sql = @"INSERT INTO ftt_form_desc 
-                //       (form_no,user_type,action_name,description,prior_status,status) 
-                //       VALUES (@form_no,'',@action_name,@description,null,@status)";
-
-                //    baseHandler.GetDBHelper().Execute(sql, dic2);
-                //    baseHandler.GetDBHelper().Commit();
-                //}
-                //else
                 {
                     baseHandler.GetDBHelper().Execute($@" 
 update FTT_FORM_DESC set 
@@ -620,10 +612,23 @@ form_no=@form_no
                 string SELFCONFIG = baseHandler.GetDBHelper().FindScalar<string>("select SELFCONFIG from FTT_FORM where FORM_NO=" + vm.form_no, null);
                 if (SELFCONFIG == "Y" && vm.STATUS == "DISPATCH")
                     baseHandler.GetDBHelper().ExecStoredProcedureWithTransation("SET_STATUS('" + vm.FORM_TYPE + "', '" + vm.form_no + "', 'TICKET', '" + _sessionVO.empno + "', '', '')");
-                //db.ExecuteNonQuery(tran, CommandType.StoredProcedure, "SET_STATUS('" + vm.FORM_TYPE + "','" + vm.form_no + "','TICKET','" + _sessionVO.empno + "','','')");
                 else
                     baseHandler.GetDBHelper().ExecStoredProcedureWithTransation("SET_STATUS('" + vm.FORM_TYPE + "','" + vm.form_no + "','" + vm.STATUS + "','" + _sessionVO.empno + "','','')");
-                //db.ExecuteNonQuery(tran, CommandType.StoredProcedure, "SET_STATUS('" + vm.FORM_TYPE+ "','" + vm.form_no+ "','" + vm.STATUS + "','" + _sessionVO.empno + "','','')");
+
+                //取得更新完的狀態
+                var newEntity = baseHandler.GetDBHelper().Find<approve_formEntity>("select * from approve_form where form_no=@form_no ", dic);
+
+                if (newEntity != null && oldEntity != null)
+                {
+                    MailPoolHandler _MailPoolHandlerHandler = new MailPoolHandler();
+                    var result = Method.CreateMailPool(vm.form_no, oldEntity.status, newEntity.status, _MailPoolHandlerHandler);
+                    if (!string.IsNullOrEmpty(result))
+                    {
+                        this.LogError("CreateMailPool 執行失敗");
+                        this.LogSuccess("申請單單號【" + vm.form_no + "】更新成功！");
+                        return JsonSuccess("申請單單號【" + vm.form_no + "】更新成功！");
+                    }
+                }
 
                 ////TODO 不知道甚麼時候未有 APPROVE="Y" 的參數
                 //if (Request.QueryString["APPROVE"] == "Y")

@@ -9,6 +9,7 @@ namespace FTT_API.Models.Handler
     public partial class BaseDBHandler
     {
         protected IDBHelper? dbHelper = null;
+     
         public BaseDBHandler()
         {
             IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json", true, true).Build();

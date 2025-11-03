@@ -19,6 +19,12 @@ namespace FTT_WEB.Controllers.Login
             _hostingEnvironment = hostingEnvironment;
             _configHelper = configHelper;
         }
+        [Route("/auth/loginFromSP.aspx")]
+        public IActionResult IndexSP(string goalURL = "")
+        {
+            return View();
+        }
+
         public IActionResult Index(string goalURL = "")
         {
             if (LoginSession.Current != null && LoginSession.Current.empno != null)
@@ -35,7 +41,7 @@ namespace FTT_WEB.Controllers.Login
 
             return View();
         }
-         
+
         /// <summary>
         /// 畫出 圖形驗證碼
         /// </summary>
@@ -53,6 +59,6 @@ namespace FTT_WEB.Controllers.Login
 
             return File(result.CaptchaImage, "image/jpeg");
         }
-          
+
     }
 }

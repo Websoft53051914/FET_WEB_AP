@@ -206,7 +206,7 @@ namespace FTT_VENDER_API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost("[action]")]
-        public IActionResult GetMenuDataCount(List<int> funcIdList)
+        public IActionResult GetMenuDataCount([FromBody] List<int> funcIdList)
         {
             try
             {
@@ -247,6 +247,17 @@ namespace FTT_VENDER_API.Controllers
                             SessionVO = _sessionVO
                         };
                         PageResult<VFttForm2DTO> pageResult = handler.GetPageList(pageEntity);
+                        result.Add(funcId.ToString(), pageResult.DataCount);
+                    }
+                    else if (funcId == Enums.FuncID.CaseClosed_View.ToInt())
+                    {
+                        CaseClosedHandler handler = new(_configHelper, HttpContext) { };
+                        PageResult<v_ftt_form2DTO> pageResult = handler.FindPageList(pageEntity, new v_ftt_form2DTO
+                        {
+                            USERROLE = _sessionVO.userrole,
+                            IVRCODE = _sessionVO.ivrcode,
+                            EMPNO = _sessionVO.empno,
+                        });
                         result.Add(funcId.ToString(), pageResult.DataCount);
                     }
                 }

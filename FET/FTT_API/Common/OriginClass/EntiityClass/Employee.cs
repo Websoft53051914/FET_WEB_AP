@@ -512,6 +512,14 @@ namespace FTT_API.Common.OriginClass.EntiityClass
                 m_rowsCount = 0L;
             }
         }
+        public Employee(RefType DataType, string Data, RetrieveData retrieveDataMethod)
+        {
+            //Trace.WriteLine("Constructor Employee Class.");
+            string sType = ConvertEmpType(DataType);
+            m_retrieveData = retrieveDataMethod;
+            m_Result = GetEmployeeData(sType, Data);
+            //Trace.WriteLine("Retrieve Employee Data : " + m_Result);
+        }
 
         private void setEmployee(bool authAD, string acc, string pwd, string region, bool leave)
         {

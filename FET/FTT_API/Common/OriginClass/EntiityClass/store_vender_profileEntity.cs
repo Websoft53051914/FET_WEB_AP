@@ -32,7 +32,7 @@ namespace FTT_API.Common.OriginClass.EntiityClass
 
         public short? locked_reason { get; set; }
 
-        public TimeSpan? pw_chgtime { get; set; }   // time without time zone
+        public DateTime? pw_chgtime { get; set; }   // time without time zone
     }
 
     public class store_vender_profileDTO : store_vender_profileEntity

@@ -14,6 +14,11 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using Const;
+using FTT_API.Models.Handler;
+using FTT_API.Common.OriginClass.EntiityClass;
+using Microsoft.AspNetCore.Components.Web;
+using System.Security.AccessControl;
+using Microsoft.Graph.Models;
 
 namespace FTT_API.Common
 {
@@ -67,7 +72,7 @@ namespace FTT_API.Common
             }
         }
 
-     
+
         public static List<T> DataTableToList<T>(DataTable dt) where T : class, new()
         {
             const BindingFlags flags = BindingFlags.Public | BindingFlags.Instance;
@@ -461,7 +466,7 @@ namespace FTT_API.Common
 
             return isPrivateServer;
         }
-     
+
 
         public static string GetAppSettingsDataByName(string columnName)
         {
@@ -583,7 +588,7 @@ namespace FTT_API.Common
         /// <param name="token">JWT Token</param>
         /// <param name="jwtConfigVO">JWT設定</param>
         /// <returns></returns>
-        public static (VerifyTokenResultVO,SessionVO?) VerifyAndGenerateJwtToken(string token, JwtConfigVO jwtConfigVO)
+        public static (VerifyTokenResultVO, SessionVO?) VerifyAndGenerateJwtToken(string token, JwtConfigVO jwtConfigVO)
         {
             VerifyTokenResultVO vo = new();
             SessionVO? sessionVO = null;
@@ -591,7 +596,7 @@ namespace FTT_API.Common
             JwtSecurityTokenHandler jwtTokenHandler = new JwtSecurityTokenHandler();
             try
             {
-                
+
 
                 //驗證參數的Token，回傳SecurityToken
                 var key = Encoding.ASCII.GetBytes(jwtConfigVO.Secret);
@@ -615,8 +620,8 @@ namespace FTT_API.Common
                 };
                 ClaimsPrincipal tokenInVerification = jwtTokenHandler.ValidateToken(token, tokenValidation, out SecurityToken validatedToken);
 
-                
-                
+
+
                 if (validatedToken is JwtSecurityToken jwtSecurityToken)
                 {
                     //檢核Token的演算法
@@ -644,8 +649,8 @@ namespace FTT_API.Common
                 return (vo, sessionVO);
             }
             catch (Exception ex)
-            {   
-                if(ex is SecurityTokenExpiredException)
+            {
+                if (ex is SecurityTokenExpiredException)
                 {
                     vo.IsExpired = true;
                     vo.IsAvailable = true;
@@ -666,5 +671,216 @@ namespace FTT_API.Common
             }
         }
 
+        public static string CreateMailPool(string form_no, string oldStatus, string newStatus, MailPoolHandler _MailPoolHandlerHandler)
+        {
+            var dtTime = DateTime.Now;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(newStatus) && newStatus != oldStatus)
+                {
+                    var mail_reciver = "";
+                    var mail_reciver_cc = "";
+                    var reviverName = "";
+                    var list = _MailPoolHandlerHandler.FindMailPoolRuleList(oldStatus + "," + newStatus);
+                    foreach (var item in list)
+                    {
+                        var _AccessRole = _MailPoolHandlerHandler.FindAccessRole(form_no, item.mail_reciver);
+                        if (_AccessRole != null)
+                        {
+                            //取得收件人
+                            mail_reciver = GetReciverMail(_MailPoolHandlerHandler, _AccessRole, item.mail_reciver, out reviverName);
+
+                            List<string> mails = new();
+
+                            //取得CC
+                            if (!string.IsNullOrEmpty(item.mail_reciver_cc))
+                            {
+                                var nouseName = "";
+                                var ccs = item.mail_reciver_cc.Split(',');
+                                foreach (var cc in ccs)
+                                {
+                                    var add_CC = GetReciverMail(_MailPoolHandlerHandler, _AccessRole, cc, out nouseName);
+                                    if (!string.IsNullOrEmpty(add_CC))
+                                        mails.Add(add_CC);
+                                }
+                            }
+
+                            //取得appsettings.json CC
+                            var other_cc = Method.GetAppSettingsDataByName(oldStatus + "," + newStatus);
+                            if (!string.IsNullOrEmpty(other_cc))
+                            {
+                                var ccs = other_cc.Split(',');
+                                foreach (var cc in ccs)
+                                    mails.Add(cc);
+                            }
+
+                            mail_reciver_cc = string.Join(",", mails);
+                        }
+
+                        if (!string.IsNullOrEmpty(mail_reciver))
+                        {
+                            var fttForm = _MailPoolHandlerHandler.GetFttForm(form_no);
+                            var subject = item.mailsubject
+                                .Replace("([FORM_NO])", form_no)
+                                .Replace("([STORE])", reviverName)
+                                .Replace("([VENDOR])", reviverName);
+
+                            var content =
+                                "<html>" +
+                                item.mailhead
+                                .Replace("([FORM_NO])", form_no)
+                                .Replace("([STORE])", reviverName)
+                                .Replace("([VENDOR])", reviverName)
+
+                                       .Replace("([REVIVERNAME])", reviverName)
+
+                                .Replace("([MailURL])", Method.GetAppSettingsDataByName("MailURL"))
+                                .Replace("([MailURL_VENDOR])", Method.GetAppSettingsDataByName("MailURL_VENDOR"))
+                                + "<br>"
+                                + "<br>"
+
+                                + item.mailcontent
+                                .Replace("([FORM_NO])", form_no)
+                                .Replace("([STORE])", reviverName)
+                                .Replace("([VENDOR])", reviverName)
+
+                                       .Replace("([REVIVERNAME])", reviverName)
+
+                                .Replace("([EMPNAME])", fttForm.empname)
+                                .Replace("([CREATETIME])", DateTime.Parse(fttForm.createtime).ToString("yyyy/MM/dd HH:mm:ss"))
+                                .Replace("([CATEGORY_NAME])", fttForm.category_name)
+                                + "</html>";
+
+                            //if (Isreminder)
+                            //{
+                            //    var _REMINDER = _MailPoolHandlerHandler.FindMailPoolRuleList("REMINDER");
+                            //    if (_REMINDER != null && _REMINDER.Count > 0)
+                            //    {
+                            //        var reminder = _REMINDER.FirstOrDefault();
+                            //        subject = reminder.mailsubject
+                            //    .Replace("([FORM_NO])", form_no)
+                            //    .Replace("([STORE])", reviverName)
+                            //    .Replace("([VENDOR])", reviverName);
+
+                            //        content =
+                            //           "<html>" +
+                            //           reminder.mailhead
+                            //           .Replace("([FORM_NO])", form_no)
+                            //           .Replace("([STORE])", reviverName)
+                            //           .Replace("([VENDOR])", reviverName)
+
+                            //           .Replace("([REVIVERNAME])", reviverName)
+
+                            //           .Replace("([MailURL])", Method.GetAppSettingsDataByName("MailURL"))
+                            //           .Replace("([MailURL_VENDOR])", Method.GetAppSettingsDataByName("MailURL_VENDOR"))
+                            //           + "<br>"
+                            //           + "<br>"
+                            //           + reminder.mailcontent
+                            //           .Replace("([FORM_NO])", form_no)
+                            //           .Replace("([STORE])", reviverName)
+                            //           .Replace("([VENDOR])", reviverName)
+
+                            //           .Replace("([REVIVERNAME])", reviverName)
+
+                            //           .Replace("([EMPNAME])", fttForm.empname)
+                            //           .Replace("([CREATETIME])", DateTime.Parse(fttForm.createtime).ToString("yyyy/MM/dd HH:mm:ss"))
+                            //           .Replace("([CATEGORY_NAME])", fttForm.category_name)
+                            //           + "</html>";
+
+                            //    }
+                            //}
+
+                            _MailPoolHandlerHandler.Insert(new MailPoolEntity()
+                            {
+                                CreateTime = dtTime,
+                                Creator = 0,
+                                Updater = 0,
+                                UpdateTime = dtTime,
+                                SendStatus = 0,
+                                EstimateSendTime = dtTime,
+
+                                DestinationEmail = mail_reciver,
+                                DestinationEmail_CC = mail_reciver_cc,
+                                Subject = subject,
+                                Status = 1,
+                                Content = content,
+                            });
+
+                            _MailPoolHandlerHandler.Commit();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+                return ex.ToString();
+            }
+
+            return "";
+
+        }
+
+        private static string GetReciverMail(MailPoolHandler _MailPoolHandlerHandler, access_roleDTO _AccessRole, string mail_reciver, out string reviverName)
+        {
+            var revier = "";
+            reviverName = "";
+            switch (mail_reciver)
+            {
+                case "MANAGER"://訂單的管理者
+                               //取得管理者mail
+                    var userProfile = _MailPoolHandlerHandler.GetFetUserProfile(_AccessRole.empno);
+                    if (userProfile != null)
+                    {
+                        revier = userProfile.email;
+                    }
+                    break;
+                case "SUBMITTER"://creater
+                                 //取得申請者mail
+                    var temp = _MailPoolHandlerHandler.FindAccessRole(_AccessRole.form_no, mail_reciver);
+                    var storeProfile = _MailPoolHandlerHandler.GetStoreProfile(temp.deptcode);
+                    if (storeProfile != null)
+                    {
+                        revier = storeProfile.email;
+                    }
+
+                    if (string.IsNullOrEmpty(reviverName))
+                    {
+                        reviverName = storeProfile.shop_name;
+                    }
+                    break;
+                case "VENDOR"://訂單的廠商
+                    var store_vender_profile = _MailPoolHandlerHandler.GetStoreVenderProfile(_AccessRole.deptcode);
+                    if (store_vender_profile != null)
+                    {
+                        revier = store_vender_profile.email;
+                    }
+                    if (string.IsNullOrEmpty(reviverName))
+                    {
+                        reviverName = store_vender_profile.merchant_name;
+                    }
+                    break;
+
+                case "SECURITY":
+                case "ASSETER":
+                case "ADMIN":
+                    var emails = _MailPoolHandlerHandler.GetEmailListByRole(mail_reciver);
+
+                    if (emails.Count > 0)
+                    {
+                        var temps = emails.Where(w => !string.IsNullOrEmpty(w.email)).Select(s => s.email).ToList();
+                        if (temps != null && temps.Count > 0)
+                        {
+                            revier = string.Join(",", temps);
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            return revier;
+        }
     }
 }

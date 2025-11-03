@@ -116,40 +116,40 @@
         </div>
     </nav>
 </header>
-<script>
-    $(function () {
-        let funcIdList = $.map($('.txt-cnt'), function (value, index) {
-            return $(value).data('funcId');
-        });
+// <script>
+//     $(function () {
+//         let funcIdList = $.map($('.txt-cnt'), function (value, index) {
+//             return $(value).data('funcId');
+//         });
 
-        let data = {
-            funcIdList
-        };
-        $.ajax({
-            url: '@(mapData.UrlGetMenuDataCount?.ToHtmlString())',
-            dataType: 'json',
-            type: 'POST',
-            data: data,
-            cache: false
-        })
-            .done((response) => {
-                if (response.Success) {
-                    let data = response['Data'];
-                    if (data) {
-                        $.each($('.txt-cnt'), function (index, value) {
-                            let $control = $(value);
-                            let dataCount = data[`${$control.data('funcId')}`] || 0;
+//         let data = {
+//             funcIdList
+//         };
+//         $.ajax({
+//             url: '@(mapData.UrlGetMenuDataCount?.ToHtmlString())',
+//             dataType: 'json',
+//             type: 'POST',
+//             data: data,
+//             cache: false
+//         })
+//             .done((response) => {
+//                 if (response.Success) {
+//                     let data = response['Data'];
+//                     if (data) {
+//                         $.each($('.txt-cnt'), function (index, value) {
+//                             let $control = $(value);
+//                             let dataCount = data[`${$control.data('funcId')}`] || 0;
 
-                            return $control.text('(' + dataCount + ')');
-                        });
-                    }
-                }
-                else {
-                    console.log(response['Message']);
-                }
-            })
-            .fail((err) => {
-                console.log(err);
-            });
-    });
-</script>
+//                             return $control.text('(' + dataCount + ')');
+//                         });
+//                     }
+//                 }
+//                 else {
+//                     console.log(response['Message']);
+//                 }
+//             })
+//             .fail((err) => {
+//                 console.log(err);
+//             });
+//     });
+// </script>

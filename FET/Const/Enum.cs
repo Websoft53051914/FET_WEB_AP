@@ -149,5 +149,38 @@ namespace Const
             [Description("成功")]
             Success = 1,
         }
+
+        public enum LockReasonEnum
+        {
+            /// <summary>
+            /// 未鎖定
+            /// </summary>
+            [Description("未鎖定")]
+            Unlocked = 0,
+
+            /// <summary>
+            /// 密碼 3 個月未更換
+            /// </summary>
+            [Description("密碼3個月未更換")]
+            LockedByNochangePWOver90Days = 1,           
+
+            /// <summary>
+            /// 密碼 3 個月未更換
+            /// </summary>
+            [Description("3個月未登入")]
+            LockedByNoLoginOver90Days = 2,
+
+            /// <summary>
+            /// Admin解鎖
+            /// </summary>
+            [Description("Admin解鎖")]
+            UnlockByAdmin = 3,
+
+            /// <summary>
+            /// 廠商自行更換密碼
+            /// </summary>
+            [Description("廠商自行更換密碼")]
+            ChangePwByVender = 4,
+        }
     }
 }

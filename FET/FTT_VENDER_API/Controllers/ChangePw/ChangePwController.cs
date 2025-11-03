@@ -1,99 +1,55 @@
-﻿using Const.VO;
-using FTT_VENDER_API.Common;
+﻿using Core.Utility.Extensions;
 using FTT_VENDER_API.Common.ConfigurationHelper;
 using FTT_VENDER_API.Models.Handler;
-using FTT_VENDER_API.Models.ViewModel.Login;
+using FTT_VENDER_API.Models.ViewModel.ChangePw;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Concurrent;
-using System.Drawing.Imaging;
 using System.Drawing;
+using System.Drawing.Imaging;
+using static Const.Enums;
+using static FTT_VENDER_API.Controllers.Login.LoginController;
+using static FTT_VENDER_API.Models.AlertMsgRedirection;
 
-namespace FTT_VENDER_API.Controllers.Login
+
+namespace FTT_VENDER_API.Controllers.ChangePw
 {
-    /// <summary>
-    /// 登入 API
-    /// </summary>
     [Route("[controller]")]
-    public partial class LoginController : BaseProjectController
+    public class ChangePwController : BaseProjectController
     {
+        private readonly ConfigurationHelper _config;
         private readonly IWebHostEnvironment _hostingEnvironment;
-        private readonly ConfigurationHelper _configHelper;
         /// <summary>
         /// Constructor
         /// </summary>
-        public LoginController(IWebHostEnvironment hostingEnvironment, ConfigurationHelper configHelper)
+        public ChangePwController(ConfigurationHelper configuration, IWebHostEnvironment hostingEnvironment)
         {
+            _config = configuration;
             _hostingEnvironment = hostingEnvironment;
-            _configHelper = configHelper;
         }
 
-        /// <summary>
-        /// 登入
-        /// </summary>
-        /// <param name="vm"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
         [HttpPost("[action]")]
-        [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
-        public IActionResult Login(LoginVM vm)
+        public IActionResult Submit(ChangePwVM vm)
         {
             try
             {
-                var loginHanlder = new LoginHanlder(_configHelper, HttpContext);
-                (LoginResultVO resultVO, SessionVO? sessionVO) = loginHanlder.Login(vm);
-
-                if (!string.IsNullOrEmpty(resultVO.ErrorMsg))
+                ChangePwHandler changePwHandler = new(_config, HttpContext);
+                string ErrorMsg = changePwHandler.CheckVenderInfoCorrect(vm);
+                if (!ErrorMsg.IsNullOrEmpty())
                 {
-                    this.LogSuccess();
-                    return JsonValidFail(resultVO.ErrorMsg);
+                    return JsonValidFail(ErrorMsg);
                 }
 
-                if (!string.IsNullOrEmpty(resultVO.Token.TokenId))
-                {
-                    Response.Cookies.Append("Token", resultVO.Token.TokenId, new CookieOptions
-                    {
-                        HttpOnly = false,
-                        Secure = false, // HTTP測試用false https用true
-                        SameSite = SameSiteMode.Lax, // http測試用Lax https用none
-                    });
-                }
-                string userLoginName = string.Empty;
-                if (sessionVO != null)
-                {
-                    string userType = sessionVO.usertype;
-
-                    userLoginName = sessionVO.engname;
-                }
-                Response.Cookies.Append("userLoginName", userLoginName ?? string.Empty, new CookieOptions
-                {
-                    HttpOnly = false,
-                    Secure = false, // HTTP測試用false https用true
-                    SameSite = SameSiteMode.Lax, // http測試用Lax https用none
-                });
-                Response.Cookies.Append("userrole", sessionVO?.userrole ?? string.Empty, new CookieOptions
-                {
-                    HttpOnly = false,
-                    Secure = false, // HTTP測試用false https用true
-                    SameSite = SameSiteMode.Lax, // http測試用Lax https用none
-                });
-                _sessionVO = sessionVO ?? new();
-
-                this.LogSuccess("登入成功");
+                changePwHandler.UpdatePw(vm);
+                this.LogSuccess("變更密碼成功");
                 return JsonOK();
             }
             catch (Exception ex)
             {
                 this.LogError(ex.ToString());
-                return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
+                return JsonValidFail(_config.GetMessage("SystemErrorMsg"));
             }
+           
         }
-
-        public class CaptchaVerifyRequest
-        {
-            public string CaptchaId { get; set; }
-            public string CaptchaCode { get; set; }
-        }
-
 
         private static ConcurrentDictionary<string, string> _captchaStore = new ConcurrentDictionary<string, string>();
 

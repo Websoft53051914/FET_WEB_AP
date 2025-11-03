@@ -4,6 +4,7 @@
 using Const;
 using Const.VO;
 using Core.Utility.Utility;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using FTT_API.Common;
 using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Common.OriginClass.EntiityClass;
@@ -174,6 +175,21 @@ namespace FTT_API.Controllers.NewOrder
                 }
 
                 newOrderHandler.DoCreateFttForm(dataList);
+
+                MailPoolHandler _MailPoolHandlerHandler = new MailPoolHandler();
+
+                foreach (Dictionary<string, object> data in dataList)
+                {
+                    var oldStatus = "NEW";
+                    if (data["selfconfig"].ToString().ToLower() == "y")
+                        oldStatus = "SELF";
+
+                    var result = Method.CreateMailPool(data["form_no"].ToString(), oldStatus, "REVIEW", _MailPoolHandlerHandler);
+                    if (!string.IsNullOrEmpty(result))
+                    {
+                        this.LogError("CreateMailPool 執行失敗");
+                    }
+                }
 
                 this.LogSuccess("報修單開立成功！");
                 return JsonSuccess("報修單開立成功！");

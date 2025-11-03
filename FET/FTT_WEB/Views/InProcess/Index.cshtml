@@ -145,19 +145,19 @@
                     { name: "statusname", title: "工單狀態", type: "text", width: 100, align: "center" },
                     { name: "CurrentInchargeName", title: "目前處理者", type: "text", width: 120, align: "center" },
                     {
+                        style: 'padding: 0px;',
                         type: 'control', align: "center",
-                        width: 80,
+                        width: 120,
                         editButton: false,
                         deleteButton: false,
                         headerTemplate: (value, item) => {
                             return $("<div><div>").attr({ class: '' });
                         },
                         itemTemplate: (value, item) => {
-
                             $trackingFormButton = $('<button>')
                                 .attr({
-                                    'class': 'btn btn-primary mt-3',
-                                    'style': 'margin-left:10px; '
+                                    'class': 'btn btn-primary',
+                                    'style': ''
                                 })
                                 .html('催單')
                                 .on('click', () => {
@@ -180,13 +180,13 @@
                                                 button: '@(mapText.Btn_Confirm.ToHtmlString())',
                                                 icon: alertType
                                             }).then((result) => {
-                                                context.$Grid.jsGrid('search');
+                                                //context.$Grid.jsGrid('search');
                                             });
                                         });
                                 });
 
                             var result = $('<div>');
-                            if (item["IsTICKET"] == true) {
+                            if (item["IsTicket"] == true) {
                                 result.append($trackingFormButton);
                             }
                             return result;

@@ -14,6 +14,7 @@
         {
             Id = Guid.NewGuid().ToString("N"),
             IdBtnSearch = Guid.NewGuid().ToString("N"),
+            IdBtnClean = Guid.NewGuid().ToString("N"),
         },
         PartialDIG = new DialogIvrCodeGridVO(),
         PartialIT = new ItemsTreeVO(),
@@ -22,8 +23,8 @@
         UrlPrintWP = $"{config.GetBackendUrl()}/Query/PrintWP",
         UrlExportExcel = $"{config.GetBackendUrl()}/Query/ExportExcel",
     };
-    Model.CloseDateGte = Model.CompleteDateGte = Model.CreateDateGte = DateTime.Now.AddDays(-3).Date;
-    Model.CloseDateLte = Model.CompleteDateLte = Model.CreateDateLte = DateTime.Now.Date;
+    // Model.CloseDateGte = Model.CompleteDateGte = Model.CreateDateGte = DateTime.Now.AddDays(-3).Date;
+    // Model.CloseDateLte = Model.CompleteDateLte = Model.CreateDateLte = DateTime.Now.Date;
     // 依角色隱藏
     List<SelectListItem> SelectListTtCategory = new()
 {
@@ -143,6 +144,7 @@
                 </div>
                 <button id="@(mapData.FormSearch.IdBtnSearch)" type="button" class="btn btn-primary">送出查詢</button>
                 <button id="btnExportExcel" type="button" class="btn btn-primary">匯出Excel</button>
+                <button id="@(mapData.FormSearch.IdBtnClean)" type="button" class="btn btn-primary">清空條件</button>
             </div>
         </div>
     </form>
@@ -174,8 +176,23 @@
         var cookieName = 'QueryGridInfo';
 
         $(function () {
+            const urlParams = new URLSearchParams(window.location.search);
+            const formNo = urlParams.get('form_no');
+
+            // 如果 formNo 存在且不是空值，放入 #FormNoEq 欄位
+            if (formNo && formNo.trim() !== '') {
+                $('#FormNoEq').val(formNo);
+                $('#CreateDateGte').val('');
+                $('#CreateDateLte').val('');
+                $('#CompleteDateGte').val('');
+                $('#CompleteDateLte').val('');
+                $('#CloseDateGte').val('');
+                $('#CloseDateLte').val('');
+            }
+
             $('.initDatepicker').datetimepicker({
                 format: 'YYYY/MM/DD',
+                useCurrent: false,
             });
 
             $('.initSelect2Clearable').select2({
@@ -331,6 +348,16 @@
             console.log(data);
 
             postSubmitJson('@(mapData.UrlExportExcel?.ToHtmlString())', data);
+        });
+
+        $('#@(mapData.FormSearch.IdBtnClean)').on('click', function (e) {
+            $('input[type="hidden"],input[type="text"], input[type="number"], textarea').val('');
+
+            $('#@(mapData.FormSearch.Id)').find('select').each(function () {
+                if ($(this).hasClass('select2-hidden-accessible')) {
+                    $(this).val(null).trigger('change');
+                }
+            });
         });
     </script>
     <script>

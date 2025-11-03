@@ -9,6 +9,7 @@ using Const.VO;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.Options;
 
 
 IConfiguration Config = new ConfigurationBuilder().AddJsonFile("appSettings.json").Build();
@@ -50,7 +51,7 @@ builder.Services.AddAuthentication(options =>
  .AddCookie(options =>
  {
      options.Cookie.HttpOnly = true;
-     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+     //options.Cookie.SecurePolicy = CookieSecurePolicy.Always;  //架設http 非 https 要註解
  });
 
 builder.Services.AddSession(options =>
@@ -107,6 +108,8 @@ builder.Services.AddHangfire(config =>
 builder.Services.AddHangfireServer();
 //builder.Services.AddSingleton<SendMailHandler>();
 builder.Services.AddScoped<SendMailHandler>();
+//builder.Services.AddScoped<CheckVenderPWLoginTimeHandler>();
+
 
 // 註冊 CORS
 #if DEBUG
@@ -218,5 +221,25 @@ RecurringJob.AddOrUpdate<SendMailHandler>(
         TimeZone = TimeZoneInfo.FindSystemTimeZoneById("Taipei Standard Time")
     }
 );
+
+RecurringJob.AddOrUpdate<CheckVenderPWLoginTimeHandler>(
+        nameof(CheckVenderPWLoginTimeHandler.CheckPWChangeTime),
+        (job) => job.CheckPWChangeTime(),
+          builder.Configuration["HangFireScheduledTime:CheckVendorLastChangePW"],         
+         new RecurringJobOptions
+         {
+             TimeZone = TimeZoneInfo.FindSystemTimeZoneById("Taipei Standard Time")
+         }
+    );
+
+RecurringJob.AddOrUpdate<CheckVenderPWLoginTimeHandler>(
+        nameof(CheckVenderPWLoginTimeHandler.CheckLastLoginTime),
+        (job) => job.CheckLastLoginTime(),
+         builder.Configuration["HangFireScheduledTime:CheckVendorLastLogin"],
+         new RecurringJobOptions
+         {
+             TimeZone = TimeZoneInfo.FindSystemTimeZoneById("Taipei Standard Time")
+         }
+    );
 
 app.Run();

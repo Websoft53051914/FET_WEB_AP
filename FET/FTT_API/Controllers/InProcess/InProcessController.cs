@@ -1,5 +1,6 @@
 ﻿using Core.Utility.Helper.DB.Entity;
 using Core.Utility.Web.EX;
+using DocumentFormat.OpenXml.Office2016.Drawing.ChartDrawing;
 using FTT_API.Common;
 using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Common.OriginClass.EntiityClass;
@@ -78,8 +79,22 @@ namespace FTT_API.Controllers.InProcess
 
                     if (m_FormType == "")
                         m_FormType = "FTT_FORM";
-                    _InProcessHanlder.InsertFTT_FORM_LOG(form_No, _sessionVO.empname, m_FormType);
+
+                    BaseDBHandler baseHandler = new BaseDBHandler();
+                    Dictionary<string, object> dic = new();
+                    dic.Add("form_no", int.Parse(form_No));
+                    var newEntity = baseHandler.GetDBHelper().Find<approve_formEntity>("select * from approve_form where form_no=@form_no ", dic);
+
+                    MailPoolHandler _MailPoolHandler = new MailPoolHandler();
+                    var result = Method.CreateMailPool(form_No, "", "REMINDER", _MailPoolHandler);
+                    if (!string.IsNullOrEmpty(result))
+                    {
+                        this.LogError("CreateMailPool 執行失敗");
+                    }
+
+                    //_InProcessHanlder.InsertFTT_FORM_LOG(form_No, _sessionVO.empname, m_FormType);
                     //db.ExecuteNonQuery("INSERT INTO FTT_FORM_LOG (FORM_NO,UPDATE_EMPNO,UPDATETIME,FIELDNAME,ACTION,FORM_TYPE,ROOT_NO) VALUES ('" + Form_No.Text + "','" + Session["empname"].ToString() + "',SYSDATE,'催單','FORM','" + m_FormType + "','" + Form_No.Text + "')");
+
                     this.LogSuccess("已發送催單通知!!");
                     return JsonSuccess("已發送催單通知!!");
                 }

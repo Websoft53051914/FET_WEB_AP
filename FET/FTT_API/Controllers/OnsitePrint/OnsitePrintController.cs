@@ -3,7 +3,9 @@ using Const.VO;
 using Core.Utility.Extensions;
 using Core.Utility.Helper.DB.Entity;
 using Core.Utility.Web.EX;
+using FTT_API.Common;
 using FTT_API.Common.ConfigurationHelper;
+using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models.Handler;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Reporting.NETCore;
@@ -189,6 +191,7 @@ namespace FTT_API.Controllers.OnsitePrint
                 }
 
                 CommonHandler commonHandler = new(_configHelper);
+                BaseDBHandler baseHandler = new BaseDBHandler();
 
                 foreach (int formNo in req.FormNoList)
                 {
@@ -197,7 +200,25 @@ namespace FTT_API.Controllers.OnsitePrint
                         { "FORM_NO", formNo }
                     });
 
+                    //先取得當下的狀態
+                    Dictionary<string, object> dic = new();
+                    dic.Add("form_no", formNo);
+                    var oldEntity = baseHandler.GetDBHelper().Find<approve_formEntity>("select * from approve_form where form_no=@form_no ", dic);
+
                     commonHandler.ExecSetStatus(formType, formNo, "TICKET", _sessionVO.empname);
+
+                    //取得更新完的狀態
+                    var newEntity = baseHandler.GetDBHelper().Find<approve_formEntity>("select * from approve_form where form_no=@form_no ", dic);
+
+                    if (newEntity != null && oldEntity != null)
+                    {
+                        MailPoolHandler _MailPoolHandlerHandler = new MailPoolHandler();
+                        var result = Method.CreateMailPool(formNo.ToString(), oldEntity.status, newEntity.status, _MailPoolHandlerHandler);
+                        if (!string.IsNullOrEmpty(result))
+                        {
+                            this.LogError("CreateMailPool 執行失敗");
+                        }
+                    }
                 }
 
                 commonHandler.GetDBHelper().Commit();
@@ -229,6 +250,7 @@ namespace FTT_API.Controllers.OnsitePrint
                 }
 
                 CommonHandler commonHandler = new(_configHelper);
+                BaseDBHandler baseHandler = new BaseDBHandler();
 
                 foreach (int formNo in req.FormNoList)
                 {
@@ -237,7 +259,25 @@ namespace FTT_API.Controllers.OnsitePrint
                         { "FORM_NO", formNo }
                     });
 
+                    //先取得當下的狀態
+                    Dictionary<string, object> dic = new();
+                    dic.Add("form_no", formNo);
+                    var oldEntity = baseHandler.GetDBHelper().Find<approve_formEntity>("select * from approve_form where form_no=@form_no ", dic);
+
                     commonHandler.ExecSetStatus(formType, formNo, "PRWP", _sessionVO.empname);
+
+                    //取得更新完的狀態
+                    var newEntity = baseHandler.GetDBHelper().Find<approve_formEntity>("select * from approve_form where form_no=@form_no ", dic);
+
+                    if (newEntity != null && oldEntity != null)
+                    {
+                        MailPoolHandler _MailPoolHandlerHandler = new MailPoolHandler();
+                        var result = Method.CreateMailPool(formNo.ToString(), oldEntity.status, newEntity.status, _MailPoolHandlerHandler);
+                        if (!string.IsNullOrEmpty(result))
+                        {
+                            this.LogError("CreateMailPool 執行失敗");
+                        }
+                    }
                 }
 
                 commonHandler.GetDBHelper().Commit();
@@ -270,6 +310,7 @@ namespace FTT_API.Controllers.OnsitePrint
 
                 OnsitePrintHandler onsitePrintHandler = new(_configHelper);
                 CommonHandler commonHandler = new(_configHelper, onsitePrintHandler.GetDBHelper());
+                BaseDBHandler baseHandler = new BaseDBHandler();
 
                 foreach (OnsitePrintVO data in req.DataList)
                 {
@@ -281,8 +322,26 @@ namespace FTT_API.Controllers.OnsitePrint
                         { "FORM_NO", data.FormNo.Value }
                     });
 
+                    //先取得當下的狀態
+                    Dictionary<string, object> dic = new();
+                    dic.Add("form_no", data.FormNo.Value);
+                    var oldEntity = baseHandler.GetDBHelper().Find<approve_formEntity>("select * from approve_form where form_no=@form_no ", dic);
+
                     onsitePrintHandler.UpdateVendorArriveDate(data.FormNo.Value, data.VendorArriveDate.Value);
                     commonHandler.ExecSetStatus(formType, data.FormNo.Value, "CONFIRM", _sessionVO.empname);
+
+                    //取得更新完的狀態
+                    var newEntity = baseHandler.GetDBHelper().Find<approve_formEntity>("select * from approve_form where form_no=@form_no ", dic);
+
+                    if (newEntity != null && oldEntity != null)
+                    {
+                        MailPoolHandler _MailPoolHandlerHandler = new MailPoolHandler();
+                        var result = Method.CreateMailPool(data.FormNo.Value.ToString(), oldEntity.status, newEntity.status, _MailPoolHandlerHandler);
+                        if (!string.IsNullOrEmpty(result))
+                        {
+                            this.LogError("CreateMailPool 執行失敗");
+                        }
+                    }
                 }
 
                 onsitePrintHandler.GetDBHelper().Commit();

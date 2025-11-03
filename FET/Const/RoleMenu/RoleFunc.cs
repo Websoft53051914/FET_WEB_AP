@@ -60,7 +60,7 @@ namespace Const
                 new MenuModel { FuncId=FuncID.Pending_View, FuncName="待處理", Url="/Pending", DataCount = 0 },
                 new MenuModel { FuncId=FuncID.OnsitePrint_View, FuncName="列印維修單", Url="/OnsitePrint", DataCount = 0 },
                 new MenuModel { FuncId=FuncID.InProcess_View, FuncName="處理中", Url="/InProcess", DataCount = 0 },
-                new MenuModel { FuncId=FuncID.CaseClosed_View, FuncName="已結案", Url="/CaseClosed" },
+                new MenuModel { FuncId=FuncID.CaseClosed_View, FuncName="已結案", Url="/CaseClosed", DataCount = 0 },
                 new MenuModel { FuncId=FuncID.Query_View, FuncName="查詢", Url="/Query" }
             },
             ["報價維護"] = new List<MenuModel>

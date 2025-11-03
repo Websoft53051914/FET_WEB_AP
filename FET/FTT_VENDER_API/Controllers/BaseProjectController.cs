@@ -42,9 +42,9 @@ namespace FTT_VENDER_API.Controllers
                         RefreshToken(resultVO.TokenInfoVO, token);
                         Response.Cookies.Append("Token", resultVO.TokenInfoVO.TokenId, new CookieOptions
                         {
-                            HttpOnly = true,
-                            Secure = true,
-                            SameSite = SameSiteMode.None,
+                            HttpOnly = false,
+                            Secure = false, // HTTP測試用false https用true
+                            SameSite = SameSiteMode.Lax, // http測試用Lax https用none
                         });
                     }
                     session = sessionRes;
@@ -164,8 +164,11 @@ namespace FTT_VENDER_API.Controllers
             }
             else
             {
+                if (context.RouteData.Values["action"] != null && (context.RouteData.Values["action"].ToString() == "GetCaptcha" || context.RouteData.Values["action"].ToString() == "VerifyCaptcha"))
+                {
 
-                if (from != "Login" && from != "Logout")
+                }
+                else if (from != "Login" && from != "Logout")
                 {
                     context.Result = new UnauthorizedObjectResult(JsonValiFail("無權限進入"));
                     return;

@@ -613,6 +613,9 @@ namespace FTT_VENDER_API.Controllers.Pending
                     dic.Add("vendor_arrive_date", tempTime);
                 }
 
+                //先取得當下的狀態
+                var oldEntity = baseHandler.GetDBHelper().Find<approve_formEntity>("select * from approve_form where form_no=@form_no ", dic);
+
                 baseHandler.GetDBHelper().Execute($@" 
 update ftt_form set 
 ticket_info=@ticket_info,
@@ -657,6 +660,21 @@ form_no=@form_no
                 baseHandler.GetDBHelper().Commit();
 
                 baseHandler.GetDBHelper().ExecStoredProcedureWithTransation("SET_STATUS('" + vm.FORM_TYPE + "','" + vm.form_no + "','" + vm.STATUS + "','" + _sessionVO.empno + "','','')");
+
+                //取得更新完的狀態
+                var newEntity = baseHandler.GetDBHelper().Find<approve_formEntity>("select * from approve_form where form_no=@form_no ", dic);
+
+                if (newEntity != null && oldEntity != null)
+                {
+                    MailPoolHandler _MailPoolHandler = new MailPoolHandler();
+                    var result = Method.CreateMailPool(vm.form_no, oldEntity.status, newEntity.status, _MailPoolHandler);
+                    if (!string.IsNullOrEmpty(result))
+                    {
+                        this.LogError("CreateMailPool 執行失敗");
+                        this.LogSuccess("申請單單號【" + vm.form_no + "】更新成功！");
+                        return JsonSuccess("申請單單號【" + vm.form_no + "】更新成功！");
+                    }
+                }
 
                 ////TODO 不知道甚麼時候未有 APPROVE="Y" 的參數
                 //if (Request.QueryString["APPROVE"] == "Y")

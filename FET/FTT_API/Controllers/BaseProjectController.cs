@@ -22,7 +22,6 @@ namespace FTT_API.Controllers
             var headers = context.HttpContext.Request.Headers;
             context.HttpContext.Request.Cookies.TryGetValue(FTT_API.Common.Const.TOKEN_NAME, out string? token);
             context.HttpContext.Request.Headers.TryGetValue("Content-From", out var from);
-
             if (!string.IsNullOrEmpty(token) && from != "Logout")
             {
                 SessionVO? session = null;
@@ -36,9 +35,9 @@ namespace FTT_API.Controllers
                         RefreshToken(resultVO.TokenInfoVO, token);
                         Response.Cookies.Append(FTT_API.Common.Const.TOKEN_NAME, resultVO.TokenInfoVO.TokenId, new CookieOptions
                         {
-                            HttpOnly = true,
-                            Secure = true,
-                            SameSite = SameSiteMode.None,
+                            HttpOnly = false,
+                            Secure = false, // HTTP測試用false https用true
+                            SameSite = SameSiteMode.Lax, // http測試用Lax https用none
                         });
                     }
                     session = sessionRes;
@@ -197,7 +196,7 @@ namespace FTT_API.Controllers
             else
             {
 
-                if (from != "Login" && from != "Logout")
+                if (from != "Login" && from != "Logout" && from != "CheckSSO")
                 {
                     context.Result = new UnauthorizedObjectResult(JsonValiFail("無權限進入"));
                     return;

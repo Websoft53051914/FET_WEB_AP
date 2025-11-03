@@ -274,13 +274,13 @@
                 $Loder.show();
 
                 $.ajax({
-                    url: '@(config.GetBackendUrl()+Url.Action("Login", "Login"))',
+                    url: '@(config.GetBackendUrl() + Url.Action("Login", "Login"))',
                     type: 'POST',
                     xhrFields: {
                         withCredentials: true // ← 這個讓瀏覽器攜帶 Cookie
                     },
                     headers: {
-                        "Content-From":"Login"
+                        "Content-From": "Login"
                     },
                     data: {
                         Role: role,
@@ -291,7 +291,14 @@
                     success: function (data) {
 
                         if (data.Success) {
-                            window.location.href = "@Url.Action("Index", "Home")";
+                            const urlParams = new URLSearchParams(window.location.search);
+                            const originUrl = urlParams.get('originUrl');
+                            if (originUrl && originUrl.trim() !== '') {
+                                window.location.href = decodeURIComponent(urlParams.get('originUrl'));
+                            }
+                            else {
+                                window.location.href = "@Url.Action("Index", "Home")";
+                            }
                         } else {
                             $errorMsg.html(data.Message);
                         }

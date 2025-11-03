@@ -26,11 +26,12 @@ public partial class FETTaskService : BackgroundService
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
         try
-        {  
+        {
+            var _FETTaskHelper = new FETTaskHelper();
+
             while (true)
             {
                 //string logPath = $@".\logs\Dispatch_TT_{DateTime.Now:yyyyMMdd}.log";
-                var _FETTaskHelper = new FETTaskHelper();
                 _FETTaskHelper.Send_TT_No_RootCause("");
                 //_FETTaskHelper.Close();
 

@@ -2,7 +2,15 @@
 using DocumentFormat.OpenXml.Drawing.Charts;
 using FTT_WEB.Common;
 using FTT_WEB.Models;
+using MathNet.Numerics;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Graph.Models;
+using Newtonsoft.Json;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Text;
+using static Const.Enums;
+using static Org.BouncyCastle.Math.EC.ECCurve;
 
 namespace FTT_WEB.ViewComponents
 {
@@ -10,6 +18,11 @@ namespace FTT_WEB.ViewComponents
     {
         public MenuViewComponent()
         {
+        }
+        public class ApiResponse
+        {
+            public bool Success { get; set; }
+            public Dictionary<string, int> Data { get; set; }
         }
 
         public async Task<IViewComponentResult> InvokeAsync(string userRole)
@@ -52,6 +65,31 @@ namespace FTT_WEB.ViewComponents
                 var filteredTreeData = RoleFunc.GetMenuByFuncIds(roleFunc);
                 vm.TreeData = filteredTreeData;
 
+                //直接在此呼叫筆數API
+                var sendPara = filteredTreeData.SelectMany(s => s.Value).ToList().Where(w => w.DataCount != null).Select(s => (int)s.FuncId).ToList();
+                var url = $"{Method.GetAppSettingsDataByName("BackendURL")}/Api/GetMenuDataCount";
+
+                var jwtToken = Request.Cookies["FTT_Token"];
+
+                using HttpClient client = new HttpClient(new HttpClientHandler { });
+                //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+                client.DefaultRequestHeaders.Add("Cookie", $"FTT_Token={jwtToken}");
+
+                HttpResponseMessage postResponse = await client.PostAsync(
+                    $"{Method.GetAppSettingsDataByName("BackendURL")}/Api/GetMenuDataCount",
+                    new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(sendPara), Encoding.UTF8, "application/json"));
+                string postResponseData = await postResponse.Content.ReadAsStringAsync();
+
+                var response = JsonConvert.DeserializeObject<ApiResponse>(postResponseData);
+                Dictionary<string, int> strMenuList = new Dictionary<string, int>();
+                if (response.Success == true && response.Data.Count > 0)
+                {
+                    foreach (var item in response.Data)
+                    {
+                        strMenuList.Add(((FuncID)int.Parse(item.Key)).ToString() , item.Value);
+                    }
+                }
+
                 //檢查目前在哪個頁面
                 var currentUrl = HttpContext.Request.Path.Value;
                 if (currentUrl != null)
@@ -63,6 +101,11 @@ namespace FTT_WEB.ViewComponents
                             if (currentUrl.Contains(menu.Url, StringComparison.OrdinalIgnoreCase))
                             {
                                 menu.IsActive = true;
+                            }
+
+                            if (response.Success == true && strMenuList.ContainsKey(menu.FuncId.ToString()))
+                            {
+                                menu.DataCount = strMenuList[menu.FuncId.ToString()];
                             }
                         }
                     }

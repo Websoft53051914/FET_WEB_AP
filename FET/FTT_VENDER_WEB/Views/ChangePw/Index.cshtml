@@ -14,6 +14,8 @@
 
     <link rel="stylesheet" href="~/lib/viho/assets/css/bootstrap.css" />
     <link rel="stylesheet" href="~/lib/viho/assets/css/fontawesome.css" />
+    <link rel="stylesheet" type="text/css" href="~/lib/viho/assets/css/sweetalert2.css">
+
 
     <style>
         html {
@@ -86,20 +88,10 @@
         }
     </style>
 
-    <style>
-        .forgot-link {
-            color: #027dca; /* 文字顏色 */
-            text-decoration: none; /* 移除底線 */
-            font-weight: bold; /* 粗體字 */
-            font-size:smaller;
-        }
 
-            .forgot-link:hover {
-                text-decoration: underline; /* 滑鼠移上時顯示底線 */
-            }
-    </style>
 </head>
 <body>
+
     <div class="login-view container-fluid">
         <div class="row justify-content-center">
             <div class="login-table col-12 col-sm-10 col-md-8 mt-sm-3 p-0 d-flex justify-content-center">
@@ -109,34 +101,41 @@
                             <img class="logo" src="~/lib/login/image/fet_log_new.png" />
                             <span class="display-6 text-center fw-bold">Facilities T.T</span>
                         </div>
-                        <div>
-                            <label for="Role" class="form-label">使用者 </label>
-                            <select id="Role" class="form-control">
-                                <option value="VENDOR">廠商</option>
-                            </select>
-                        </div>
+
                         <hr />
                         <div class="mt-3">
-                            <label for="Act" class="form-label">帳號 </label>
-                            <input type="text" class="form-control" id="AC" autocomplete="username" placeholder="" />
+                            <label for="Act" class="form-label">帳號</label>
+                            <input type="text" class="form-control" id="AC" placeholder="" />
                         </div>
-
+                        <div class="mt-3">
+                            <label for="Act" class="form-label">聯絡電話</label>
+                            <input type="text" class="form-control" id="cpTel" placeholder="" maxlength="20" />
+                        </div>
                         <div class="mt-1">
-                            <label for="Pd" class="form-label">密碼</label>
+                            <label for="Pd" class="form-label">新密碼</label>
                             <div class="input-group">
-                                <input id="PD" type="password" class="form-control" autocomplete="current-password" placeholder="" />
+                                <input id="newPD" type="password" class="form-control" placeholder="" maxlength="10" />
                                 <div id="PdDisplay" class="input-group-text">
                                     <i class="fa fa-eye" id="PdEye"></i>
                                 </div>
                             </div>
-                            <a href='@Url.Action("Index","ChangePw")' target="_blank" class="forgot-link">變更密碼</a>
+
+                        </div>
+                        <div class="mt-1">
+                            <label for="Pd" class="form-label">確認密碼</label>
+                            <div class="input-group">
+                                <input id="checkNewPD" type="password" class="form-control" placeholder="" maxlength="10" />
+                                <div id="PdDisplay2" class="input-group-text">
+                                    <i class="fa fa-eye" id="PdEye2"></i>
+                                </div>
+                            </div>
 
                         </div>
 
-                        <div class="mt-2">
+                        <div class="mt-1">
                             <label for="Pd" class="form-label">驗證碼</label>
                             <div class="input-group">
-                                <input class="form-control" type="text" name="captcha" id="captcha" required style="width:80px;" maxlength="4"/>
+                                <input class="form-control" type="text" name="captcha" id="captcha" required style="width:80px;" maxlength="4" />
                                 <img id="imgCaptcha" src="" style="cursor:pointer;" title="點擊重新產生" />
                             </div>
                         </div>
@@ -145,14 +144,14 @@
                         </div>
 
                         <div class="mt-4 text-center">
-                            <button type="submit" class="btn btn-confirm px-4 py-2">登入</button>
+                            <button type="submit" class="btn btn-confirm px-4 py-2">變更密碼</button>
                         </div>
 
                         <br />
 
                         @* <div class="d-flex justify-content-center">
-                        <span>請使用[<a href="javascript:void(0)">NT Account</a>]與[<a href="javascript:void(0)">密碼</a>]登入</span>
-                        </div> *@
+                            <span>請使用[<a href="javascript:void(0)">NT Account</a>]與[<a href="javascript:void(0)">密碼</a>]登入</span>
+                            </div> *@
 
                         <br />
 
@@ -165,31 +164,38 @@
         </div>
 
         @* <div class="row mt-2 justify-content-center">
-        <div class="login-info col-12 col-sm-10 p-0 d-flex justify-content-center">
-        <div class="form-mask w-100 d-flex justify-content-center">
-        <table class="login-table w-100">
-        <thead>
-        <tr>
-        <th>
-        使用手冊
-        </th>
-        <th>
-        公告事項
-        </th>
-        </tr>
-        </thead>
-        <tbody>
+            <div class="login-info col-12 col-sm-10 p-0 d-flex justify-content-center">
+            <div class="form-mask w-100 d-flex justify-content-center">
+            <table class="login-table w-100">
+            <thead>
+            <tr>
+            <th>
+            使用手冊
+            </th>
+            <th>
+            公告事項
+            </th>
+            </tr>
+            </thead>
+            <tbody>
 
-        </tbody>
-        </table>
-        </div>
-        </div>
-        </div> *@
+            </tbody>
+            </table>
+            </div>
+            </div>
+            </div> *@
     </div>
 
-    <div id="loader-mask" style="position:fixed; top:0 ;width:100%;height:100%;background-color:#80808080;display:none">
-    </div>
+    @*<div id="loader-mask" style="position:fixed; top:0 ;width:100%;height:100%;background-color:#80808080;display:none">
+        </div>*@
+
     <script src="~/lib/viho/assets/js/jquery-3.5.1.min.js"></script>
+    <script src="~/lib/viho/assets/js/sweet-alert/sweetalert.min.js"></script>
+    <script src="~/js/handlebars.min-v4.7.7.js"></script>
+
+    @*@Html.Partial("~/Views/Shared/_Loader.cshtml")*@
+
+
     <script>
         var captchaId = "";
 
@@ -201,11 +207,10 @@
             changeCaptcha(img);
         });
 
-        const $Loder = $('#loader-mask');
 
         function changeCaptcha(img) {
             $.ajax({
-                url: '@(config.GetBackendUrl() + Url.Action("GetCaptcha", "Login"))',
+                url: '@(config.GetBackendUrl() + Url.Action("GetCaptcha", "ChangePw"))',
                 type: 'Get',
                 xhrFields: {
                     withCredentials: true // ← 這個讓瀏覽器攜帶 Cookie
@@ -227,7 +232,6 @@
                     $errorMsg.html("取得驗證碼失敗，請稍後再試。");
                 }
             }).always(() => {
-                $Loder.hide();
             })
         }
 
@@ -267,8 +271,16 @@
             $('#PdDisplay').click(function (e) {
                 $('#PdEye').toggleClass('fa-eye');
                 $('#PdEye').toggleClass('fa-eye-slash');
-                let setPdType = $('#PD').prop('type') == 'password' ? 'text' : 'password';
-                $('#PD').prop('type', setPdType);
+                let setPdType = $('#newPD').prop('type') == 'password' ? 'text' : 'password';
+                $('#newPD').prop('type', setPdType);
+            });
+
+            $('#PdDisplay2').click(function (e)
+            {
+                $('#PdEye2').toggleClass('fa-eye')
+                $('#PdEye2').toggleClass('fa-eye-slash')
+                let setPdType = $('#checkNewPD').prop('type') == 'password' ? 'text' : 'password'
+                $('#checkNewPD').prop('type', setPdType)
             });
 
             //FormSubmit事件註冊
@@ -279,7 +291,7 @@
                 CaptchaCode = $('#captcha').val();
                 //檢查驗證碼
                 $.ajax({
-                    url: '@(config.GetBackendUrl() + Url.Action("VerifyCaptcha", "Login"))',
+                    url: '@(config.GetBackendUrl() + Url.Action("VerifyCaptcha", "ChangePw"))',
                     type: 'POST',
                     xhrFields: {
                         withCredentials: true // ← 這個讓瀏覽器攜帶 Cookie
@@ -296,19 +308,42 @@
                         changeCaptcha(document.getElementById('imgCaptcha'));
 
                         if (data.Success) {
-                            let role = $('#Role').val();
+                            //let role = $('#Role').val();
                             let ac = $('#AC').val();
-                            let pd = $('#PD').val();
+                            let newPD = $('#newPD').val()
+                            let checkNewPD = $('#checkNewPD').val()
 
-                            if (!ac || !pd) {
-                                $errorMsg.html("請填入帳號、密碼");
+
+                            let cptel = $('#cpTel').val()
+                            cptel = cptel.replace(/\D/g, ''); //只將數字的部分送往後端
+
+                            if (!ac || !cptel || !newPD || !checkNewPD ) {
+                                $errorMsg.html("請填入帳號、聯絡電話、新密碼、確認密碼");
+                                return;
+                            }
+
+                            if (newPD !== checkNewPD)
+                            {
+                                $errorMsg.html("新密碼及確認密碼須一致")
+                                return
+                            }
+
+                            const pattern = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)[A-Za-z\d]{10}$/
+                            if (!pattern.test(newPD))
+                            {
+
+                                swal({
+                                    text: "密碼需符合以下條件：\n1. 長度為10\n2. 含至少一個英文大寫字母\n3. 含至少一個英文小寫字母\n4. 含至少一個數字",
+                                    icon: "info",
+                                    button: "確認"
+                                })
                                 return;
                             }
                             $errorMsg.html("");
-                            $Loder.show();
+                            //showLoader()
 
                             $.ajax({
-                                url: '@(config.GetBackendUrl() + Url.Action("Login", "Login"))',
+                                url: '@(config.GetBackendUrl() + Url.Action("Submit", "ChangePw"))',
                                 type: 'POST',
                                 xhrFields: {
                                     withCredentials: true // ← 這個讓瀏覽器攜帶 Cookie
@@ -317,34 +352,42 @@
                                     "Content-From": "Login"
                                 },
                                 data: {
-                                    Role: role,
                                     AC: ac,
-                                    PD: pd
+                                    NewPD: newPD,
+                                    cp_tel: cptel
                                 },
                                 success: function (data) {
-                                    if (data.Success) {
 
-                                        if (data.Success) {
-                                            const urlParams = new URLSearchParams(window.location.search);
-                                            const originUrl = urlParams.get('originUrl');
-                                            if (originUrl && originUrl.trim() !== '') {
-                                                window.location.href = decodeURIComponent(urlParams.get('originUrl'));
-                                            }
-                                            else {
-                                                window.location.href = "@Url.Action("Index", "Home")";
-                                            }
-                                        } else {
-                                            $errorMsg.html(data.Message);
-                                        }
+                                    console.log(data)
+                                    if (data.Success)
+                                    {
+                                        swal({
+                                            text: "密碼已成功更新",
+                                            icon: "success",
+                                            button: "確認"
+                                        }).then(() =>
+                                        {
+                                            window.location.href = "@Url.Action("Index", "Login")";
+                                        })
+                                        return;
                                     } else {
-                                        $errorMsg.html(data.Message);
+                                        swal({
+                                            text: data.Message,
+                                            icon: "error",
+                                            button: "確認"
+                                        })
+                                        return;
                                     }
                                 },
-                                error: function (xhr, status, error) {
-                                    $errorMsg.html("登入失敗，請稍後再試。");
+                                error: function (xhr, status, error)
+                                {
+                                    console.log(xhr)
+                                    console.log(status)
+                                    console.log(error)
+                                    $errorMsg.html("變更密碼失敗，請稍後再試。");
                                 }
                             }).always(() => {
-                                $Loder.hide();
+                                //hideLoader();
                             })
                         } else {
                             $errorMsg.html(data.Message);
@@ -354,7 +397,7 @@
                         $errorMsg.html("驗證碼檢查失敗，請稍後再試。");
                     }
                 }).always(() => {
-                    $Loder.hide();
+
                 })
             });
         });

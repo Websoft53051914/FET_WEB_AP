@@ -3,8 +3,12 @@ using System.Data;
 //using Npgsql;   // dotnet add package Npgsql
 using System.IO;
 using System.Text;
+using DocumentFormat.OpenXml.Wordprocessing;
+using FTT_API.Common;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models.Handler;
+using Microsoft.Graph.Models;
+using static Const.Enums;
 
 namespace FTT_API.Background
 {
@@ -37,12 +41,53 @@ namespace FTT_API.Background
 
                 //InsertLog("get TT data ! SQL=" + sql);
 
+                Dictionary<string, object> dic = new();
+                dic.Add("form_no", approve_formDTO.form_no);
+                //取得更新前的狀態
+                var oldEntity = baseHandler.GetDBHelper().Find<approve_formEntity>("select * from approve_form where form_no=@form_no ", dic);
+
                 UpdateForm(approve_formDTO.form_no);
                 InsertFormDesc(approve_formDTO.form_no);
+
+                //取得更新完的狀態
+                var newEntity = baseHandler.GetDBHelper().Find<approve_formEntity>("select * from approve_form where form_no=@form_no ", dic);
+
+                MailPoolHandler _MailPoolHandlerHandler = new MailPoolHandler();
+                var result = Method.CreateMailPool(approve_formDTO.form_no, oldEntity.status, newEntity.status, _MailPoolHandlerHandler);
+                if (!string.IsNullOrEmpty(result))
+                {
+                    var entity = new TB_Control_LogEntity()
+                    {
+                        IP = Method.GetClientIPAddress(),
+                        Status = ((int)LogStatusEnum.Success).ToString(),
+                        ControllerName = "Background FETTaskHelper",
+                        ActionName = "Send_TT_No_RootCause",
+                        Exception = result,
+                        Account = "service",
+                        Name = "service",
+                        LogTime = DateTime.Now,
+                        Token = "",
+                    };
+                    TB_Control_LogHandler _BaseDBHandler = new TB_Control_LogHandler();
+                    _BaseDBHandler.Insert(entity);
+                }
             }
             catch (Exception ex)
             {
-                //ErrorLog("get TT data fail! " + sql, ex);
+                var entity = new TB_Control_LogEntity()
+                {
+                    IP = Method.GetClientIPAddress(),
+                    Status = ((int)LogStatusEnum.Success).ToString(),
+                    ControllerName = "Background FETTaskHelper",
+                    ActionName = "Send_TT_No_RootCause",
+                    Exception = ex.ToString(),
+                    Account = "service",
+                    Name = "service",
+                    LogTime = DateTime.Now,
+                    Token = "",
+                };
+                TB_Control_LogHandler _BaseDBHandler = new TB_Control_LogHandler();
+                _BaseDBHandler.Insert(entity);
             }
         }
 

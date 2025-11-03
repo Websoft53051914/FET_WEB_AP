@@ -15,6 +15,8 @@ using System.Security.Claims;
 using Const.VO;
 using FEE_VENDER_API.Common;
 using Const;
+using FTT_VENDER_API.Models.Handler;
+using static FTT_VENDER_API.Models.Handler.MailPoolHandler;
 
 namespace FTT_VENDER_API.Common
 {
@@ -667,5 +669,164 @@ namespace FTT_VENDER_API.Common
             }
         }
 
+        public static string CreateMailPool(string form_no, string oldStatus, string newStatus, MailPoolHandler _MailPoolHandler)
+        {
+            var dtTime = DateTime.Now;
+
+            try
+            {
+                if (!string.IsNullOrEmpty(newStatus) && newStatus != oldStatus)
+                {
+                    var mail_reciver = "";
+                    var mail_reciver_cc = "";
+                    var reviverName = "";
+                    var list = _MailPoolHandler.FindMailPoolRuleList(oldStatus + "," + newStatus);
+                    foreach (var item in list)
+                    {
+                        var _AccessRole = _MailPoolHandler.FindAccessRole(form_no, item.mail_reciver);
+                        if (_AccessRole != null)
+                        {
+                            //取得收件人
+                            mail_reciver = GetReciverMail(_MailPoolHandler, _AccessRole, item.mail_reciver, out reviverName);
+
+                            List<string> mails = new();
+
+                            //取得CC
+                            if (!string.IsNullOrEmpty(item.mail_reciver_cc))
+                            {
+                                var ccs = item.mail_reciver_cc.Split(',');
+                                foreach (var cc in ccs)
+                                {
+                                    mails.Add(GetReciverMail(_MailPoolHandler, _AccessRole, item.mail_reciver, out reviverName));
+                                }
+                            }
+
+                            //取得appsettings.json CC
+                            var other_cc = Method.GetAppSettingsDataByName(oldStatus + "," + newStatus);
+                            if (!string.IsNullOrEmpty(other_cc))
+                            {
+                                mails.AddRange(other_cc.Split(','));
+                            }
+
+                            mail_reciver_cc = string.Join(",", mails);
+                        }
+
+                        if (!string.IsNullOrEmpty(mail_reciver))
+                        {
+                            var fttForm = _MailPoolHandler.GetFttForm(form_no);
+
+                            _MailPoolHandler.Insert(new MailPoolEntity()
+                            {
+                                CreateTime = dtTime,
+                                Creator = 0,
+                                Updater = 0,
+                                UpdateTime = dtTime,
+                                SendStatus = 0,
+                                EstimateSendTime = dtTime,
+
+                                DestinationEmail = mail_reciver,
+                                DestinationEmail_CC = mail_reciver_cc,
+                                Subject = item.mailsubject
+                                .Replace("([FORM_NO])", form_no)
+                                .Replace("([STORE])", reviverName)
+                                .Replace("([VENDOR])", reviverName)
+                                ,
+                                Status = 1,
+                                Content =
+                                "<html>" +
+                                item.mailhead
+                                .Replace("([FORM_NO])", form_no)
+                                .Replace("([STORE])", reviverName)
+                                .Replace("([VENDOR])", reviverName)
+                                .Replace("([MailURL])", Method.GetAppSettingsDataByName("MailURL"))
+                                .Replace("([MailURL_VENDOR])", Method.GetAppSettingsDataByName("MailURL_VENDOR"))
+                                + "<br>"
+                                + "<br>"
+                                + item.mailcontent
+                                .Replace("([FORM_NO])", form_no)
+                                .Replace("([STORE])", reviverName)
+                                .Replace("([VENDOR])", reviverName)
+
+                                .Replace("([EMPNAME])", fttForm.empname)
+                                .Replace("([CREATETIME])", DateTime.Parse(fttForm.createtime).ToString("yyyy/MM/dd HH:mm:ss"))
+                                .Replace("([CATEGORY_NAME])", fttForm.category_name)
+
+                                + "</html>"
+                                ,
+                            });
+
+                            _MailPoolHandler.Commit();
+                        }
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+
+                return ex.ToString();
+            }
+
+            return "";
+        }
+
+        private static string GetReciverMail(MailPoolHandler _MailPoolHandler, access_roleDTO _AccessRole, string mail_reciver, out string reviverName)
+        {
+            var revier = "";
+            reviverName = "";
+            switch (mail_reciver)
+            {
+                case "MANAGER"://訂單的管理者
+                               //取得管理者mail
+                    var userProfile = _MailPoolHandler.GetFetUserProfile(_AccessRole.empno);
+                    if (userProfile != null)
+                    {
+                        revier = userProfile.email;
+                    }
+                    break;
+                case "SUBMITTER"://creater
+                                 //取得申請者mail
+                    var storeProfile = _MailPoolHandler.GetStoreProfile(_AccessRole.deptcode);
+                    if (storeProfile != null)
+                    {
+                        revier = storeProfile.email;
+                    }
+
+                    if (string.IsNullOrEmpty(reviverName))
+                    {
+                        reviverName = storeProfile.shop_name;
+                    }
+                    break;
+                case "VENDOR"://訂單的廠商
+                    var store_vender_profile = _MailPoolHandler.GetStoreVenderProfile(_AccessRole.deptcode);
+                    if (store_vender_profile != null)
+                    {
+                        revier = store_vender_profile.email;
+                    }
+                    if (string.IsNullOrEmpty(reviverName))
+                    {
+                        reviverName = store_vender_profile.merchant_name;
+                    }
+                    break;
+
+                case "SECURITY":
+                case "ASSETER":
+                case "ADMIN":
+                    var emails = _MailPoolHandler.GetEmailListByRole(mail_reciver);
+
+                    if (emails.Count > 0)
+                    {
+                        var temps = emails.Where(w => !string.IsNullOrEmpty(w.email)).Select(s => s.email).ToList();
+                        if (temps != null && temps.Count > 0)
+                        {
+                            revier = string.Join(",", temps);
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+
+            return revier;
+        }
     }
 }

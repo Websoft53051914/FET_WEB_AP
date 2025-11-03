@@ -278,11 +278,11 @@
                         itemTemplate: (value, item) => {
 
                             $div = $('<div>')
-                            $editButton = $('<a>')
-                                .attr({
-                                    'class': 'jsgrid-button jsgrid-edit-button d-inline-block',
-                                    'href': "",
-                                })
+                            // $editButton = $('<a>')
+                            //     .attr({
+                            //         'class': 'jsgrid-button jsgrid-edit-button d-inline-block',
+                            //         'href': "",
+                            //     })
 
                             $deleteButton = $('<button>')
                                 .attr({
@@ -328,8 +328,8 @@
                                     });
                                 });
 
-                            var result = $div.append($editButton);
-                            result.append($deleteButton);
+                            // var result = $div.append($editButton);
+                            var result = $div.append($deleteButton);
                             return result;
                         }
                     },

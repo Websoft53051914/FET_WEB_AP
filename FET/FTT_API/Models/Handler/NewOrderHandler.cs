@@ -1,5 +1,6 @@
 ﻿using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Common.OriginClass.EntiityClass;
+using Microsoft.Graph.Models;
 using System.Text;
 using System.Transactions;
 
@@ -47,12 +48,12 @@ LIMIT 1
 SELECT *
 FROM TABLE(form_dispatch_get(@IVRCODE, @CISID, @IFWARRANT));
 ";
-#if DEBUG
+//#if DEBUG
             sql = $@"
 SELECT *
 FROM form_dispatch_get(@IVRCODE, @CISID, @IFWARRANT);
 ";
-#endif
+//#endif
 
             return GetDBHelper().FindList<FormDispatchGetDTO>(sql, paras);
         }
