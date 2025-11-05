@@ -212,46 +212,49 @@ WHERE  INSTR(actype, @actype) > 0) ");
             }
 
             string sql = $@"
-WITH recursive path_cte AS
-(
-       SELECT cisid,
-              parentsid,
-              cisid                   AS leaf_id,
-              ARRAY[cisid]::NUMERIC[] AS path_ids
-       FROM   ci_relations
-       WHERE  cisid IN @IdIn
-       UNION ALL
-       SELECT tn.cisid,
-              tn.parentsid,
-              cte.leaf_id,
-              ARRAY[tn.cisid]::NUMERIC[]
-                     || cte.path_ids
-       FROM   ci_relations tn
-       join   path_cte cte
-       ON     tn.cisid = cte.parentsid )
-SELECT ci.*
-       , circ.notes
-       , circ.descr
-       , t_path.path_csv
-       , (SELECT ciname
-          FROM   ci_relations ci3
-          WHERE  ci3.cisid = ci.parentsid
-                 AND rownum = 1) || '-' || ci.ciname AS fullname
-       , EXISTS(SELECT 1
-                FROM   ci_relations ci2
-                WHERE  ci2.parentsid = ci.cisid
-            ) AS HasChildren
-FROM   ci_relations ci
+WITH RECURSIVE path_cte(cisid, parentsid, leaf_id, path_ids) AS (
+    SELECT 
+        cisid,
+        parentsid,
+        cisid AS leaf_id,
+        ARRAY[cisid::text] AS path_ids
+    FROM ci_relations
+    UNION ALL
+    SELECT 
+        tn.cisid,
+        tn.parentsid,
+        cte.leaf_id,
+        ARRAY[tn.cisid::text] || cte.path_ids
+    FROM ci_relations tn
+    JOIN path_cte cte ON tn.cisid = cte.parentsid
+)
+SELECT 
+    ci.*,
+    circ.notes,
+    circ.descr,
+    t_path.path_csv,
+    (
+        SELECT ci3.ciname
+        FROM ci_relations ci3
+        WHERE ci3.cisid = ci.parentsid
+        AND ROWNUM = 1
+    ) || '-' || ci.ciname AS fullname,
+    EXISTS (
+        SELECT 1
+        FROM ci_relations ci2
+        WHERE ci2.parentsid = ci.cisid
+    ) AS HasChildren
+FROM ci_relations ci
 LEFT JOIN ci_relations_category circ
-        ON circ.cisid = ci.cisid
+       ON circ.cisid = ci.cisid
 LEFT JOIN (
-SELECT leaf_id,
-       array_to_string(path_ids, ',') AS path_csv
-FROM   path_cte
-WHERE  parentsid = 1006
-) t_path 
-        ON t_path.leaf_id = ci.cisid
-WHERE  1 = 1
+    SELECT 
+        leaf_id,
+        array_to_string(path_ids, ',') AS path_csv
+    FROM path_cte
+) t_path
+       ON t_path.leaf_id = ci.cisid
+WHERE 1 = 1
 {condition}
 ORDER  BY ciname 
 ";
