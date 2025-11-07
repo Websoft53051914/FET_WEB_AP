@@ -23,12 +23,41 @@ namespace FTT_API.Models.Handler
         }
 
         /// <summary>
+        /// 紀錄成功訊息於資料庫
+        /// </summary>
+        /// <param name="description"></param>
+        protected void LogSuccess(string description = null)
+        {
+            var entity = new TB_Control_LogEntity()
+            {
+                IP = Method.GetClientIPAddress(),
+                Status = ((int)LogStatusEnum.Success).ToString(),
+                ControllerName = "login",
+                ActionName = "login",
+                Exception = description,
+                Account = "system",
+                Name = "system",
+                LogTime = DateTime.Now,
+                Token = string.Empty,
+            };
+
+            InsertLog(entity);
+        }
+
+        protected void InsertLog(TB_Control_LogEntity entity)
+        {
+            TB_Control_LogHandler _BaseDBHandler = new TB_Control_LogHandler();
+            _BaseDBHandler.Insert(entity);
+        }
+
+        /// <summary>
         /// 登入檢查
         /// </summary>
         /// <param name="vm">登入資訊</param>
         /// <returns>錯誤訊息</returns>
         public (LoginResultVO, SessionVO?) Login(LoginVM vm)
         {
+            LogSuccess("login/login/login---開始");
             bool logLoginStatus = false;
             bool boolIsAuthenticated = false;
             string logAccount = vm.AC;
@@ -45,12 +74,14 @@ namespace FTT_API.Models.Handler
 
             JwtConfigVO jwtConfigVO = new();
 
+            LogSuccess("login/login/login/---vm.Role=" + vm.Role);
             if (vm.Role == "RETAIL" || vm.Role == "EMPLOYEE")
             {
                 if (checkUserAuthenticated == true)
                 {
                     try
                     {
+                        LogSuccess("login/login/login/IsAuthenticated---開始");
                         if (true == adAuth.IsAuthenticated(adDomain, vm.AC, vm.PD))
                         {
                             boolIsAuthenticated = true;
@@ -59,22 +90,28 @@ namespace FTT_API.Models.Handler
                         {
                             errorMsg = "帳號或密碼輸入錯誤，請重新輸入！";
                         }
+                        LogSuccess("login/login/login/IsAuthenticated---結束");
 
+
+                        LogSuccess("login/login/login/---vm.IVR_Code=" + vm.IVR_Code);
                         if (!vm.IVR_Code.IsNullOrEmpty())
                         {
                             Dictionary<string, object> condition = new Dictionary<string, object>()
                             {
                                 { "IVR_Code", vm.IVR_Code },
                             };
+                            LogSuccess("login/login/login/CheckDataExist(STORE_PROFILE)---開始");
                             if (!base.CheckDataExist("STORE_PROFILE", condition))
                             {
                                 errorMsg = "IVRCode輸入錯誤，請重新輸入！";
                                 boolIsAuthenticated = false;
                             }
+                            LogSuccess("login/login/login/CheckDataExist(STORE_PROFILE)---結束");
                         }
                     }
                     catch (Exception ex)
                     {
+                        LogSuccess("login/login/login/---row 114 =" + ex.Message);
                         errorMsg = "Error authenticating. [" + adDomain + "]  : " + ex.Message;
                     }
                 }
@@ -86,7 +123,10 @@ namespace FTT_API.Models.Handler
 
                 if (boolIsAuthenticated)
                 {
+                    LogSuccess("login/login/login/Employee(checkUserAuthenticated)---開始 ac=" + vm.AC);
                     Employee emp = new Employee(checkUserAuthenticated, vm.AC, vm.PD, "FET", false, "FTT");
+                    LogSuccess("login/login/login/Employee(checkUserAuthenticated)---結束 emp=" + Newtonsoft.Json.JsonConvert.SerializeObject(emp));
+
                     if (emp.hasData())
                     {
                         logLoginStatus = true;
@@ -101,8 +141,13 @@ namespace FTT_API.Models.Handler
                             usertype = vm.Role,
                             ivrcode = vm.IVR_Code.IsNullOrEmpty() ? "NULL" : vm.IVR_Code,
                         };
+                        LogSuccess("login/login/login/GetUserRole---開始");
                         sessionVO.userrole = SystemModelClass.GetUserRole(sessionVO.empno, sessionVO);
+                        LogSuccess("login/login/login/GetUserRole---結束 sessionVO.userrole=" + sessionVO.userrole);
+
+                        LogSuccess("login/login/login/GenerateJwtToken---開始");
                         token = Method.GenerateJwtToken(sessionVO, jwtConfigVO);
+                        LogSuccess("login/login/login/GenerateJwtToken---結束");
                     }
                     else
                     {
@@ -181,6 +226,7 @@ namespace FTT_API.Models.Handler
             }
 
 
+            LogSuccess("login/login/login/將登入資訊寫入Log Table---開始");
             // 將登入資訊寫入Log Table，以利事後分析是否有不正常登入
             try
             {
@@ -231,12 +277,14 @@ namespace FTT_API.Models.Handler
                 }
 
                 base.dbHelper.Commit();
+                LogSuccess("login/login/login/將登入資訊寫入Log Table---結束");
 
             }
             catch (Exception err)
             {
 
             }
+            LogSuccess("login/login/login---結束");
             return (new LoginResultVO()
             {
                 ErrorMsg = errorMsg,

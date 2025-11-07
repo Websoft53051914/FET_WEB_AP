@@ -331,7 +331,7 @@ namespace FTT_API.Controllers
                     if (funcId == Enums.FuncID.Pending_View.ToInt())
                     {
                         v_ftt_form2SQL v_Ftt_Form2SQL = new();
-                        PageResult<v_ftt_form2DTO> pageResult = v_Ftt_Form2SQL.FindPageList(pageEntity, new v_ftt_form2DTO
+                        PageResult<v_ftt_form2DTO> pageResult = v_Ftt_Form2SQL.FindPageListForCount(pageEntity, new v_ftt_form2DTO
                         {
                             USERROLE = _sessionVO.userrole,
                             IVRCODE = _sessionVO.ivrcode,
@@ -342,7 +342,7 @@ namespace FTT_API.Controllers
                     else if (funcId == Enums.FuncID.InProcess_View.ToInt())
                     {
                         InProcessHandler handler = new(_configHelper, HttpContext);
-                        PageResult<v_ftt_form2DTO> pageResult = handler.FindPageList(pageEntity, new v_ftt_form2DTO
+                        PageResult<v_ftt_form2DTO> pageResult = handler.FindPageListForCount(pageEntity, new v_ftt_form2DTO
                         {
                             USERROLE = _sessionVO.userrole,
                             IVRCODE = _sessionVO.ivrcode,
@@ -353,14 +353,14 @@ namespace FTT_API.Controllers
                     else if (funcId == Enums.FuncID.OnsitePrint_View.ToInt())
                     {
                         OnsitePrintHandler handler = new(_configHelper);
-                        PageResult<VFttForm2DTO> pageResultPrwp = handler.GetPageListPrwp(pageEntity, _sessionVO.ivrcode);
-                        PageResult<VFttForm2DTO> pageResultConfirm = handler.GetPageListConfirm(pageEntity, _sessionVO.ivrcode);
+                        PageResult<VFttForm2DTO> pageResultPrwp = handler.GetPageListPrwpForCount(pageEntity, _sessionVO.ivrcode);
+                        PageResult<VFttForm2DTO> pageResultConfirm = handler.GetPageListConfirmForCount(pageEntity, _sessionVO.ivrcode);
                         result.Add(funcId.ToString(), pageResultPrwp.DataCount + pageResultConfirm.DataCount);
                     }
                     else if (funcId == Enums.FuncID.CaseClosed_View.ToInt())
                     {
                         CaseClosedHandler handler = new(_configHelper, HttpContext);
-                        PageResult<v_ftt_form2DTO> pageResult = handler.FindPageList(pageEntity, new v_ftt_form2DTO
+                        PageResult<v_ftt_form2DTO> pageResult = handler.FindPageListForCount(pageEntity, new v_ftt_form2DTO
                         {
                             USERROLE = _sessionVO.userrole,
                             IVRCODE = _sessionVO.ivrcode,

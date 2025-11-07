@@ -203,7 +203,7 @@ VALUES(@Subject, @Content, @EstimateSendTime, @RealSendTime, @SendStatus, @Error
         public void UpdateVenderProfileRemindStatus(store_vender_profileDTO StoreVenderProfile)
         {
             var UpdateSql = @"
-UPDATE public.store_vender_profile
+UPDATE store_vender_profile
 SET 
   is_pwchange_remind    = @is_pwchange_remind  
 WHERE
@@ -223,7 +223,7 @@ WHERE
         {
 
             var UpdateSql = @"
-            UPDATE public.store_vender_profile
+            UPDATE store_vender_profile
             SET                      
               locked                = @locked,
               locked_reason         = @locked_reason             
@@ -322,7 +322,7 @@ WHERE
         *, 
         ROW_NUMBER() OVER (PARTITION BY account ORDER BY createtime DESC) AS rn 
     FROM 
-        public.user_login_log
+        user_login_log
     WHERE
         createtime < NOW() - INTERVAL '90 days'
 ) t 

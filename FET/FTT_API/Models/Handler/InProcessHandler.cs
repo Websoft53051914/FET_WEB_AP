@@ -131,6 +131,70 @@ ORDER  BY updatetime DESC
             return result;
         }
 
+        internal PageResult<v_ftt_form2DTO> FindPageListForCount(PageEntity pageEntity, v_ftt_form2DTO dto)
+        {
+            BaseDBHandler baseHandler = new BaseDBHandler();
+            Dictionary<string, object> paras = new Dictionary<string, object>();
+            paras.Add("USERROLE", dto.USERROLE);
+            paras.Add("EMPNO", dto.EMPNO);
+            paras.Add("IVRCODE", dto.IVRCODE);
+
+            string originSQL = @"
+
+SELECT DISTINCT form_no                                      AS form_no
+FROM   v_ftt_form2
+WHERE  StatusId NOT IN ( 'CLOSE', 'REJECT', 'CANCEL', 'NOSHOW' )
+       AND form_no IN (SELECT form_no
+                       FROM   access_role
+                       WHERE  User_Type = @USERROLE
+                               OR empno = @EMPNO
+                               OR deptcode = @IVRCODE) 
+";
+
+            switch (dto.USERROLE)
+            {
+                case "VENDOR":
+                    originSQL = @"
+SELECT DISTINCT form_no                                      AS form_no
+FROM   v_ftt_form2
+WHERE  StatusId IN ( 'AGREE', 'OFFER', 'COMPLETE' )
+       AND form_no IN (SELECT form_no
+                       FROM   access_role
+                       WHERE  User_Type = @USERROLE
+                              AND deptcode = @IVRCODE
+                              AND @EMPNO IS NOT NULL) 
+";
+                    break;
+                case "MANAGER":
+                    originSQL = @"
+SELECT DISTINCT form_no                                      AS form_no
+FROM   v_ftt_form2
+WHERE  StatusId NOT IN ( 'CLOSE', 'REJECT', 'CANCEL', 'NOSHOW' )
+       AND form_no IN (SELECT form_no
+                       FROM   access_role
+                       WHERE  User_Type = @USERROLE
+                              AND empno = @EMPNO
+                              AND @IVRCODE IS NOT NULL) 
+";
+                    break;
+                default:
+                    break;
+            }
+
+            string countSQL = @"
+  SELECT  
+    count(0)
+  FROM 
+  (
+" + originSQL + @"
+) as pageData
+ where 1=1 
+";
+
+            var result = dbHelper.FindPageList<v_ftt_form2DTO>(originSQL, countSQL, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
+            return result;
+        }
+
         internal string GetFORM_TYPE(string form_no)
         {
             return GetFieldData("FORM_TYPE", "APPROVE_FORM", new Dictionary<string, object>() { { "FORM_NO", form_no } });

@@ -55,6 +55,41 @@ WHERE  statusid IN ( 'CLOSE', 'CANCEL', 'REJECT' )
             var result = dbHelper.FindPageList<v_ftt_form2DTO>(originSQL, countSQL, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
             return result;
         }
-         
+
+        internal PageResult<v_ftt_form2DTO> FindPageListForCount(PageEntity pageEntity, v_ftt_form2DTO dto)
+        {
+            //SELECT DISTINCT form_no as 工單號碼,tt_category as 報修型態,l2_desc as 報修類別,ciname as 報修品項,to_char(createtime,'yyyy/mm/dd hh24:mi:ss') as 報修日期,shop_name as 店名,statusname as 工單狀態,to_char(updatetime,'yyyy/mm/dd hh24:mi:ss') as 更新日期 FROM v_ftt_form2 WHERE statusid in ('CLOSE','CANCEL','REJECT') AND (UPDATETIME > SYSDATE-180) AND  form_no in (select form_no from ACCESS_ROLE where user_type=:USERROLE or empno=:EMPNO or deptcode=:IVRCODE)
+            Dictionary<string, object> paras = new Dictionary<string, object>();
+            paras.Add("USERROLE", dto.USERROLE);
+            paras.Add("EMPNO", dto.EMPNO);
+            paras.Add("IVRCODE", dto.IVRCODE);
+
+            string originSQL = @"
+SELECT DISTINCT form_no                                      AS form_no 
+FROM   v_ftt_form2
+WHERE  statusid IN ( 'CLOSE', 'CANCEL', 'REJECT' )
+       AND ( updatetime > SYSDATE - 180 )
+       AND form_no IN (SELECT form_no
+                       FROM   access_role
+                       WHERE  User_Type = @USERROLE
+                               AND deptcode = @IVRCODE
+                               AND @EMPNO IS NOT NULL)
+
+";
+
+            string countSQL = @"
+  SELECT  
+    count(0)
+  FROM 
+  (
+" + originSQL + @"
+) as pageData
+ where 1=1 
+";
+
+            var result = dbHelper.FindPageList<v_ftt_form2DTO>(originSQL, countSQL, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
+            return result;
+        }
+
     }
 }

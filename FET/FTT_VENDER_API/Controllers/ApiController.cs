@@ -223,7 +223,7 @@ namespace FTT_VENDER_API.Controllers
                     if (funcId == Enums.FuncID.InProcess_View.ToInt())
                     {
                         InProcessHandler handler = new(_configHelper, HttpContext);
-                        PageResult<v_ftt_form2DTO> pageResult = handler.FindPageList(pageEntity, new v_ftt_form2DTO
+                        PageResult<v_ftt_form2DTO> pageResult = handler.FindPageListForCount(pageEntity, new v_ftt_form2DTO
                         {
                             USERROLE = _sessionVO.userrole,
                             IVRCODE = _sessionVO.ivrcode,
@@ -237,7 +237,7 @@ namespace FTT_VENDER_API.Controllers
                         {
                             SessionVO = _sessionVO
                         };
-                        PageResult<VFttForm2DTO> pageResult = handler.GetPageList(pageEntity);
+                        PageResult<VFttForm2DTO> pageResult = handler.GetPageListForCount(pageEntity);
                         result.Add(funcId.ToString(), pageResult.DataCount);
                     }
                     else if (funcId == Enums.FuncID.Dispatched_View.ToInt())
@@ -246,13 +246,13 @@ namespace FTT_VENDER_API.Controllers
                         {
                             SessionVO = _sessionVO
                         };
-                        PageResult<VFttForm2DTO> pageResult = handler.GetPageList(pageEntity);
+                        PageResult<VFttForm2DTO> pageResult = handler.GetPageListForCount(pageEntity);
                         result.Add(funcId.ToString(), pageResult.DataCount);
                     }
                     else if (funcId == Enums.FuncID.CaseClosed_View.ToInt())
                     {
                         CaseClosedHandler handler = new(_configHelper, HttpContext) { };
-                        PageResult<v_ftt_form2DTO> pageResult = handler.FindPageList(pageEntity, new v_ftt_form2DTO
+                        PageResult<v_ftt_form2DTO> pageResult = handler.FindPageListForCount(pageEntity, new v_ftt_form2DTO
                         {
                             USERROLE = _sessionVO.userrole,
                             IVRCODE = _sessionVO.ivrcode,

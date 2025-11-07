@@ -61,5 +61,38 @@ ORDER  BY updatetime DESC
             var result = dbHelper.FindPageList<v_ftt_form2DTO>(originSQL, countSQL, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
             return result;
         }
+
+        internal PageResult<v_ftt_form2DTO> FindPageListForCount(PageEntity pageEntity, v_ftt_form2DTO dto)
+        {
+            BaseDBHandler baseHandler = new BaseDBHandler();
+            Dictionary<string, object> paras = new Dictionary<string, object>();
+            paras.Add("USERROLE", dto.USERROLE);
+            paras.Add("EMPNO", dto.EMPNO);
+            paras.Add("IVRCODE", dto.IVRCODE);
+
+            string originSQL = @"
+SELECT DISTINCT form_no                                      AS form_no 
+FROM   v_ftt_form2
+WHERE  statusid IN ( 'AGREE', 'OFFER', 'COMPLETE', 'CONFIRM' )
+       AND form_no IN (SELECT form_no
+                       FROM   access_role
+                       WHERE  user_type = @USERROLE
+                              AND deptcode = @IVRCODE
+                              AND @EMPNO IS NOT NULL) 
+";
+
+            string countSQL = @"
+  SELECT  
+    count(0)
+  FROM 
+  (
+" + originSQL + @"
+) as pageData
+ where 1=1 
+";
+
+            var result = dbHelper.FindPageList<v_ftt_form2DTO>(originSQL, countSQL, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
+            return result;
+        }
     }
 }

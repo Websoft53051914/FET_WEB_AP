@@ -70,6 +70,35 @@ WHERE
 
             return GetDBHelper().FindPageList<VFttForm2DTO>(sql, sqlCount, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
         }
+        public PageResult<VFttForm2DTO> GetPageListPrwpForCount(PageEntity pageEntity, string ivrCode)
+        {
+            StringBuilder condition = new();
+            Dictionary<string, object> paras = new()
+            {
+                {"ivr_code", ivrCode }
+            };
+
+            string sql = $@"
+SELECT DISTINCT form_no 
+FROM   v_ftt_form2
+WHERE  statusid = 'PRWP'
+       AND form_no IN (SELECT form_no
+                       FROM   access_role
+                       WHERE  User_Type = 'VENDOR'
+                              AND deptcode = @ivr_code) 
+";
+            string sqlCount = $@"
+SELECT
+    COUNT(*)
+FROM(
+{sql}
+) AS pageData
+WHERE
+    1 = 1
+";
+
+            return GetDBHelper().FindPageList<VFttForm2DTO>(sql, sqlCount, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
+        }
 
         /// <summary>
         /// 取得狀態為 CONFIRM 的分頁資料
@@ -101,6 +130,34 @@ WHERE  statusid = 'CONFIRM'
                        FROM   access_role
                        WHERE  deptcode = @ivr_code)
 ORDER  BY vender 
+";
+            string sqlCount = $@"
+SELECT
+    COUNT(*)
+FROM(
+{sql}
+) AS pageData
+WHERE
+    1 = 1
+";
+
+            return GetDBHelper().FindPageList<VFttForm2DTO>(sql, sqlCount, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
+        }
+        public PageResult<VFttForm2DTO> GetPageListConfirmForCount(PageEntity pageEntity, string ivrCode)
+        {
+            StringBuilder condition = new();
+            Dictionary<string, object> paras = new()
+            {
+                {"ivr_code", ivrCode }
+            };
+
+            string sql = $@"
+SELECT DISTINCT form_no
+FROM   v_ftt_form2
+WHERE  statusid = 'CONFIRM'
+       AND form_no IN (SELECT form_no
+                       FROM   access_role
+                       WHERE  deptcode = @ivr_code) 
 ";
             string sqlCount = $@"
 SELECT

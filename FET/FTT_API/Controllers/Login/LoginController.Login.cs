@@ -43,8 +43,13 @@ namespace FTT_API.Controllers.Login
         {
             try
             {
+                this.LogSuccess("login/login---開始");
+
                 var loginHanlder = new LoginHandler(_configHelper, HttpContext);
+
+                this.LogSuccess("login/login---開始登入驗證");
                 (LoginResultVO resultVO, SessionVO? sessionVO) = loginHanlder.Login(vm);
+                this.LogSuccess("login/login---結束登入驗證");
 
                 if (!string.IsNullOrEmpty(resultVO.ErrorMsg))
                 {
@@ -101,6 +106,7 @@ namespace FTT_API.Controllers.Login
                 });
                 _sessionVO = sessionVO ?? new();
 
+                this.LogSuccess("login/login---結束");
                 this.LogSuccess("登入成功");
                 return JsonOK();
             }

@@ -34,7 +34,7 @@ namespace FTT_VENDER_API.Models.Handler
 
             string UpdateStoreVenderProfileSQL = "";
             Dictionary<string, object> ParasForUpdateStoreVenderProfile = new();
-            UpdateStoreVenderProfileSQL = @$"UPDATE public.store_vender_profile SET 
+            UpdateStoreVenderProfileSQL = @$"UPDATE store_vender_profile SET 
 merchant_password = @pw, 
 locked = @Locked, 
 locked_reason = @LockedReason, 

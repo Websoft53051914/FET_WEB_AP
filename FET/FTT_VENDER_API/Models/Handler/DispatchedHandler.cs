@@ -76,5 +76,43 @@ WHERE
 
             return GetDBHelper().FindPageList<VFttForm2DTO>(sql, sqlCount, pageEntity.CurrentPage, pageEntity.PageDataSize, paras, $"{pageEntity.Sort} {pageEntity.Asc}");
         }
+
+        /// <summary>
+        /// 取得分頁資料
+        /// </summary>
+        /// <returns></returns>
+        public PageResult<VFttForm2DTO> GetPageListForCount(PageEntity pageEntity)
+        {
+            StringBuilder condition = new();
+            Dictionary<string, object> paras = new()
+            {
+                { "ivr_code", SessionVO?.ivrcode ?? string.Empty },
+            };
+            if (string.IsNullOrWhiteSpace(pageEntity.Sort))
+            {
+                pageEntity.Sort = nameof(VFttForm2DTO.updatetime);
+                pageEntity.Asc = "DESC";
+            }
+
+            string sql = $@"
+SELECT DISTINCT form_no 
+FROM   v_ftt_form2
+WHERE  form_no IN (SELECT form_no
+                   FROM   access_role
+                   WHERE  deptcode = @ivr_code)
+       AND statusname IN( '已派工', '待料中' )
+";
+            string sqlCount = $@"
+SELECT
+    COUNT(*)
+FROM(
+{sql}
+) AS pageData
+WHERE
+    1 = 1
+";
+
+            return GetDBHelper().FindPageList<VFttForm2DTO>(sql, sqlCount, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
+        }
     }
 }

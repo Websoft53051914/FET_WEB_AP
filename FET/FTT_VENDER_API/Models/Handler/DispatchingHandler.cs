@@ -70,5 +70,42 @@ WHERE
 
             return GetDBHelper().FindPageList<VFttForm2DTO>(sql, sqlCount, pageEntity.CurrentPage, pageEntity.PageDataSize, paras, $"{pageEntity.Sort} {pageEntity.Asc}");
         }
+
+        public PageResult<VFttForm2DTO> GetPageListForCount(PageEntity pageEntity)
+        {
+            StringBuilder condition = new();
+            Dictionary<string, object> paras = new()
+            {
+                { "ivr_code", SessionVO?.ivrcode ?? string.Empty },
+                { "user_type", SessionVO?.userrole ?? string.Empty },
+                { "empno", SessionVO?.empno ?? string.Empty },
+            };
+
+            pageEntity.Sort = nameof(VFttForm2DTO.form_no);
+            pageEntity.Asc = "DESC";
+
+            string sql = $@"
+SELECT DISTINCT form_no                                         
+FROM   v_ftt_form2
+WHERE  form_no IN (SELECT form_no
+                   FROM   access_role
+                   WHERE  action = 'Y'
+                          AND deptcode = @ivr_code
+                          AND user_type = @user_type
+                          AND @empno IS NOT NULL)
+       AND statusname = '派工中'
+";
+            string sqlCount = $@"
+SELECT
+    COUNT(*)
+FROM(
+{sql}
+) AS pageData
+WHERE
+    1 = 1
+";
+
+            return GetDBHelper().FindPageList<VFttForm2DTO>(sql, sqlCount, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
+        }
     }
 }

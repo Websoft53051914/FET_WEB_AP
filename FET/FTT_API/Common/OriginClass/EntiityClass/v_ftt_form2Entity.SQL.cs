@@ -8,6 +8,41 @@ namespace FTT_API.Common.OriginClass.EntiityClass
 {
     public class v_ftt_form2SQL
     {
+        public PageResult<v_ftt_form2DTO> FindPageListForCount(PageEntity pageEntity, v_ftt_form2DTO dto)
+        {
+            BaseDBHandler baseHandler = new BaseDBHandler();
+            Dictionary<string, object> paras = new Dictionary<string, object>();
+            paras.Add("USERROLE", dto.USERROLE);
+            paras.Add("EMPNO", dto.EMPNO);
+            paras.Add("IVRCODE", dto.IVRCODE);
+
+            string originSQL = @"
+
+SELECT DISTINCT form_no                                        
+FROM   v_ftt_form2
+WHERE  form_no IN (SELECT form_no
+                   FROM   access_role
+                   WHERE  action = 'Y'
+                          AND ( User_Type = @USERROLE
+                                 OR empno = @EMPNO
+                                 OR deptcode = @IVRCODE ))
+       AND StatusId NOT IN ( 'CONFIRM' ) 
+";
+             
+            string countSQL = @"
+  SELECT  
+    count(0)
+  FROM 
+  (
+" + originSQL + @"
+) as pageData
+ where 1=1 
+";
+
+            var result = baseHandler.GetDBHelper().FindPageList<v_ftt_form2DTO>(originSQL, countSQL, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
+            return result;
+        }
+
         public PageResult<v_ftt_form2DTO> FindPageList(PageEntity pageEntity, v_ftt_form2DTO dto)
         {
             BaseDBHandler baseHandler = new BaseDBHandler();
