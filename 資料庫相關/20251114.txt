@@ -1,0 +1,24 @@
+-- Table: public.tb_file
+
+-- DROP TABLE IF EXISTS public.tb_file;
+
+CREATE TABLE IF NOT EXISTS public.tb_file
+(
+    id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
+    status integer DEFAULT 0,
+    creator character varying(100) COLLATE pg_catalog."default",
+    createtime timestamp(0) without time zone,
+    updater character varying(100) COLLATE pg_catalog."default",
+    updatetime timestamp(0) without time zone,
+    filename character varying(100) COLLATE pg_catalog."default",
+    destfilepath character varying(500) COLLATE pg_catalog."default",
+    fileext character varying(100) COLLATE pg_catalog."default",
+    filesize integer,
+    formno character varying(100) COLLATE pg_catalog."default",
+    CONSTRAINT tb_file_pkey PRIMARY KEY (id)
+)
+
+TABLESPACE pg_default;
+
+ALTER TABLE IF EXISTS public.tb_file
+    OWNER to enterprisedb;
