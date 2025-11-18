@@ -11,6 +11,7 @@ using static Org.BouncyCastle.Math.EC.ECCurve;
 namespace FTT_API.Controllers.QuoteMgt
 {
     [Route("[controller]")]
+    [Common.Attribute.CustomAuthorization]
     public class QuoteMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

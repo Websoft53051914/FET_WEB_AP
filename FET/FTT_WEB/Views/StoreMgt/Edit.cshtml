@@ -400,7 +400,7 @@
                                 .attr({
                                     'class': 'btn btn-secondary',
                                 })
-                                .html('選擇')
+                                .text('選擇')
                                 .on('click', () => {
                                     switch (dialogType) {
                                         case "AS":
@@ -472,18 +472,22 @@
                         var option;
                         for (var i = 0; i < data.Data.company_leaves.length; i++) {
                             var item = data.Data.company_leaves[i];
+                            var safeText = escapeHtml(item.Text);
+                            var safeValue = escapeHtml(item.Value);
                             if (i == 0)
-                                option = new Option(item.Text, item.Value, true, true);
+                                option = new Option(safeText, safeValue, true, true);
                             else
-                                option = new Option(item.Text, item.Value, false, false);
+                                option = new Option(safeText, safeValue, false, false);
                             $('#company_leaves').append(option);
                         }
                         for (var i = 0; i < data.Data.store_types.length; i++) {
                             var item = data.Data.store_types[i];
+                            var safeText = escapeHtml(item.Text);
+                            var safeValue = escapeHtml(item.Value);
                             if (i == 0)
-                                option = new Option(item.Text, item.Value, true, true);
+                                option = new Option(safeText, safeValue, true, true);
                             else
-                                option = new Option(item.Text, item.Value, false, false);
+                                option = new Option(safeText, safeValue, false, false);
                             $('#store_type').append(option);
                         }
 
@@ -491,26 +495,32 @@
 
                         for (var i = 0; i < data.Data.channels.length; i++) {
                             var item = data.Data.channels[i];
+                            var safeText = escapeHtml(item.Text);
+                            var safeValue = escapeHtml(item.Value);
                             if (i == 0)
-                                option = new Option(item.Text, item.Value, true, true);
+                                option = new Option(safeText, safeValue, true, true);
                             else
-                                option = new Option(item.Text, item.Value, false, false);
+                                option = new Option(safeText, safeValue, false, false);
                             $('#channel').append(option);
                         }
                         for (var i = 0; i < data.Data.area.length; i++) {
                             var item = data.Data.area[i];
+                            var safeText = escapeHtml(item.Text);
+                            var safeValue = escapeHtml(item.Value);
                             if (i == 0)
-                                option = new Option(item.Text, item.Value, true, true);
+                                option = new Option(safeText, safeValue, true, true);
                             else
-                                option = new Option(item.Text, item.Value, false, false);
+                                option = new Option(safeText, safeValue, false, false);
                             $('#area').append(option);
                         }
                         for (var i = 0; i < data.Data.decoration_conditions.length; i++) {
                             var item = data.Data.decoration_conditions[i];
+                            var safeText = escapeHtml(item.Text);
+                            var safeValue = escapeHtml(item.Value);
                             if (i == 0)
-                                option = new Option(item.Text, item.Value, true, true);
+                                option = new Option(safeText, safeValue, true, true);
                             else
-                                option = new Option(item.Text, item.Value, false, false);
+                                option = new Option(safeText, safeValue, false, false);
                             $('#decoration_condition').append(option);
                         }
 
@@ -562,7 +572,8 @@
                         $('#channel').trigger("change");
 
                         if ($('#area').find("option[value='" + item.area + "']").length === 0) {
-                            $('#area').append(new Option(item.area, item.area, false, false));
+                            let safeArea = escapeHtml(item.area);
+                            $('#area').append(new Option(safeArea, safeArea, false, false));
                         }
 
                         $('#area').val(item.area);
@@ -852,5 +863,14 @@
             initGrid2();
 
         });
+
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
     </script>
 }

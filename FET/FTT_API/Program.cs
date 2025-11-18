@@ -12,7 +12,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 
 
-IConfiguration Config = new ConfigurationBuilder().AddJsonFile("appSettings.json").Build();
+IConfiguration Config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
@@ -132,7 +132,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowLocalhost7234",
         policy =>
         {
-            policy.WithOrigins("http://192.168.1.107:8002") // 允許的來源
+            policy.WithOrigins("https://192.168.1.107:8002") // 允許的來源
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();

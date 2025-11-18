@@ -220,11 +220,11 @@
                         captchaId = data.Data.captchaId;
 
                     } else {
-                        $errorMsg.html(data.Message);
+                        $errorMsg.text(data.Message);
                     }
                 },
                 error: function (xhr, status, error) {
-                    $errorMsg.html("取得驗證碼失敗，請稍後再試。");
+                    $errorMsg.text("取得驗證碼失敗，請稍後再試。");
                 }
             }).always(() => {
                 $Loder.hide();
@@ -301,10 +301,10 @@
                             let pd = $('#PD').val();
 
                             if (!ac || !pd) {
-                                $errorMsg.html("請填入帳號、密碼");
+                                $errorMsg.text("請填入帳號、密碼");
                                 return;
                             }
-                            $errorMsg.html("");
+                            $errorMsg.text("");
                             $Loder.show();
 
                             $.ajax({
@@ -327,31 +327,31 @@
                                         if (data.Success) {
                                             const urlParams = new URLSearchParams(window.location.search);
                                             const originUrl = urlParams.get('originUrl');
-                                            if (originUrl && originUrl.trim() !== '') {
-                                                window.location.href = decodeURIComponent(urlParams.get('originUrl'));
+                                            if (originUrl && originUrl.startsWith('/')) {
+                                                window.location.href = originUrl; // 安全
                                             }
                                             else {
                                                 window.location.href = "@Url.Action("Index", "Home")";
                                             }
                                         } else {
-                                            $errorMsg.html(data.Message);
+                                            $errorMsg.text(data.Message);
                                         }
                                     } else {
-                                        $errorMsg.html(data.Message);
+                                        $errorMsg.text(data.Message);
                                     }
                                 },
                                 error: function (xhr, status, error) {
-                                    $errorMsg.html("登入失敗，請稍後再試。");
+                                    $errorMsg.text("登入失敗，請稍後再試。");
                                 }
                             }).always(() => {
                                 $Loder.hide();
                             })
                         } else {
-                            $errorMsg.html(data.Message);
+                            $errorMsg.text(data.Message);
                         }
                     },
                     error: function (xhr, status, error) {
-                        $errorMsg.html("驗證碼檢查失敗，請稍後再試。");
+                        $errorMsg.text("驗證碼檢查失敗，請稍後再試。");
                     }
                 }).always(() => {
                     $Loder.hide();

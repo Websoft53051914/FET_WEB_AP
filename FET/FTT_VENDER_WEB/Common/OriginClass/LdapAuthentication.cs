@@ -50,6 +50,15 @@ namespace FTT_VENDER_WEB.Common.OriginClass
             return ValidateUser(domain, username, pwd);
         }
 
+        public static string EscapeLdapSearchFilter(string filter)
+        {
+            return filter
+                .Replace(@"\", @"\5c")
+                .Replace("*", @"\2a")
+                .Replace("(", @"\28")
+                .Replace(")", @"\29")
+                .Replace("\u0000", @"\00");
+        }
         private bool ValidateUser(string domain, string username, string pwd)
         {
             string username2 = domain + "\\" + username;
@@ -58,7 +67,8 @@ namespace FTT_VENDER_WEB.Common.OriginClass
             {
                 object nativeObject = directoryEntry.NativeObject;
                 DirectorySearcher directorySearcher = new DirectorySearcher(directoryEntry);
-                directorySearcher.Filter = "(SAMAccountName=" + username + ")";
+                string safeUsername = EscapeLdapSearchFilter(username);
+                directorySearcher.Filter = $"(SAMAccountName={safeUsername})";
                 directorySearcher.PropertiesToLoad.Add("cn");
                 SearchResult searchResult = directorySearcher.FindOne();
                 if (null == searchResult)

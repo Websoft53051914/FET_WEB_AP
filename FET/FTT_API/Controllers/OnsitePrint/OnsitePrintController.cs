@@ -18,6 +18,7 @@ namespace FTT_API.Controllers.OnsitePrint
     /// 列印到場單 API
     /// </summary>
     [Route("[controller]")]
+    [Common.Attribute.CustomAuthorization]
     public partial class OnsitePrintController : BaseProjectController
     {
         /// <summary>

@@ -6,6 +6,7 @@ using FTT_VENDER_API.Models;
 using FTT_VENDER_API.Models.Handler;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using Microsoft.AspNetCore.StaticFiles;
 using System.Data;
 
 namespace FTT_VENDER_API.Controllers.Pending
@@ -23,6 +24,18 @@ namespace FTT_VENDER_API.Controllers.Pending
             try
             {
                 FormTableVM vm = new FormTableVM();
+                vm.FileItems = new List<SelectListItem>() { };
+                FileHandler _FileHandler = new FileHandler();
+                var dtos = _FileHandler.FindListByFormNo(form_no);
+                if (dtos != null && dtos.Count > 0)
+                {
+                    vm.FileItems = dtos.Select(s => new SelectListItem()
+                    {
+                        Text = s.filename,
+                        Value = s.ID
+                    }).ToList();
+                }
+
                 vm.Form_Type = "FTT_FORM";
                 vm.ActionName = _sessionVO.empname;
                 if (_sessionVO.empname != _sessionVO.engname)
@@ -818,6 +831,117 @@ form_no=@form_no
             {
                 this.LogError(ex.ToString());
                 return JsonValidFail("系統發生異常");
+            }
+        }
+
+        [HttpPost("[action]")]
+        public IActionResult FileUpload(IFormFile file, string formNo)
+        {
+            try
+            {
+                if (file == null || file.Length == 0)
+                {
+                    return JsonValidFail("未選擇檔案");
+                }
+
+                //紀錄舊檔名
+                var originFileName = file.FileName;
+                //新檔案名稱
+                var newFileName = _sessionVO.empno + "_" + DateTime.Now.ToString("HHmmss") + "_" + file.FileName;
+                //檔案路徑
+                string destFilePath = _config.Config["OutputPath"] + System.IO.Path.GetFileName(_config.Config["OutputPath"] + newFileName);
+
+                // 檢查資料夾是否存在
+                if (!Directory.Exists(_config.Config["OutputPath"]))
+                {
+                    Directory.CreateDirectory(_config.Config["OutputPath"]);
+                }
+
+                // 儲存檔案
+                using (var stream = new FileStream(destFilePath, FileMode.Create))
+                {
+                    //file.CopyToAsync(stream); 非同步導致檔案是 0 kb 時就被使用
+                    file.CopyTo(stream);
+                }
+
+                DateTime dtNow = DateTime.Now;
+
+                var fileOriginName = Path.GetFileName(file.FileName);
+                var fileExt = Path.GetExtension(fileOriginName);
+
+                //存至TABLE
+                FileHandler _FileHandler = new FileHandler();
+
+                int fileId = 0;
+
+                var msg = _FileHandler.Insert(new FileEntity()
+                {
+                    destfilepath = destFilePath,
+                    Status = "1",
+                    createtime = dtNow,
+                    creator = _sessionVO.empno,
+                    filename = originFileName,
+                    filesize = file.Length,
+                    updater = _sessionVO.empno,
+                    updatetime = dtNow,
+                    fileext = fileExt,
+                },
+                formNo,
+                out fileId
+                );
+
+
+                if (string.IsNullOrEmpty(msg) == false)
+                {
+                    this.LogError(msg);
+                    return JsonValidFail("新增檔案時發生異常");
+                }
+                else
+                {
+                    this.LogSuccess("新增檔案成功");
+                    return JsonSuccess(new SelectListItem() { Text = originFileName, Value = fileId.ToString() }); ;
+                }
+            }
+            catch (Exception ex)
+            {
+                this.LogError(ex.ToString());
+                return JsonValidFail("系統錯誤");
+            }
+        }
+
+
+        [HttpGet("[action]")]
+        public IActionResult DownloadFile(string id)
+        {
+            try
+            {
+                FileHandler _FileHandler = new FileHandler();
+                var dto = _FileHandler.FindById(id);
+                if (dto != null)
+                {
+                    var filePath = dto.destfilepath;
+
+                    if (!System.IO.File.Exists(filePath))
+                        return NotFound("檔案不存在");
+
+                    var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read);
+                    var provider = new FileExtensionContentTypeProvider();
+                    if (!provider.TryGetContentType(filePath, out var contentType))
+                    {
+                        contentType = "application/octet-stream";
+                    }
+
+                    return File(stream, contentType, dto.filename);
+                }
+                else
+                {
+                    return JsonValidFail("查無檔案");
+                }
+            }
+            catch (Exception ex)
+            {
+                this.LogError(ex.ToString());
+                return JsonValidFail("系統錯誤");
             }
         }
     }

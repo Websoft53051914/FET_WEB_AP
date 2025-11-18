@@ -97,5 +97,8 @@ namespace FTT_API.Models
         /// 按鈕設定
         /// </summary>
         public List<FormTableButtonVO> FormTableButtons { get; set; } = [];
+
+        public List<SelectListItem> FileItems{ get; set; } = [];
+
     }
 }

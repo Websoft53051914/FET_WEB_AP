@@ -146,11 +146,19 @@
                             return $("<div>操作<div>").attr({ class: 'd-flex' });
                         },
                         itemTemplate: (value, item) => {
+                            let safeId = $('<div>')
+                                .text(item['@(nameof(DispatchRuleMgtGridVO.Id))'])
+                                .text();
+
+                            let safeEditUrl = '@(mapData.UrlEdit?.ToHtmlString())'
+                                .replace('tempId', encodeURIComponent(safeId));
+
                             let $btnEdit = $('<a>')
                                 .attr({
                                     'class': 'jsgrid-button jsgrid-edit-button d-inline-block',
-                                    'href': '@(mapData.UrlEdit?.ToHtmlString())'.replace('tempId', item['@(nameof(DispatchRuleMgtGridVO.Id))']),
+                                    'href': safeEditUrl,
                                 });
+
                             let $btnDelete = $('<button>')
                                 .attr({
                                     'class': 'jsgrid-button jsgrid-delete-button d-inline-block',
@@ -158,36 +166,32 @@
                                 })
                                 .on('click', () => {
                                     const callDelete = () => {
-                                        var data = {
-                                            id: item['@(nameof(DispatchRuleMgtGridVO.Id))']
-                                        };
-
                                         $.ajax({
                                             url: '@(mapData.UrlDelete?.ToHtmlString())',
                                             dataType: 'json',
                                             type: 'POST',
-                                            data: data
+                                            data: { id: safeId }
                                         })
                                             .done((response) => {
+                                                const safeMsg = $('<div>').text(response.Message).text();
+
                                                 if (response.Success) {
-                                                    MyApp.Alert.success('刪除資料成功')
-                                                        .then(() => ctxGrid.reload());
+                                                    MyApp.Alert.success('刪除資料成功').then(() => ctxGrid.reload());
                                                 }
                                                 else {
-                                                    MyApp.Alert.error(response.Message)
-                                                        .then(() => ctxGrid.reload());
+                                                    MyApp.Alert.error(safeMsg).then(() => ctxGrid.reload());
                                                 }
                                             })
-                                            .fail((err) => {
-                                                console.log(err);
-                                            });
+                                            .fail((err) => console.log(err));
                                     };
 
-                                    MyApp.Alert.confirm('@(config.GetMessage("BeforeDeleteMsg").ToHtmlString())')
+                                    let safeConfirmMsg = $('<div>')
+                                        .text('@(config.GetMessage("BeforeDeleteMsg").ToHtmlString())')
+                                        .text();
+
+                                    MyApp.Alert.confirm(safeConfirmMsg)
                                         .then((result) => {
-                                            if (result) {
-                                                callDelete();
-                                            }
+                                            if (result) callDelete();
                                         });
                                 });
 

@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FTT_API.Controllers.CaseClosed
 {
     [Route("[controller]")]
+    [Common.Attribute.CustomAuthorization]
     public class CaseClosedController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

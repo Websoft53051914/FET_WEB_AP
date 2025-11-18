@@ -19,55 +19,55 @@ namespace FTT_WEB.Common.Attribute
 
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            if (LoginSession.Current == null || string.IsNullOrEmpty(LoginSession.Current.empno))
-            {
-                {
-                    if (IsAjaxRequest(context.HttpContext.Request))//是Ajax的話
-                    {
-                        context.HttpContext.Response.StatusCode = 440;//Login timeout
-                        context.Result = new JsonResult(new { Success = false });
-                        //context.HttpContext.Response..End();
-                    }
-                    else
-                    {
-                        IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json", true, true).Build();
-                        String loginUrl = config["loginUrl"];
-                        context.Result = new RedirectResult(loginUrl);
+            //if (LoginSession.Current == null || string.IsNullOrEmpty(LoginSession.Current.empno))
+            //{
+            //    {
+            //        if (IsAjaxRequest(context.HttpContext.Request))//是Ajax的話
+            //        {
+            //            context.HttpContext.Response.StatusCode = 440;//Login timeout
+            //            context.Result = new JsonResult(new { Success = false });
+            //            //context.HttpContext.Response..End();
+            //        }
+            //        else
+            //        {
+            //            IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json", true, true).Build();
+            //            String loginUrl = config["loginUrl"];
+            //            context.Result = new RedirectResult(loginUrl);
  
-                    }
-                }
-            }
+            //        }
+            //    }
+            //}
 
-            if (LoginSession.Current != null && !string.IsNullOrEmpty(LoginSession.Current.empno))
-            {
-                //重置密碼頁   不需要權限
-                if (functions != null && functions.Any() && functions.Where(w => w == (int)FuncID.ResetTESTP || w == (int)FuncID.Home_View).Count() > 0)
-                {
+            //if (LoginSession.Current != null && !string.IsNullOrEmpty(LoginSession.Current.empno))
+            //{
+            //    //重置密碼頁   不需要權限
+            //    if (functions != null && functions.Any() && functions.Where(w => w == (int)FuncID.ResetTESTP || w == (int)FuncID.Home_View).Count() > 0)
+            //    {
 
-                }
-                else if (functions == null || !functions.Any() || !LoginSession.Authorization(functions))
-                {
-                    if (IsAjaxRequest(context.HttpContext.Request))//是Ajax的話
-                    {
-                        context.HttpContext.Response.StatusCode = 403;//Login timeout
-                        context.Result = new JsonResult(new { Success = false });
-                        //context.HttpContext.Response..End();
-                    }
-                    else
-                    {
-                        {
-                            context.Result = new RedirectToRouteResult(new RouteValueDictionary
-                            {
-                                { "action", "PermissionDenied" },
-                                { "controller", "Home" },
-                                 { "area", string.Empty }
-                            });
-                        }
+            //    }
+            //    else if (functions == null || !functions.Any() || !LoginSession.Authorization(functions))
+            //    {
+            //        if (IsAjaxRequest(context.HttpContext.Request))//是Ajax的話
+            //        {
+            //            context.HttpContext.Response.StatusCode = 403;//Login timeout
+            //            context.Result = new JsonResult(new { Success = false });
+            //            //context.HttpContext.Response..End();
+            //        }
+            //        else
+            //        {
+            //            {
+            //                context.Result = new RedirectToRouteResult(new RouteValueDictionary
+            //                {
+            //                    { "action", "PermissionDenied" },
+            //                    { "controller", "Home" },
+            //                     { "area", string.Empty }
+            //                });
+            //            }
 
 
-                    }
-                }
-            }
+            //        }
+            //    }
+            //}
         }
 
         /// <summary>

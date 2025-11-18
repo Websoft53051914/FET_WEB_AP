@@ -187,7 +187,18 @@ namespace FTT_VENDER_API.Controllers
         public StoreVenderProfileVM GetStoreVenderProfile(string AC, string PD, bool isPassPWD = false)
         {
             BaseDBHandler _BaseDBHandler = new BaseDBHandler();
-            string sql = @"SELECT * FROM STORE_VENDER_PROFILE WHERE MERCHANT_LOGIN= @AC AND MERCHANT_PASSWORD= @PD";
+            string sql = @"SELECT 
+merchant_name ,
+cp_name ,
+cp_tel ,
+email ,
+construction_category ,
+merchant_login ,
+order_id ,
+login_count ,
+locked ,
+kpi_days 
+FROM STORE_VENDER_PROFILE WHERE MERCHANT_LOGIN= @AC AND MERCHANT_PASSWORD= @PD";
             Dictionary<string, object> parameters = new Dictionary<string, object>
             {
                 { "AC", AC },
@@ -196,7 +207,18 @@ namespace FTT_VENDER_API.Controllers
 
             if (isPassPWD == true)
             {
-                sql = @"SELECT * FROM STORE_VENDER_PROFILE WHERE MERCHANT_LOGIN= @AC ";
+                sql = @"SELECT 
+merchant_name ,
+cp_name ,
+cp_tel ,
+email ,
+construction_category ,
+merchant_login ,
+order_id ,
+login_count ,
+locked ,
+kpi_days 
+FROM STORE_VENDER_PROFILE WHERE MERCHANT_LOGIN= @AC ";
             }
 
             StoreVenderProfileVM? result = _BaseDBHandler.GetDBHelper().Find<StoreVenderProfileVM>(sql, parameters);
@@ -242,7 +264,7 @@ namespace FTT_VENDER_API.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         public TokenInfoVO? GetTokenInfo(string token)
         {
-            string sql = "SELECT * FROM tb_token WHERE tokenid = @tokenid";
+            string sql = "SELECT Status FROM tb_token WHERE tokenid = @tokenid";
             Dictionary<string, object> parameters = new Dictionary<string, object>
             {
                 { "tokenid", token }
@@ -347,6 +369,7 @@ namespace FTT_VENDER_API.Controllers
                 ActionName = ControllerContext.ActionDescriptor?.ActionName ?? string.Empty,
                 Exception = exception,
                 Token = Request.Cookies["Token"] ?? string.Empty,
+                LogTime = DateTime.Now
             };
 
             InsertLog(entity);

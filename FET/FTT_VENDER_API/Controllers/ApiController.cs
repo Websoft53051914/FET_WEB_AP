@@ -67,8 +67,13 @@ namespace FTT_VENDER_API.Controllers
 
                     if (!dto.HasChildren && !string.IsNullOrWhiteSpace(dto.ciname))
                     {
-                        string filePath = $"Item/{dto.ciname.Trim()}.jpg";
-                        string path = Path.Combine(_env.WebRootPath, filePath);
+                        // 只取檔名，去掉路徑
+                        var safeFileName = Path.GetFileName(dto.ciname.Trim()) + ".jpg";
+
+                        // 固定存放資料夾
+                        var filePath = Path.Combine("Item", safeFileName);
+                        var path = Path.Combine(_env.WebRootPath, filePath);
+
                         if (System.IO.File.Exists(path))
                         {
                             item.OtherAttr.Add("TT_IMAGE", filePath);
@@ -123,8 +128,14 @@ namespace FTT_VENDER_API.Controllers
 
                     if (!dto.HasChildren && !string.IsNullOrWhiteSpace(dto.ciname))
                     {
-                        string filePath = $"images/Item/{dto.ciname.Trim()}.jpg";
-                        string path = Path.Combine(_env.WebRootPath, filePath);
+                        // 1️⃣ 取安全檔名，去掉路徑
+                        var safeFileName = Path.GetFileName(dto.ciname.Trim()) + ".jpg";
+
+                        // 2️⃣ 指定固定資料夾
+                        var filePath = Path.Combine("images", "Item", safeFileName);
+                        var path = Path.Combine(_env.WebRootPath, filePath);
+
+                        // 3️⃣ 驗證檔案存在
                         if (System.IO.File.Exists(path))
                         {
                             item.OtherAttr.Add("TT_IMAGE", filePath);

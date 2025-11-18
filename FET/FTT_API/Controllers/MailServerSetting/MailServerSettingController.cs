@@ -10,6 +10,7 @@ using FTT_API.Common.ConfigurationHelper;
 namespace FTT_API.Controllers.MailServerSetting
 {
     [Route("[controller]")]
+    [Common.Attribute.CustomAuthorization]
     public class MailServerSettingController : BaseProjectController
     {
         private readonly IWebHostEnvironment _hostingEnvironment;

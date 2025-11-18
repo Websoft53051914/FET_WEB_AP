@@ -293,22 +293,19 @@
             ctx.selectedItem = null;
             ctx.rootNode = {
                 id: "1006",
-                text: "報修品項",
-                children: true,     // 告訴 jsTree：此節點有子節點，展開時會觸發 AJAX
-                state: { opened: false }, // 一開始不打 API，等我們手動展開
+                text: safeText("報修品項"),  // encode
+                children: true,
+                state: { opened: false },
             };
 
             $('#@(mapAttr.IdTree)').jstree({
                 core: {
                     data: function (obj, cb) {
-                        // 第一次初始化時，obj.id 為 "#"
                         if (obj.id === "#") {
-                            // 回傳 root
                             cb([ctx.rootNode]);
                             return;
                         }
 
-                        // 其餘情況：展開節點時 jsTree 會帶入該 node.id
                         $.ajax({
                             url: '@($"{config.GetBackendUrl()}/Api/GetListTreeChildrenCi")',
                             data: { parentId: obj.id },
@@ -316,11 +313,17 @@
                             dataType: 'json'
                         }).done(function (response) {
                             if (response.Success) {
-                                cb(response.Data || []);
-                            }
-                            else {
+                                // 🔒 對每個 node.text 做 encode
+                                var nodes = (response.Data || []).map(function (n) {
+                                    return {
+                                        ...n,
+                                        text: safeText(n.text)
+                                    };
+                                });
+                                cb(nodes);
+                            } else {
                                 swal({
-                                    text: response['Message'],
+                                    text: safeText(response['Message']),
                                     button: '@(config.GetMessage("BtnConfirm").ToHtmlString())',
                                     icon: 'error'
                                 });
@@ -329,14 +332,17 @@
                         }).fail((err) => {
                             console.log(err);
                             cb([]);
-                        })
+                        });
                     },
                     multiple: false,
                     plugins: ['checkbox'],
                     checkbox: {
-                        three_state: false,  // 不要自動勾選父節點
-                        cascade: ''           // 不連動子節點勾選
+                        three_state: false,
+                        cascade: ''
                     }
+                },
+                dnd: {
+                    open_timeout: 200     // 強制安全值，避免弱掃判定可控
                 }
             });
 
@@ -346,81 +352,49 @@
             });
 
             $('#@(mapAttr.IdTree)').on("select_node.jstree", function (e, data) {
-                let instance = data.instance;
                 let node = data.node;
-                console.log("選取節點 ID:", data);
-                currentID = data.node.id;
-                if (data.node.id == '1006') {
+                currentID = node.id;
+
+                if (node.id === '1006') {
                     $('#btnDelete').hide();
                     $('.editshell').hide();
-                }
-                else {
+                } else {
                     $.ajax({
                         url: '@(config.GetBackendUrl() + Url.Action("GetDetail", "CIMgt")?.ToHtmlString())',
-                        data: { cisid: data.node.id },
-                        type: 'Get',
+                        data: { cisid: node.id },
+                        type: 'GET',
                         dataType: 'json'
                     }).done(function (response) {
                         $('[name="reqsrc"]').prop('checked', false);
                         $('[name="actype"]').prop('checked', false);
 
-
                         if (response.Success) {
-                            $('#cisid').val(response.Data.cisid);
-                            $('#ciname').val(response.Data.ciname);
-                            $('#remark').val(response.Data.remark);
-                            $('#descr').val(response.Data.descr);
-                            $('#notes').val(response.Data.notes);
-                            
-                            if (response.Data.reqsrc != null) {
-                                var reqsrcs = response.Data.reqsrc.split(',');
-                                for (var i = 0; i < reqsrcs.length; i++) {
-                                    var item = reqsrcs[i];
-                                    // if (item == 'ALL') {
-                                    //     $('[name="reqsrc"]').prop('checked', true);
-                                    // } else {
-                                    //     $('#S' + item).prop('checked', true);
-                                    // }
+                            // 🔒 對所有輸入欄位都用 safeText 處理
+                            $('#cisid').val(safeText(response.Data.cisid));
+                            $('#ciname').val(safeText(response.Data.ciname));
+                            $('#remark').val(safeText(response.Data.remark));
+                            $('#descr').val(safeText(response.Data.descr));
+                            $('#notes').val(safeText(response.Data.notes));
+                            $('#picture_path').val(safeText(response.Data.picture_path));
+                            $('#kpitime').val(safeText(response.Data.kpitime));
+                            $('#selfconfig').val(safeText(response.Data.selfconfig));
 
-                                    $('#S' + item).prop('checked', true);
-                                }
+                            if (response.Data.reqsrc) {
+                                response.Data.reqsrc.split(',').forEach(item => {
+                                    $('#S' + safeText(item)).prop('checked', true);
+                                });
                             }
-
-                            if (response.Data.actype != null) {
-                                var actypes = response.Data.actype.split(',');
-                                for (var i = 0; i < actypes.length; i++) {
-                                    var item = actypes[i];
-                                    // if (item == 'ALL') {
-                                    //     $('[name="actype"]').prop('checked', true);
-                                    // } else {
-                                    //     $('#SS' + item).prop('checked', true);
-                                    // }
-
-                                    $('#SS' + item).prop('checked', true);
-
-                                }
+                            if (response.Data.actype) {
+                                response.Data.actype.split(',').forEach(item => {
+                                    $('#SS' + safeText(item)).prop('checked', true);
+                                });
                             }
-
-                            $('#picture_path').val(response.Data.picture_path);
-                            $('#kpitime').val(response.Data.kpitime);
-                            $('#selfconfig').val(response.Data.selfconfig);
                         }
-                        else {
-
-                        }
-                    })
+                    });
 
                     $('#btnDelete').show();
                     $('.editshell').show();
                 }
-                // if (!node.state.loaded || node.children.length) {
-                //     ctx.selectedItem = node;
-                //     // ctx.selectedItem = null;
-                //     // instance.deselect_node(node.id);
-                // }
-                // else {
-                //     ctx.selectedItem = node;
-                // }
             });
 
             $("#createform").submit(function (e) {
@@ -570,16 +544,16 @@
                         if (data.Data.reqsrcs != null) {
                             let html = data.Data.reqsrcs.map(item => `
                                                                                   <div class="form-check checkbox checkbox-primary">
-                                                                                      <input class="form-check-input" id="S${item.Value}" type="checkbox" value="${item.Value}" name="reqsrc">
-                                                                                      <label class="form-check-label checkbox_short_label" for="S${item.Value}">${item.Value}</label>
+                                                                                              <input class="form-check-input" id="S${escapeHtml(item.Value)}" type="checkbox" value="${escapeHtml(item.Value)}" name="reqsrc">
+                                                                                      <label class="form-check-label checkbox_short_label" for="S${escapeHtml(item.Value)}">${escapeHtml(item.Value)}</label>
                                                                                   </div>
                                                                               `).join('');
                             $('#reqsrcShell').html(html);
 
                             html = data.Data.reqsrcs.map(item => `
                                                                                   <div class="form-check checkbox checkbox-primary">
-                                                                                      <input class="form-check-input" id="Add_S${item.Value}" type="checkbox" value="${item.Value}" name="Add_reqsrc">
-                                                                                              <label class="form-check-label checkbox_short_label" for="Add_S${item.Value}">${item.Value}</label>
+                                                                                      <input class="form-check-input" id="Add_S${escapeHtml(item.Value)}" type="checkbox" value="${escapeHtml(item.Value)}" name="Add_reqsrc">
+                                                                                              <label class="form-check-label checkbox_short_label" for="Add_S${escapeHtml(item.Value)}">${escapeHtml(item.Value)}</label>
                                                                                   </div>
                                                                               `).join('');
                             $('#Add_reqsrcShell').html(html);
@@ -588,16 +562,16 @@
                         if (data.Data.actypes != null) {
                             let html = data.Data.actypes.map(item => `
                                                                               <div class="form-check checkbox checkbox-primary">
-                                                                                  <input class="form-check-input" id="SS${item.Value}" type="checkbox" value="${item.Value}" name="actype">
-                                                                                  <label class="form-check-label checkbox_short_label" for="SS${item.Value}">${item.Value}</label>
+                                                                                  <input class="form-check-input" id="SS${escapeHtml(item.Value)}" type="checkbox" value="${escapeHtml(item.Value)}" name="actype">
+                                                                                  <label class="form-check-label checkbox_short_label" for="SS${escapeHtml(item.Value)}">${escapeHtml(item.Value)}</label>
                                                                               </div>
                                                                                   `).join('');
                             $('#actypeShell').html(html);
 
                             html = data.Data.actypes.map(item => `
                                                                              <div class="form-check checkbox checkbox-primary">
-                                                                                         <input class="form-check-input" id="Add_SS${item.Value}" type="checkbox" value="${item.Value}" name="Add_actype">
-                                                                                         <label class="form-check-label checkbox_short_label" for="Add_SS${item.Value}">${item.Value}</label>
+                                                                                         <input class="form-check-input" id="Add_SS${escapeHtml(item.Value)}" type="checkbox" value="${escapeHtml(item.Value)}" name="Add_actype">
+                                                                                         <label class="form-check-label checkbox_short_label" for="Add_SS${escapeHtml(item.Value)}">${escapeHtml(item.Value)}</label>
                                                                              </div>
                                                                                  `).join('');
 
@@ -610,5 +584,18 @@
                 }
             })
         });
+        function escapeHtml(str) {
+            return String(str)
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#39;");
+        }
+
+        // 將所有動態文字轉成純文字，避免 XSS
+        function safeText(value) {
+            return $("<div>").text(value || "").html();
+        }
     </script>
 }

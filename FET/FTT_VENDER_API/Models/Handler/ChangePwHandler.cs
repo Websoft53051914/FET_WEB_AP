@@ -22,7 +22,7 @@ namespace FTT_VENDER_API.Models.Handler
 
             string InsertVenderPwHistorySQL = "";
             Dictionary<string, object> ParasForInsertVenderPwHistory = new();
-            InsertVenderPwHistorySQL = @$"INSERT INTO vender_pw_history (account,pw) VALUES
+            InsertVenderPwHistorySQL = @$"INSERT INTO tb_vender_pw_history (account,pw) VALUES
                          (@account,@pw) ";
             ParasForInsertVenderPwHistory = new Dictionary<string, object>
                         {
@@ -111,7 +111,7 @@ WHERE merchant_login = @AC;";
 
         private List<vender_pw_historyDTO> GetTheNewestVenderPwHistory(string AC)
         {
-            string sql = @"SELECT * FROM vender_pw_history WHERE account = @AC ORDER BY createtime DESC LIMIT 3";
+            string sql = @"SELECT * FROM tb_vender_pw_history WHERE account = @AC ORDER BY createtime DESC LIMIT 3";
             Dictionary<string, object> parameters = new Dictionary<string, object>
             {
                 { "AC", AC },

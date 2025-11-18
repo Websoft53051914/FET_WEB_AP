@@ -6,6 +6,7 @@ using static Org.BouncyCastle.Math.EC.ECCurve;
 namespace FTT_API.Controllers.CIMgt
 {
     [Route("[controller]")]
+    [Common.Attribute.CustomAuthorization]
     public partial class  CIMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

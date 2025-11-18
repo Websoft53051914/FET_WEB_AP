@@ -81,8 +81,9 @@
             </div>
             <div class="nav-right col pull-right right-menu p-0">
                 <ul class="nav-menus" style="padding: 0px 10px;">
-                    <li id="userloginname">
+                    <li>
                         <i class="fa fa-user-circle-o me-1" aria-hidden="true" style="font-size:16px"></i>
+                        <label id="userloginname"></label>
                     </li>
                     <li class="onhover-dropdown p-0">
                         <button class="btn btn-primary-light" style="min-width: 100px;" id="btn-logout">
@@ -114,7 +115,7 @@
 <script src="~/lib/jsCookie/js.cookie.min.js"></script>
 <script>
     $(document).ready(function () {
-        $('#userloginname').append(decodeURIComponent(Cookies.get('FTT_userLoginName')))
+        $('#userloginname').text(decodeURIComponent(Cookies.get('FTT_userLoginName')))
         $('#btn-logout').on('click',function(){
             showLoader();
             // var data = { formNo: formNo };

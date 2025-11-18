@@ -18,6 +18,17 @@ namespace FTT_API.Controllers.Pending
             try
             {
                 FormTableVM vm = new FormTableVM();
+                vm.FileItems = new List<SelectListItem>() { };
+                FileHandler _FileHandler = new FileHandler();
+                var dtos = _FileHandler.FindListByFormNo(form_no);
+                if (dtos != null && dtos.Count > 0)
+                {
+                    vm.FileItems = dtos.Select(s => new SelectListItem()
+                    {
+                        Text = s.filename,
+                        Value = s.ID
+                    }).ToList();
+                }
 
                 vm.ActionName = _sessionVO.empname;
                 if (_sessionVO.empname != _sessionVO.engname)

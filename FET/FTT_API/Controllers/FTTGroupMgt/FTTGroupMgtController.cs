@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 namespace FTT_API.Controllers.FTTGroupMgt
 {
     [Route("[controller]")]
+    [Common.Attribute.CustomAuthorization]
     public partial class FTTGroupMgtController : BaseProjectController
     {
         [HttpPost("[action]")]

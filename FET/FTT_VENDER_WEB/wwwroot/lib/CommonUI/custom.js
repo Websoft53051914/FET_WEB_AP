@@ -40,18 +40,20 @@ function ControlUI(obj) {
                 $('#' + element.ElementId).attr('maxlength', element.MaxLength);
             }
 
-            //驗證訊息
-            if (element.InvalidText != null && element.InvalidText != '' && element.InvalidText.length > 0) {
-                if ($('#' + element.ElementId).parent('div').find('.invalid-feedback').length > 0) {
-                    $('#' + element.ElementId).parent('div').find('.invalid-feedback').eq(0).text(element.InvalidText);
-                }
-                else {
-                    var $temp = $('<div>')
-                        .attr({
-                            'class': 'invalid-feedback',
-                        }).html(element.InvalidText);
+            // 驗證訊息
+            if (element.InvalidText != null && element.InvalidText !== '' && element.InvalidText.length > 0) {
 
-                    $('#' + element.ElementId).parent('div').append($temp);
+                let $root = $('#' + element.ElementId).parent('div');
+                let $invalid = $root.find('.invalid-feedback');
+
+                if ($invalid.length > 0) {
+                    $invalid.eq(0).text(element.InvalidText);
+                } else {
+                    var $temp = $('<div>', {
+                        'class': 'invalid-feedback'
+                    }).text(element.InvalidText);   // << 這裡改為 text()
+
+                    $root.append($temp);
                 }
             }
 

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FTT_API.Controllers.SupplierMgt
 {
     [Route("[controller]")]
+    [Common.Attribute.CustomAuthorization]
     public partial class SupplierMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

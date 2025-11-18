@@ -18,6 +18,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
     /// 派工規則維護
     /// </summary>
     [Route("[controller]")]
+    [Common.Attribute.CustomAuthorization]
     public partial class DispatchRuleMgtController : BaseProjectController
     {
         /// <summary>

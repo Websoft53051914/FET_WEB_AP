@@ -195,6 +195,7 @@ where cisid=@cisid
 
             paras.Add("reqsrc", vm.reqsrc);
             paras.Add("actype", vm.actype);
+            paras.Add("notes", vm.notes);
 
             string originSQL = $@"
 update ci_relations 
@@ -211,7 +212,7 @@ cisid=@cisid
             originSQL = $@"
 update ci_relations_category
 set
-
+notes=@notes,          
 descr=@descr,          
 picture_path=@picture_path,   
 kpitime=@kpitime,        

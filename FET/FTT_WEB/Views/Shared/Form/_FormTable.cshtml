@@ -299,49 +299,49 @@
                         <td colspan="5">
                             @*原使用 table 呈現但會跑版，改為表單顯示*@
                             @* <div id="NewData" class="row gy-2 row-cols-1 row-cols-md-2 row-cols-lg-3 mb-2">
-                                <div class="col">
-                                    <label class="col-form-label websoft-form-label pt-2">費用種類</label>
-                                    <select class="form-select initSelect2" id="EXPENSE_TYPE" name="EXPENSE_TYPE">
-                                        <option></option>
-                                    </select>
-                                </div>
-                                <div class="col">
-                                    <label class="col-form-label websoft-form-label pt-2">維修細項</label>
-                                    <input id="EXPENSE_DESC_TEXT" name="EXPENSE_DESC_TEXT" class="form-control input_class" />
-                                    <select class="form-select initSelect2 select_class" id="EXPENSE_DESC_SEL" name="EXPENSE_DESC_SEL">
-                                    </select>
-                                </div>
-                                <div class="col d-md-none d-lg-block"></div>
-                                <div class="col">
-                                    <label class="col-form-label websoft-form-label pt-2">檢測故障原因</label>
-                                    <input id="FAULT_REASON" class="form-control " />
-                                </div>
-                                <div class="col">
-                                    <label class="col-form-label websoft-form-label pt-2">維修處理動作</label>
-                                    <input id="REPAIR_ACTION" class="form-control " />
-                                </div>
-                                <div class="col">
-                                    <label class="col-form-label websoft-form-label pt-2">備註</label>
-                                    <label id="COMMENT" class="col-form-label websoft-form-label d-block"></label>
-                                </div>
-                                <div class="col">
-                                    <label class="col-form-label websoft-form-label pt-2">數量</label>
-                                    <input id="QTY" min="1" type="number" class="form-control " style="width: 80px" />
-                                    <div class="invalid-feedback">請輸入數量</div>
-                                </div>
-                                <div class="col">
-                                    <label class="col-form-label websoft-form-label pt-2">單位</label>
-                                    <input id="UNIT" class="form-control " style="width: 80px" />
-                                </div>
-                                <div class="col">
-                                    <label class="col-form-label websoft-form-label pt-2">單價</label>
-                                    <input id="PRICE" min="1" type="number" class="form-control " style="width: 80px" />
-                                    <div class="invalid-feedback">請輸入單價</div>
-                                </div>
+                            <div class="col">
+                            <label class="col-form-label websoft-form-label pt-2">費用種類</label>
+                            <select class="form-select initSelect2" id="EXPENSE_TYPE" name="EXPENSE_TYPE">
+                            <option></option>
+                            </select>
+                            </div>
+                            <div class="col">
+                            <label class="col-form-label websoft-form-label pt-2">維修細項</label>
+                            <input id="EXPENSE_DESC_TEXT" name="EXPENSE_DESC_TEXT" class="form-control input_class" />
+                            <select class="form-select initSelect2 select_class" id="EXPENSE_DESC_SEL" name="EXPENSE_DESC_SEL">
+                            </select>
+                            </div>
+                            <div class="col d-md-none d-lg-block"></div>
+                            <div class="col">
+                            <label class="col-form-label websoft-form-label pt-2">檢測故障原因</label>
+                            <input id="FAULT_REASON" class="form-control " />
+                            </div>
+                            <div class="col">
+                            <label class="col-form-label websoft-form-label pt-2">維修處理動作</label>
+                            <input id="REPAIR_ACTION" class="form-control " />
+                            </div>
+                            <div class="col">
+                            <label class="col-form-label websoft-form-label pt-2">備註</label>
+                            <label id="COMMENT" class="col-form-label websoft-form-label d-block"></label>
+                            </div>
+                            <div class="col">
+                            <label class="col-form-label websoft-form-label pt-2">數量</label>
+                            <input id="QTY" min="1" type="number" class="form-control " style="width: 80px" />
+                            <div class="invalid-feedback">請輸入數量</div>
+                            </div>
+                            <div class="col">
+                            <label class="col-form-label websoft-form-label pt-2">單位</label>
+                            <input id="UNIT" class="form-control " style="width: 80px" />
+                            </div>
+                            <div class="col">
+                            <label class="col-form-label websoft-form-label pt-2">單價</label>
+                            <input id="PRICE" min="1" type="number" class="form-control " style="width: 80px" />
+                            <div class="invalid-feedback">請輸入單價</div>
+                            </div>
                             </div>
                             <div class="d-flex gap-2 mb-2">
-                                <button type="button" id="InsertButton" onclick="addItemRow(null,false);" class="btn btn-primary" style="width: 115px;">新增一筆</button>
-                                <input id="AMOUNT_MAX_IDX" type="hidden" value="-1" />
+                            <button type="button" id="InsertButton" onclick="addItemRow(null,false);" class="btn btn-primary" style="width: 115px;">新增一筆</button>
+                            <input id="AMOUNT_MAX_IDX" type="hidden" value="-1" />
                             </div> *@
                             <table width="100%" id="AMOUNT_LIST" style="background-color:#DEDEDE;" border=1>
                                 <tr>
@@ -377,6 +377,16 @@
                         </td>
                     </tr>
 
+                    <tr id="FILE_PANEL" style="">
+                        <td bgcolor="#FFDDEE">檔案清單：</td>
+                        <td colspan="5" id="fildTD">
+                            <input class="form-control" type="file" id="File" style="max-width:500px;float: left;" />
+                            <button id="FileUpload" type="button" class="btn btn-primary" style="margin-bottom: 5px;">上傳檔案</button>
+                            <br>
+
+                        </td>
+                    </tr>
+
                     <tr>
                         <td colspan="6" width="100%" align="center">
                             <div class="d-flex gap-2 justify-content-center flex-wrap">
@@ -396,6 +406,9 @@
     <partial name="Form/_RMItemTree" view-data='new ViewDataDictionary(ViewData)' /> *@
 
 <script>
+    function GetFileElement(text, value) {
+        return '<a target="_blank" href="@(config.GetBackendUrl() + Url.Action("DownloadFile", "Pending"))?id=' + value + '" style="margin: 5px;">【' + text + '】</a>';
+    }
     if (!String.format) {
         String.format = function (format, ...args) {
             return format.replace(/{(\d+)}/g, function (match, number) {
@@ -432,7 +445,12 @@
             $("#rmTable_Header1").html("");
             $("#rmTable_Header1").append("門市資訊")
 
-            let statusSpan = $("<span id='APPROVE_FORM_STATUS_DESC' class='text-success' style='float:right;background-color: cornsilk;'></span").html("*目前表單狀態: 審單中")
+            let statusSpan = $("<span>", {
+                id: "APPROVE_FORM_STATUS_DESC",
+                class: "text-success",
+                style: "float:right;background-color: cornsilk;"
+            }).text("*目前表單狀態: 審單中");
+
             $("#rmTable_Header1").append(statusSpan);
         }
     }
@@ -442,6 +460,41 @@
     });
 
     $(function () {
+        $("#FileUpload").on("click", function () {
+            var file = $("#File")[0].files[0];
+            if (!file) {
+                alert("請選擇檔案");
+                return;
+            }
+
+            showLoader();
+
+            var formData = new FormData();
+            formData.append("file", file);
+            formData.append("formNo", '@form_no');
+
+            $.ajax({
+                url: '@(config.GetBackendUrl() + Url.Action("FileUpload", "Pending"))',
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    hideLoader();
+                    if (data.Success) {
+                        alert('新增檔案完成');
+
+                        $('#fildTD').append(GetFileElement(data.Data.Text, data.Data.Value));
+
+                        $('#File').val('');
+                    } else {
+                        alert(data.Message);
+                        $('#File').val('');
+                    }
+                }
+            });
+
+        });
         $(".initSelect2").select2({
             allowClear: true
         });
@@ -604,7 +657,7 @@
             vm.vms = vms;
             showLoader();
             $.ajax({
-                url: '@(config.GetBackendUrl() + Url.Action("Add_FTT_FORM_AMOUNT","pending"))',
+                url: '@(config.GetBackendUrl() + Url.Action("Add_FTT_FORM_AMOUNT", "pending"))',
                 dataType: 'json',
                 type: 'POST',
                 data: { vm: vm },
@@ -646,12 +699,12 @@
                 vm.CATEGORY_NAME = $('#CATEGORY_NAME').val();
                 vm.REMARK = $('#REMARK').val();
                 vm.DESCRIPTION = $('#DESCRIPTION').val();
-                
+
                 vm.FORM_TYPE = $('#FORM_TYPE').val();
                 vm.STATUS = $('#STATUS').val();
 
                 $.ajax({
-                    url: '@(config.GetBackendUrl() + Url.Action("Detail","Pending"))',
+                    url: '@(config.GetBackendUrl() + Url.Action("Detail", "Pending"))',
                     dataType: 'json',
                     type: 'POST',
                     data: { vm: vm },
@@ -715,6 +768,14 @@
             success: function (response) {
                 if (response.Success == true) {
                     var data = response.Data;
+
+                    if (data.FileItems != null && data.FileItems.length > 0) {
+
+                        // 處理資料庫的金額彙整欄資料
+                        for (var i = 0; i < data.FileItems.length; i++) {
+                            $('#fildTD').append(GetFileElement(data.FileItems[i].Text, data.FileItems[i].Value));
+                        }
+                    }
 
                     $('#StoreClass_Company').text(data.Store_profileDTO.Company);
                     $('#StoreClass_StoreType').text(data.Store_profileDTO.StoreType);
@@ -924,7 +985,7 @@
                     for (var i = 0; i < data.Amount_SelectList.length; i++) {
                         var item = data.Amount_SelectList[i];
 
-                        var option = new Option(item.Text, item.Value, true, true);
+                        var option = new Option(escapeHtml(item.Text), escapeHtml(item.Value), true, true);
                         $('#EXPENSE_TYPE').append(option).trigger('change');
                     }
 
@@ -937,7 +998,14 @@
 
                     var ticket_info = data.Ftt_formDTO.ticket_info;
                     if (ticket_info != '' && ticket_info != null) {
-                        document.getElementById(ticket_info + "_PANEL").style.display = "";
+                        var panel = document.getElementById(ticket_info + "_PANEL");
+                        if (panel) {
+                            panel.style.display = ""; // 元素存在才操作
+                        } else {
+                            console.warn("找不到元素:", ticket_info + "_PANEL");
+                        }
+
+//                        document.getElementById(ticket_info + "_PANEL").style.display = "";
                         $('#TICKET_INFO').val(ticket_info);
 
                         if (ticket_info == 'COMPLETE') {
@@ -1005,53 +1073,80 @@
                 _UNIT = obj.unit || '';
                 _PRICE = obj.price || '';
             }
-
             try {
                 var index = parseInt($('#AMOUNT_MAX_IDX').val()) + 1;
-                var addRow = String.format('<tr id="AMOUNT_TR_{0}" name="TableTR">', index);
+                var $tr = $('<tr>', { id: 'AMOUNT_TR_' + index, name: 'TableTR' });
 
-                addRow += String.format('<td>', index); //
-
-                if (hideAmountDel == false) {
-                    addRow += String.format('<button type="button" class="btn btn-link text-danger icofont icofont-trash fs-6 p-1" style="cursor:pointer;" onclick="DelAMOUNT(this)" ></button>', index); //刪除按鈕
+                // 刪除按鈕
+                var $tdDel = $('<td>');
+                if (!hideAmountDel) {
+                    var $btn = $('<button>', {
+                        type: 'button',
+                        class: 'btn btn-link text-danger icofont icofont-trash fs-6 p-1',
+                        style: 'cursor:pointer;',
+                        click: function () { DelAMOUNT(this); }
+                    });
+                    $tdDel.append($btn);
                 }
-                addRow += String.format('</td>', index); //
+                $tr.append($tdDel);
 
-                addRow += String.format('<td>{0}', _EXPENSE_TYPE); //費用種類
-                addRow += String.format('<input type="hidden" id="EXPENSE_TYPE_{0}" name="EXPENSE_TYPE" value="{1}" /></td>', index, _EXPENSE_TYPE);
+                // 費用種類
+                var $tdExpenseType = $('<td>').text(_EXPENSE_TYPE);
+                $tdExpenseType.append(
+                    $('<input>', { type: 'hidden', id: 'EXPENSE_TYPE_' + index, name: 'EXPENSE_TYPE', value: _EXPENSE_TYPE })
+                );
+                $tr.append($tdExpenseType);
 
-                if ($('#AMOUNT_CONFIG').val() == "Y") {
-                    addRow += String.format('<td>{0}', _EXPENSE_DESC_SEL); //維修細項
-                    addRow += String.format('<input type="hidden" id="EXPENSE_DESC_{0}" name="EXPENSE_DESC" value="{1}" /></td>', index, _EXPENSE_DESC_SEL);
-                }
-                else {
-                    addRow += String.format('<td>{0}', _EXPENSE_DESC_TEXT); //維修細項
-                    addRow += String.format('<input type="hidden" id="EXPENSE_DESC_{0}" name="EXPENSE_DESC" value="{1}" /></td>', index, _EXPENSE_DESC_TEXT);
-                }
+                // 維修細項
+                var _desc = ($('#AMOUNT_CONFIG').val() === "Y") ? _EXPENSE_DESC_SEL : _EXPENSE_DESC_TEXT;
+                var $tdDesc = $('<td>').text(_desc);
+                $tdDesc.append(
+                    $('<input>', { type: 'hidden', id: 'EXPENSE_DESC_' + index, name: 'EXPENSE_DESC', value: _desc })
+                );
+                $tr.append($tdDesc);
 
-                addRow += String.format('<td>{0}', _FAULT_REASON); //檢測故障原因
-                addRow += String.format('<input type="hidden" id="FAULT_REASON_{0}" name="FAULT_REASON" value="{1}" /></td>', index, _FAULT_REASON);
-                addRow += String.format('<td>{0}', _REPAIR_ACTION); //維修處理動作
-                addRow += String.format('<input type="hidden" id="REPAIR_ACTION_{0}" name="REPAIR_ACTION" value="{1}" /></td>', index, _REPAIR_ACTION);
-                addRow += String.format('<td>{0}', _QTY); //數量
-                addRow += String.format('<input type="hidden" id="QTY_{0}" name="QTY" value="{1}" /></td>', index, _QTY);
-                addRow += String.format('<td>{0}', _UNIT); //單位
-                addRow += String.format('<input type="hidden" id="UNIT_{0}" name="UNIT" value="{1}" /></td>', index, _UNIT);
-                addRow += String.format('<td>{0}', _PRICE); //單價
-                addRow += String.format('<input type="hidden" id="PRICE_{0}" name="PRICE" value="{1}" /></td>', index, _PRICE);
+                // 檢測故障原因
+                var $tdFault = $('<td>').text(_FAULT_REASON);
+                $tdFault.append(
+                    $('<input>', { type: 'hidden', id: 'FAULT_REASON_' + index, name: 'FAULT_REASON', value: _FAULT_REASON })
+                );
+                $tr.append($tdFault);
 
+                // 維修處理動作
+                var $tdRepair = $('<td>').text(_REPAIR_ACTION);
+                $tdRepair.append(
+                    $('<input>', { type: 'hidden', id: 'REPAIR_ACTION_' + index, name: 'REPAIR_ACTION', value: _REPAIR_ACTION })
+                );
+                $tr.append($tdRepair);
+
+                // 數量、單位、單價
+                var $tdQty = $('<td>').text(_QTY);
+                $tdQty.append($('<input>', { type: 'hidden', id: 'QTY_' + index, name: 'QTY', value: _QTY }));
+                $tr.append($tdQty);
+
+                var $tdUnit = $('<td>').text(_UNIT);
+                $tdUnit.append($('<input>', { type: 'hidden', id: 'UNIT_' + index, name: 'UNIT', value: _UNIT }));
+                $tr.append($tdUnit);
+
+                var $tdPrice = $('<td>').text(_PRICE);
+                $tdPrice.append($('<input>', { type: 'hidden', id: 'PRICE_' + index, name: 'PRICE', value: _PRICE }));
+                $tr.append($tdPrice);
+
+                // 小計
                 var tmpTotal = parseInt(_QTY) * parseInt(_PRICE);
-
                 calSubTotal('Add', tmpTotal);
+                var tmpTotalDisplay = "$" + tmpTotal + ".-";
 
-                tmpTotal = "$" + tmpTotal + ".-";
+                var $tdSubtotal = $('<td>').text(tmpTotalDisplay);
+                $tdSubtotal.append($('<input>', { type: 'hidden', id: 'SUBTOTAL_' + index, name: 'SUBTOTAL', value: tmpTotalDisplay }));
+                $tr.append($tdSubtotal);
 
-                addRow += String.format('<td>{0}', tmpTotal); //小計
-                addRow += String.format('<input type="hidden" id="SUBTOTAL_{0}" name="SUBTOTAL" value="{1}" /></td>', index, tmpTotal);
-
+                // 更新 index
                 $('#AMOUNT_MAX_IDX').val(index);
 
-                $('#AMOUNT_LIST').append(addRow);
+                // 安全 append
+                $('#AMOUNT_LIST').append($tr);
+
             }
             catch (ex) {
                 MyApp.Alert.error(ex.message);
@@ -1352,5 +1447,14 @@
                 $control.removeAttr('required');
             }
         });
+    }
+
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
     }
 </script>

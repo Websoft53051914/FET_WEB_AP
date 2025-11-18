@@ -12,6 +12,7 @@ using System.Data;
 namespace FTT_API.Controllers.SecurityMgt
 {
     [Route("[controller]")]
+    [Common.Attribute.CustomAuthorization]
     public partial class SecurityMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

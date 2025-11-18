@@ -55,7 +55,7 @@ namespace FTT_WEB.Controllers.Login
             };
 
             CaptchaResult result = captchaCode.Result();
-            TempData[CaptchaCodeHelper.CAPTCHA_CODE] = result.ResultCode;
+            TempData[CaptchaCodeHelper_ImageSharp.CAPTCHA_CODE] = result.ResultCode;
 
             return File(result.CaptchaImage, "image/jpeg");
         }

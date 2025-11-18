@@ -11,7 +11,7 @@
     function showLoader(msg) {
         var h$tmpl = Handlebars.compile($('#tmplLoading').html());
         var loading = h$tmpl({
-            msg: msg
+            msg: escapeHtml_showLoader(msg)
         });
         $('body').append(loading);
     }
@@ -19,6 +19,21 @@
     function hideLoader() {
         $('.loader-wrapper').fadeOut('slow', function () {
             $(this).remove();
+        });
+    };
+
+    function escapeHtml_showLoader(text) {
+        if (typeof text !== 'string') {
+            text = text || ''; // 如果是 undefined 或 null，改成空字串
+        }
+        return text.replace(/[&<>"']/g, function (m) {
+            return ({
+                '&': '&amp;',
+                '<': '&lt;',
+                '>': '&gt;',
+                '"': '&quot;',
+                "'": '&#39;'
+            })[m];
         });
     }
 </script>

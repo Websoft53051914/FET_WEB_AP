@@ -243,7 +243,7 @@ WHERE
 
         public void InsertVenderPWHistory(store_vender_profileDTO StoreVenderProfile)
         {
-            string InsertVenderPWHistoryCmd = $@"INSERT INTO vender_pw_history
+            string InsertVenderPWHistoryCmd = $@"INSERT INTO tb_vender_pw_history
 (account, pw) VALUES (@account, @pw)";
 
             Dictionary<string, object> Paras = new Dictionary<string, object>

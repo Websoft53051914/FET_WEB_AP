@@ -126,6 +126,14 @@
                             </div>
                         </div>
 
+                        <div class="mt-2">
+                            <label for="Pd" class="form-label">驗證碼</label>
+                            <div class="input-group">
+                                <input class="form-control" type="text" name="captcha" id="captcha" required style="width:80px;" maxlength="4" />
+                                <img id="imgCaptcha" src="" style="cursor:pointer;" title="點擊重新產生" />
+                            </div>
+                        </div>
+
                         <div id="errorMsg" class="mt-1  text-center text-danger">
                         </div>
 
@@ -176,7 +184,45 @@
     </div>
     <script src="~/lib/viho/assets/js/jquery-3.5.1.min.js"></script>
     <script>
+        var captchaId = "";
+
+        changeCaptcha(document.getElementById('imgCaptcha'));
+
+        document.getElementById('imgCaptcha').addEventListener('click', function () {
+            let $errorMsg = $('#errorMsg');
+            var img = this;
+            changeCaptcha(img);
+        });
+
         const $Loder = $('#loader-mask');
+
+        function changeCaptcha(img) {
+            $.ajax({
+                url: '@(config.GetBackendUrl() + Url.Action("GetCaptcha", "Login"))',
+                type: 'Get',
+                xhrFields: {
+                    withCredentials: true // ← 這個讓瀏覽器攜帶 Cookie
+                },
+                headers: {
+                    "Content-From": "GetCaptcha"
+                },
+                success: function (data) {
+
+                    if (data.Success) {
+                        img.src = data.Data.imageBase64;
+                        captchaId = data.Data.captchaId;
+
+                    } else {
+                        $errorMsg.text(data.Message);
+                    }
+                },
+                error: function (xhr, status, error) {
+                    $errorMsg.text("取得驗證碼失敗，請稍後再試。");
+                }
+            }).always(() => {
+                $Loder.hide();
+            })
+        }
 
         function detectIEEdge() {
             var ua = window.navigator.userAgent;
@@ -254,57 +300,90 @@
             //FormSubmit事件註冊
             $('#LoginForm').submit(async function (e) {
                 e.preventDefault();
-                let role = $('#Role').val();
-                let ivrCode = $('#IVR_Code').val();
-                let ac = $('#AC').val();
-                let pd = $('#PD').val();
+
                 let $errorMsg = $('#errorMsg');
-
-                if (role == "RETAIL" && (!ivrCode || !ac || !pd)) {
-                    $errorMsg.html("請填入IVR Code、帳號、密碼");
-                    return;
-                } else if (role == "VASS" && (!ivrCode || !pd)) {
-                    $errorMsg.html("請填入IVR Code、密碼");
-                    return;
-                } else if (role == "EMPLOYEE" && (!ac || !pd)) {
-                    $errorMsg.html("請填入帳號、密碼");
-                    return;
-                }
-                $errorMsg.html("");
-                $Loder.show();
-
+                CaptchaCode = $('#captcha').val();
+                //檢查驗證碼
                 $.ajax({
-                    url: '@(config.GetBackendUrl() + Url.Action("Login", "Login"))',
+                    url: '@(config.GetBackendUrl() + Url.Action("VerifyCaptcha", "Login"))',
                     type: 'POST',
                     xhrFields: {
                         withCredentials: true // ← 這個讓瀏覽器攜帶 Cookie
                     },
                     headers: {
-                        "Content-From": "Login"
+                        "Content-From": "VerifyCaptcha"
                     },
                     data: {
-                        Role: role,
-                        IVR_Code: ivrCode,
-                        AC: ac,
-                        PD: pd
+                        CaptchaId: captchaId,
+                        CaptchaCode: CaptchaCode,
                     },
                     success: function (data) {
 
+                        changeCaptcha(document.getElementById('imgCaptcha'));
+
                         if (data.Success) {
-                            const urlParams = new URLSearchParams(window.location.search);
-                            const originUrl = urlParams.get('originUrl');
-                            if (originUrl && originUrl.trim() !== '') {
-                                window.location.href = decodeURIComponent(urlParams.get('originUrl'));
+
+                            let role = $('#Role').val();
+                            let ivrCode = $('#IVR_Code').val();
+                            let ac = $('#AC').val();
+                            let pd = $('#PD').val();
+                            let $errorMsg = $('#errorMsg');
+
+                            if (role == "RETAIL" && (!ivrCode || !ac || !pd)) {
+                                $errorMsg.text("請填入IVR Code、帳號、密碼");
+                                return;
+                            } else if (role == "VASS" && (!ivrCode || !pd)) {
+                                $errorMsg.text("請填入IVR Code、密碼");
+                                return;
+                            } else if (role == "EMPLOYEE" && (!ac || !pd)) {
+                                $errorMsg.text("請填入帳號、密碼");
+                                return;
                             }
-                            else {
-                                window.location.href = "@Url.Action("Index", "Home")";
-                            }
+                            $errorMsg.text("");
+                            $Loder.show();
+
+                            $.ajax({
+                                url: '@(config.GetBackendUrl() + Url.Action("Login", "Login"))',
+                                type: 'POST',
+                                xhrFields: {
+                                    withCredentials: true // ← 這個讓瀏覽器攜帶 Cookie
+                                },
+                                headers: {
+                                    "Content-From": "Login"
+                                },
+                                data: {
+                                    Role: role,
+                                    IVR_Code: ivrCode,
+                                    AC: ac,
+                                    PD: pd
+                                },
+                                success: function (data) {
+
+                                    if (data.Success) {
+                                        const urlParams = new URLSearchParams(window.location.search);
+                                        const originUrl = urlParams.get('originUrl');
+                                        if (originUrl && originUrl.startsWith('/')) {
+                                            window.location.href = originUrl; // 安全
+                                        }
+                                        else {
+                                            window.location.href = "@Url.Action("Index", "Home")";
+                                        }
+                                    } else {
+                                        $errorMsg.text(data.Message);
+                                    }
+                                },
+                                error: function (xhr, status, error) {
+                                    $errorMsg.text("登入失敗，請稍後再試。");
+                                }
+                            }).always(() => {
+                                $Loder.hide();
+                            })
                         } else {
-                            $errorMsg.html(data.Message);
+                            $errorMsg.text(data.Message);
                         }
                     },
                     error: function (xhr, status, error) {
-                        $errorMsg.html("登入失敗，請稍後再試。");
+                        $errorMsg.text("驗證碼檢查失敗，請稍後再試。");
                     }
                 }).always(() => {
                     $Loder.hide();

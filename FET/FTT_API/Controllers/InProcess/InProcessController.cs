@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FTT_API.Controllers.InProcess
 {
     [Route("[controller]")]
+    [Common.Attribute.CustomAuthorization]
     public class InProcessController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

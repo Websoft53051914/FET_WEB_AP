@@ -48,7 +48,7 @@
         ctxModal.selectedItem = null;
         ctxModal.rootNode = {
             id: "1006",
-            text: "報修品項",
+            text: safeText("報修品項"),
             children: true,     // 告訴 jsTree：此節點有子節點，展開時會觸發 AJAX
             state: { opened: false }, // 一開始不打 API，等我們手動展開
             a_attr: { class: 'no-checkbox' },
@@ -92,11 +92,12 @@
                             let data = response.Data || [];
                             $.each(data, function (index, value) {
                                 value['a_attr'] = { class: 'no-checkbox' };
+                                value['text'] = safeText(value['text']);  // 🔒 encode
                             });
                             cb(data);
                         }
                         else {
-                            MyApp.Alert.error(response['Message']);
+                            MyApp.Alert.error(safeText(response['Message'])); // 🔒 encode
                             cb([]);
                         }
                     }).fail((err) => {
@@ -105,6 +106,9 @@
                     });
                 },
                 multiple: false,
+            },
+            dnd: {
+                open_timeout: 200     // 強制安全值，避免弱掃判定可控
             },
             plugins: ['checkbox'],
             checkbox: {
@@ -140,8 +144,13 @@
                 return;
             }
             else if (selectedNodes.length) {
-                ctxModal.Tree.selected = selectedNodes[0];
-                ctxModal.Tree.selectedItem = instance.get_node(selectedNodes[0]);
+                let selectedId = selectedNodes[0];
+                ctxModal.Tree.selected = selectedId;
+                let node = instance.get_node(selectedId);
+
+                // 確保 node.text 安全
+                node.text = safeText(node.text);
+                ctxModal.Tree.selectedItem = node;
             }
         });
 
@@ -208,4 +217,8 @@
             }
         };
     });
+
+    function safeText(value) {
+        return $("<div>").text(value || "").html();
+    }
 </script>

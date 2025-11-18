@@ -141,14 +141,15 @@
                     hideLoader();
                     if (data.Success == true) {
                         var item = data.Data;
-                        $('#merchant_name').val(item.merchant_name);
+                        if (item != null) {
+                            $('#merchant_name').val(item.merchant_name);
 
-                        $('#cp_name').val(item.cp_name);
-                        $('#cp_tel').val(item.cp_tel);
-                        $('#email').val(item.email);
-                        $('#merchant_login').val(item.merchant_login);
-                        $('#merchant_password').val(item.merchant_password);
-
+                            $('#cp_name').val(item.cp_name);
+                            $('#cp_tel').val(item.cp_tel);
+                            $('#email').val(item.email);
+                            $('#merchant_login').val(item.merchant_login);
+                            $('#merchant_password').val(item.merchant_password);
+                        }
                     } else {
                         alert(data.Message);
                     }

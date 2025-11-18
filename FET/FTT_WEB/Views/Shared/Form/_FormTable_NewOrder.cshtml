@@ -27,6 +27,10 @@
     .TrEvenChild {
         background-color: gray;
     }
+
+        .TrEvenChild a {
+            color: white;
+        }
 </style>
 <div>
     <div class="table-responsive  bg-white" style="overflow-y: hidden;">
@@ -252,6 +256,17 @@
                         </td>
                     </tr>
 
+                    <tr id="FILE_PANEL" style="">
+                        <td bgcolor="#FFDDEE">檔案清單：</td>
+                        <td colspan="5" id="fildTD">
+                            <input class="form-control" type="file" id="File" style="max-width:500px;float: left;" />
+                            <button id="FileUpload" type="button" class="btn btn-primary" style="margin-bottom: 5px;">上傳檔案</button>
+                            <br>
+
+                        </td>
+                    </tr>
+
+
                     <tr>
                         <th colspan="6" class="text-end">
                             <button type="button" class="btn btn-info" id="rmBtn_Add">新增資料</button>
@@ -269,9 +284,10 @@
                                             <th>維修廠商</th>
                                             <th>狀況描述</th>
                                             <th>報修備註</th>
+                                            <th>上傳檔案</th>
                                         </tr>
                                         <tr id="noData" style="background-color:white;">
-                                            <td class="text-center" colspan="5"><B><u>尚未新增報修資料</u></B></td>
+                                            <td class="text-center" colspan="6"><B><u>尚未新增報修資料</u></B></td>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -296,9 +312,48 @@
 <partial name="Form/_DialogVender" view-data='new ViewDataDictionary(ViewData)' />
 
 <script>
+    function GetFileElement(i, text, value) {
+        return '<a val="' + value + '" name="TTItemList[1].FileIds[' + i + ']" target="_blank" href="@(config.GetBackendUrl() + Url.Action("DownloadFile", "Pending"))?id=' + value + '" style="margin: 5px;">【' + text + '】</a>';
+    }
     var context = context || {};
     context['IfWarrant'] = 'Y';
     $(function () {
+        $("#FileUpload").on("click", function () {
+            var file = $("#File")[0].files[0];
+            if (!file) {
+                alert("請選擇檔案");
+                return;
+            }
+
+            showLoader();
+
+            var formData = new FormData();
+            formData.append("file", file);
+            formData.append("formNo", '0');
+
+            $.ajax({
+                url: '@(config.GetBackendUrl() + Url.Action("FileUpload", "Pending"))',
+                type: "POST",
+                data: formData,
+                processData: false,
+                contentType: false,
+                success: function (data) {
+                    hideLoader();
+                    if (data.Success) {
+                        alert('新增檔案完成');
+
+                        $('#fildTD').append(GetFileElement($('#fildTD a').length, data.Data.Text, data.Data.Value));
+
+                        $('#File').val('');
+                    } else {
+                        alert(data.Message);
+                        $('#File').val('');
+                    }
+                }
+            });
+
+        });
+
         context.TTItemList = {
             count: 0
         };
@@ -312,7 +367,7 @@
     });
 
     //initModel.Type : 1.新開單  , 2.自行尋商
-    function initFormTable (initModel) {
+    function initFormTable(initModel) {
         if (initModel.Type === 1) {
             $("#rmBtn_SelectItems").on("click", function () {
                 $("#@(mapData.PartialIT.Id)").modal("show");
@@ -332,8 +387,7 @@
                 }
             });
         }
-        else if (initModel.Type === 2)
-        {// 自行尋商
+        else if (initModel.Type === 2) {// 自行尋商
             $("#rmBtn_SelectItems").on("click", function () {
                 $("#@(ModalId2)").modal("show");
             });
@@ -382,8 +436,7 @@
             $('#TT_IMAGE').attr('src', $('#TT_IMAGE').data('defaultSrc'));
         }
 
-        $('#TT_CATEGORY_NOTE_PANNEL').html('');
-        $('#TT_CATEGORY_DESC_PANNEL').html('');
+        $('#TT_CATEGORY_NOTE_PANNEL').text('');
 
         if (categoryId) {
             // isNewTT 必定為 true
@@ -497,12 +550,14 @@
                     $('#@(Html.IdFor(m => m.EMPNAME))').val(data['@(Html.IdFor(m => m.EMPNAME))']);
                     $('#@(Html.IdFor(m => m.EMPTEL))').val(data['@(Html.IdFor(m => m.EMPTEL))']);
                     Object.keys(dataStore).forEach(function (key) {
-                        let id = '#StoreVO_' + key + 'Text';
-                        if ($(id).length) {
-                            $(id).text(dataStore[key]);
+                        let safeKey = escapeId(key);
+
+                        let idText = '#StoreVO_' + safeKey + 'Text';
+                        if ($(idText).length) {
+                            $(idText).text(dataStore[key]);
                         }
 
-                        id = '#StoreVO_' + key;
+                        let id = '#StoreVO_' + safeKey;
                         if ($(id).length) {
                             $(id).text(dataStore[key]);
                         }
@@ -714,7 +769,7 @@
                 value: valCATEGORY_NAME
             });
         let $categoryNameDisplay = $('<span>')
-            .html(valCATEGORY_NAME);
+            .text(valCATEGORY_NAME);
         $td1.append($categoryId);
         $td1.append($categoryName);
         $td1.append($categoryNameDisplay);
@@ -728,7 +783,7 @@
                 value: valVENDER_ID
             });
         let $venderNameDisplay = $('<span>')
-            .html(valVENDER_NAME);
+            .text(valVENDER_NAME);
         $td2.append($venderId);
         $td2.append($venderNameDisplay);
         $tr.append($td2);
@@ -743,7 +798,7 @@
                 value: valItemNoteVal
             });
         let $itemNoteValDisplay = $('<span>')
-            .html(valItemNoteVal);
+            .text(valItemNoteVal);
         let valItemDescVal = valITEMDESC.join(',');
         let $itemDescVal = $('<input>')
             .attr({
@@ -753,7 +808,7 @@
                 value: valItemDescVal
             });
         let $itemDescValDisplay = $('<span>')
-            .html(valItemDescVal);
+            .text(valItemDescVal);
         $td3.append($itemNoteVal);
         $td3.append($itemNoteValDisplay);
         $td3.append($('<br/>'));
@@ -770,11 +825,35 @@
                 value: valREMARK
             });
         let $remarkDisplay = $('<span>')
-            .html(valREMARK);
+            .text(valREMARK);
         $td4.append($remark);
         $td4.append($remarkDisplay);
         $tr.append($td4);
+        let $td5 = $('<td>');
 
+        // 處理 hidden inputs
+        $('#fildTD').find('a').each(function (i, item) {
+            let $file = $('<input>')
+                .attr({
+                    type: 'hidden',
+                    class: 'form-control',
+                    name: `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.FileIds))[${i}]`,
+                    value: $(item).attr('val') // safe
+                });
+
+            $td5.append($file);
+        });
+
+        // 安全插入 <a> 元素
+        $('#fildTD').find('a').each(function () {
+            let $original = $(this);
+            let $safeLink = $('<a>')
+                .attr('href', $original.attr('href') || '#') // 保留 href
+                .text($original.text());                     // 只插入文字，escape HTML
+            $td5.append($safeLink);
+        });
+
+        $tr.append($td5);
         $container.append($tr);
 
         context.TTItemList.count = idx + 1;
@@ -801,11 +880,14 @@
             if ($('#SELFCONFIG').val() == 'N') {
                 $('#@(Html.IdFor(m => m.TemplateItem.VENDER_ID))').val(data['id']);
                 $('#@(Html.IdFor(m => m.TemplateItem.VENDER_NAME))').val(data['text']);
-                $('#VENDER_NAME_DISPLAY').html(data['text']);
-                $('#CP_NAME').html(data['OtherAttr']['CP_NAME']);
-                $('#CP_TEL').html(data['OtherAttr']['CP_TEL']);
+                $('#VENDER_NAME_DISPLAY').text(data['text']);
+                $('#CP_NAME').text(data['OtherAttr']['CP_NAME']);
+                $('#CP_TEL').text(data['OtherAttr']['CP_TEL']);
                 $('#btnSelectVender').removeClass('d-none');
             }
         }
     });
+    function escapeId(str) {
+        return String(str).replace(/[^A-Za-z0-9\-_:.]/g, "_");
+    }
 </script>

@@ -11,6 +11,7 @@ using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.Fonts;
+using System.Text.RegularExpressions;
 
 namespace FTT_VENDER_API.Controllers.Login
 {
@@ -54,6 +55,7 @@ namespace FTT_VENDER_API.Controllers.Login
 
                 if (!string.IsNullOrEmpty(resultVO.Token.TokenId))
                 {
+                    resultVO.Token.TokenId = InputSanitizer.SanitizeForCookie(resultVO.Token.TokenId);
                     Response.Cookies.Append("Token", resultVO.Token.TokenId, new CookieOptions
                     {
                         HttpOnly = false,
@@ -68,13 +70,17 @@ namespace FTT_VENDER_API.Controllers.Login
 
                     userLoginName = sessionVO.engname;
                 }
+
+                userLoginName = SanitizeCookieValue(userLoginName);
+                var userrole = SanitizeCookieValue(sessionVO?.userrole);
+
                 Response.Cookies.Append("userLoginName", userLoginName ?? string.Empty, new CookieOptions
                 {
                     HttpOnly = false,
                     Secure = false, // HTTP測試用false https用true
                     SameSite = SameSiteMode.Lax, // http測試用Lax https用none
                 });
-                Response.Cookies.Append("userrole", sessionVO?.userrole ?? string.Empty, new CookieOptions
+                Response.Cookies.Append("userrole", userrole ?? string.Empty, new CookieOptions
                 {
                     HttpOnly = false,
                     Secure = false, // HTTP測試用false https用true
@@ -91,6 +97,15 @@ namespace FTT_VENDER_API.Controllers.Login
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
+
+        private string SanitizeCookieValue(string value)
+        {
+            if (string.IsNullOrEmpty(value)) return string.Empty;
+
+            // 移除 CR, LF, 空字元
+            return Regex.Replace(value, @"[\r\n]", string.Empty);
+        }
+
 
         public class CaptchaVerifyRequest
         {

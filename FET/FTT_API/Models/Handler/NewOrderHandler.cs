@@ -115,12 +115,16 @@ INSERT INTO ftt_form(
             string sqlApprovalGenerate = @"
 SELECT APPROVAL_GENERATE(@formtype, @form_no, @tt_no, @ivrcode, null, null, null, null)
 ";
+            string sqlLinkFile = @"
+update tb_file set formno=@form_no where id in @fileids
+";
 
             //using TransactionScope scope = new(TransactionScopeAsyncFlowOption.Enabled);
             foreach (Dictionary<string, object> data in dataList)
             {
                 GetDBHelper().Execute(sqlInsert, data);
                 GetDBHelper().Execute(sqlApprovalGenerate, data);
+                GetDBHelper().Execute(sqlLinkFile, data);
             }
 
             GetDBHelper().Commit();

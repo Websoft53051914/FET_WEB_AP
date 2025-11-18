@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace FTT_API.Controllers
 {
     [Route("[controller]")]
+    [Common.Attribute.CustomAuthorization]
     public class LogoutController : BaseProjectController
     {
         private readonly IWebHostEnvironment _hostingEnvironment;

@@ -33,5 +33,6 @@
         public List<string> ITEMDESC { get; set; } = [];
         public string? ItemDescVal { get; set; }
         public string? REMARK { get; set; }
+        public List<string> FileIds { get; set; } = [];
     }
 }

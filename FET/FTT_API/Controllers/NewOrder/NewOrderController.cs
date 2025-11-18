@@ -20,6 +20,7 @@ namespace FTT_API.Controllers.NewOrder
     /// 新開單 API
     /// </summary>
     [Route("[controller]")]
+    [Common.Attribute.CustomAuthorization]
     public partial class NewOrderController : BaseProjectController
     {
         /// <summary>
@@ -163,6 +164,7 @@ namespace FTT_API.Controllers.NewOrder
                         { "repair", vm.REPAIR ?? string.Empty },
                         { "resupply", vm.RESUPPLY ?? string.Empty },
                         { "selfconfig", vm.SELFCONFIG ?? string.Empty },
+                        { "fileids", item.FileIds },
                     };
 
                     string formType = "FTT_FORM";

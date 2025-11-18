@@ -196,7 +196,11 @@ namespace FTT_API.Controllers
             else
             {
 
-                if (from != "Login" && from != "Logout" && from != "CheckSSO")
+                if (context.RouteData.Values["action"] != null && (context.RouteData.Values["action"].ToString() == "GetCaptcha" || context.RouteData.Values["action"].ToString() == "VerifyCaptcha"))
+                {
+
+                }
+                else if(from != "Login" && from != "Logout" && from != "CheckSSO")
                 {
                     context.Result = new UnauthorizedObjectResult(JsonValiFail("無權限進入"));
                     return;

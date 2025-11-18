@@ -18,6 +18,7 @@ namespace FTT_API.Controllers.Query
     /// 門市報修管理-查詢
     /// </summary>
     [Route("[controller]")]
+    [Common.Attribute.CustomAuthorization]
     public partial class QueryController : BaseProjectController
     {
         /// <summary>

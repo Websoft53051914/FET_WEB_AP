@@ -15,6 +15,7 @@ using static Org.BouncyCastle.Math.EC.ECCurve;
 namespace FTT_API.Controllers.StoreMgt
 {
     [Route("[controller]")]
+    [Common.Attribute.CustomAuthorization]
     public partial class StoreMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

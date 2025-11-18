@@ -17,6 +17,7 @@ namespace FTT_API.Controllers.CIConfig
     /// 例外派工維護 API
     /// </summary>
     [Route("[controller]")]
+    [Common.Attribute.CustomAuthorization]
     public partial class CIConfigController : BaseProjectController
     {
         /// <summary>
@@ -356,13 +357,18 @@ namespace FTT_API.Controllers.CIConfig
                     Directory.CreateDirectory(pathOutputPath);
                 }
 
-                string attachFileName = _sessionVO.empno + "_" + DateTime.Now.ToString("HHmmss") + "_" + file.FileName;
+                // 只取檔名，不包含任何路徑
+                var safeFileName = Path.GetFileName(file.FileName);
+
+                // 加上前綴，生成最終檔名
+                string attachFileName = _sessionVO.empno + "_" + DateTime.Now.ToString("HHmmss") + "_" + safeFileName;
+
+                // 組合安全的資料夾路徑
                 string pathFile = Path.Combine(pathOutputPath, attachFileName);
 
                 // 儲存檔案
                 using (var stream = new FileStream(pathFile, FileMode.Create))
                 {
-                    //file.CopyToAsync(stream); 非同步導致檔案是 0 kb 時就被使用
                     file.CopyTo(stream);
                 }
 
