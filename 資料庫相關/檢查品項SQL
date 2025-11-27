@@ -1,0 +1,3 @@
+確認新開單時 選擇品項後 是否有記錄錯誤訊息
+
+select * from tb_Control_log where controllername in ('RetrieveTTCount','GetSelectListVender') and status!=1 order by logtime desc 

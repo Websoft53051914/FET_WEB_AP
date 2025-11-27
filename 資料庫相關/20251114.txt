@@ -1,8 +1,8 @@
--- Table: public.tb_file
+-- Table: tb_file
 
--- DROP TABLE IF EXISTS public.tb_file;
+-- DROP TABLE IF EXISTS tb_file;
 
-CREATE TABLE IF NOT EXISTS public.tb_file
+CREATE TABLE IF NOT EXISTS tb_file
 (
     id integer NOT NULL GENERATED ALWAYS AS IDENTITY ( INCREMENT 1 START 1 MINVALUE 1 MAXVALUE 2147483647 CACHE 1 ),
     status integer DEFAULT 0,
@@ -20,5 +20,5 @@ CREATE TABLE IF NOT EXISTS public.tb_file
 
 TABLESPACE pg_default;
 
-ALTER TABLE IF EXISTS public.tb_file
+ALTER TABLE IF EXISTS tb_file
     OWNER to enterprisedb;
