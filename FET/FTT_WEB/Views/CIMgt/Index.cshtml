@@ -299,6 +299,7 @@
             };
 
             $('#@(mapAttr.IdTree)').jstree({
+                force_text:true,
                 core: {
                     data: function (obj, cb) {
                         if (obj.id === "#") {
@@ -417,7 +418,7 @@
                     data.remark = $('#Add_remark').val();
                     data.descr = $('#Add_descr').val();
                     data.notes = $('#Add_notes').val();
-                    
+
                     data.picture_path = $('#Add_picture_path').val();
                     data.cicategory = $('#Add_cicategory').val();
 
@@ -473,7 +474,7 @@
                     data.remark = $('#remark').val();
                     data.descr = $('#descr').val();
                     data.notes = $('#notes').val();
-                    
+
                     data.picture_path = $('#picture_path').val();
 
                     data.kpitime = $('#kpitime').val();
@@ -538,64 +539,60 @@
                 // data: { cisid: data.node.id },
                 type: 'Get',
                 dataType: 'json'
-            }).done(function (data) {
-                if (data.Success) {
-                    if (data.Data != null) {
-                        if (data.Data.reqsrcs != null) {
-                            let html = data.Data.reqsrcs.map(item => `
-                                                                                  <div class="form-check checkbox checkbox-primary">
-                                                                                              <input class="form-check-input" id="S${escapeHtml(item.Value)}" type="checkbox" value="${escapeHtml(item.Value)}" name="reqsrc">
-                                                                                      <label class="form-check-label checkbox_short_label" for="S${escapeHtml(item.Value)}">${escapeHtml(item.Value)}</label>
-                                                                                  </div>
-                                                                              `).join('');
-                            $('#reqsrcShell').html(html);
+                    }).done(function (data) {
+            if (data.Success && data.Data != null) {
 
-                            html = data.Data.reqsrcs.map(item => `
-                                                                                  <div class="form-check checkbox checkbox-primary">
-                                                                                      <input class="form-check-input" id="Add_S${escapeHtml(item.Value)}" type="checkbox" value="${escapeHtml(item.Value)}" name="Add_reqsrc">
-                                                                                              <label class="form-check-label checkbox_short_label" for="Add_S${escapeHtml(item.Value)}">${escapeHtml(item.Value)}</label>
-                                                                                  </div>
-                                                                              `).join('');
-                            $('#Add_reqsrcShell').html(html);
-                        }
-
-                        if (data.Data.actypes != null) {
-                            let html = data.Data.actypes.map(item => `
-                                                                              <div class="form-check checkbox checkbox-primary">
-                                                                                  <input class="form-check-input" id="SS${escapeHtml(item.Value)}" type="checkbox" value="${escapeHtml(item.Value)}" name="actype">
-                                                                                  <label class="form-check-label checkbox_short_label" for="SS${escapeHtml(item.Value)}">${escapeHtml(item.Value)}</label>
-                                                                              </div>
-                                                                                  `).join('');
-                            $('#actypeShell').html(html);
-
-                            html = data.Data.actypes.map(item => `
-                                                                             <div class="form-check checkbox checkbox-primary">
-                                                                                         <input class="form-check-input" id="Add_SS${escapeHtml(item.Value)}" type="checkbox" value="${escapeHtml(item.Value)}" name="Add_actype">
-                                                                                         <label class="form-check-label checkbox_short_label" for="Add_SS${escapeHtml(item.Value)}">${escapeHtml(item.Value)}</label>
-                                                                             </div>
-                                                                                 `).join('');
-
-                            $('#Add_actypeShell').html(html);
-                        }
-                    }
+                if (data.Data.reqsrcs) {
+                    safeAppendCheckBox("reqsrcShell", data.Data.reqsrcs, "S", "reqsrc");
+                    safeAppendCheckBox("Add_reqsrcShell", data.Data.reqsrcs, "Add_S", "Add_reqsrc");
                 }
-                else {
-                    alert(response.Message);
+
+                if (data.Data.actypes) {
+                    safeAppendCheckBox("actypeShell", data.Data.actypes, "SS", "actype");
+                    safeAppendCheckBox("Add_actypeShell", data.Data.actypes, "Add_SS", "Add_actype");
                 }
-            })
+
+            } else {
+                alert(data.Message);
+            }
         });
-        function escapeHtml(str) {
-            return String(str)
-                .replace(/&/g, "&amp;")
-                .replace(/</g, "&lt;")
-                .replace(/>/g, "&gt;")
-                .replace(/"/g, "&quot;")
-                .replace(/'/g, "&#39;");
-        }
+        });
 
         // 將所有動態文字轉成純文字，避免 XSS
         function safeText(value) {
             return $("<div>").text(value || "").html();
+        }
+                function safeAppendCheckBox(containerId, list, prefix, name) {
+            const container = document.getElementById(containerId);
+            container.innerHTML = ""; // 清空
+
+            list.forEach(item => {
+                const value = item.Value ?? "";
+
+                // 建立容器 div
+                const div = document.createElement("div");
+                div.className = "form-check checkbox checkbox-primary";
+
+                // checkbox
+                const input = document.createElement("input");
+                input.className = "form-check-input";
+                input.type = "checkbox";
+                input.name = name;
+                input.value = value;
+                input.id = prefix + value;
+
+                // label
+                const label = document.createElement("label");
+                label.className = "form-check-label checkbox_short_label";
+                label.htmlFor = prefix + value;
+                label.textContent = value; // 安全：自動 escape
+
+                // 組裝
+                div.appendChild(input);
+                div.appendChild(label);
+
+                container.appendChild(div);
+            });
         }
     </script>
 }

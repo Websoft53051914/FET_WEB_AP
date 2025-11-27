@@ -106,7 +106,10 @@ namespace FTT_API.Controllers.Login
                 userLoginName = SanitizeCookieValue(userLoginName);
                 var userrole = SanitizeCookieValue(sessionVO?.userrole);
 
-                Response.Cookies.Append(FTT_API.Common.Const.USER_LOGIN_NAME, userLoginName ?? string.Empty, new CookieOptions
+                // 假設 userLoginName 是從 vm 取得的使用者輸入
+                string safeUserLoginName = string.IsNullOrEmpty(userLoginName) ? string.Empty : Uri.EscapeDataString(userLoginName); // 將特殊字符編碼
+
+                Response.Cookies.Append(FTT_API.Common.Const.USER_LOGIN_NAME, safeUserLoginName ?? string.Empty, new CookieOptions
                 {
                     HttpOnly = false,
                     Secure = false, // HTTP測試用false https用true

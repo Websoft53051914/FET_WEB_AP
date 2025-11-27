@@ -337,26 +337,50 @@
                     if (data.Success == true) {
                         hideLoader();
                         var option;
-                        for (var i = 0; i < data.Data.company_leaves.length; i++) {
-                            var item = data.Data.company_leaves[i];
-                            option = new Option(item.Text, item.Value, false, false);
-                            $('#company_leaves').append(option).trigger('change');
-                        }
-                        for (var i = 0; i < data.Data.store_types.length; i++) {
-                            var item = data.Data.store_types[i];
-                            option = new Option(item.Text, item.Value, false, false);
-                            $('#store_type').append(option).trigger('change');
-                        }
-                        for (var i = 0; i < data.Data.channels.length; i++) {
-                            var item = data.Data.channels[i];
-                            option = new Option(item.Text, item.Value, false, false);
-                            $('#channel').append(option).trigger('change');
-                        }
-                        for (var i = 0; i < data.Data.area.length; i++) {
-                            var item = data.Data.area[i];
-                            option = new Option(item.Text, item.Value, false, false);
-                            $('#area').append(option).trigger('change');
-                        }
+        var select = document.getElementById("company_leaves");
+
+        for (var i = 0; i < data.Data.company_leaves.length; i++) {
+            var item = data.Data.company_leaves[i];
+            var option = new Option(item.Text ?? "", item.Value ?? "");
+            select.add(option);
+        }
+
+        // 如果需要：再用 jQuery 觸發 change（不影響安全）
+        $('#company_leaves').trigger('change');
+
+        var select = document.getElementById("store_type");
+
+        for (var i = 0; i < data.Data.store_types.length; i++) {
+            var item = data.Data.store_types[i];
+            var option = new Option(item.Text ?? "", item.Value ?? "");
+            select.add(option);
+        }
+
+        // 如果需要：再用 jQuery 觸發 change（不影響安全）
+        $('#store_type').trigger('change');
+
+        var select = document.getElementById("channel");
+
+        for (var i = 0; i < data.Data.channels.length; i++) {
+            var item = data.Data.channels[i];
+            var option = new Option(item.Text ?? "", item.Value ?? "");
+            select.add(option);
+        }
+
+        // 如果需要：再用 jQuery 觸發 change（不影響安全）
+        $('#channel').trigger('change');
+
+        var select = document.getElementById("area");
+
+        for (var i = 0; i < data.Data.area.length; i++) {
+            var item = data.Data.area[i];
+            var option = new Option(item.Text ?? "", item.Value ?? "");
+            select.add(option);
+        }
+
+        // 如果需要：再用 jQuery 觸發 change（不影響安全）
+        $('#area').trigger('change');
+
                     } else {
                         alert(data.Message);
                         hideLoader();

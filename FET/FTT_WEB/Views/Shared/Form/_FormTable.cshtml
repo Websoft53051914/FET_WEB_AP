@@ -406,305 +406,274 @@
     <partial name="Form/_RMItemTree" view-data='new ViewDataDictionary(ViewData)' /> *@
 
 <script>
-    function GetFileElement(text, value) {
-        return '<a target="_blank" href="@(config.GetBackendUrl() + Url.Action("DownloadFile", "Pending"))?id=' + value + '" style="margin: 5px;">【' + text + '】</a>';
-    }
-    if (!String.format) {
-        String.format = function (format, ...args) {
-            return format.replace(/{(\d+)}/g, function (match, number) {
-                return typeof args[number] != 'undefined'
-                    ? args[number]
-                    : match
-                    ;
-            });
-        };
-    }
+            function GetFileElement(i, text, value) {
+                const a = document.createElement("a");
+                a.textContent = `【${text ?? ""}】`;    // 安全，自動 escape
+                a.setAttribute("val", value ?? "");
+                a.name = `TTItemList[1].FileIds[${i}]`;
+                a.target = "_blank";
+                a.style.margin = "5px";
 
-    var context = context || {};
-    var iFrameIsSubmit = false;
+                a.href = '@(config.GetBackendUrl() + Url.Action("DownloadFile", "Pending"))'
+                    + "?id=" + encodeURIComponent(value ?? "");
 
-    //initModel.Type : 1.新開單  , 2.自行尋商
-    function initFormTable(initModel) {
-        if (initModel.Type === 1) {
-            $("#rmBtn_SelectItems").on("click", function () {
-                $("#@(TreeModalId)").modal("show");
-            });
-            $("#SelfFindBussiness").text("N");
-        }
-        else if (initModel.Type === 2) {
-            $("#rmBtn_SelectItems").on("click", function () {
-                $("#RMItemListSelfVendorModal").modal("show");
-            });
-            $("#SelfFindBussiness").text("Y");
-        }
-        else if (initModel.Type === 3) {
-            $("#rmBtn_SelectItems").remove();
-            $("#rmBtn_Add").remove();
-            $("#rmBtn_Create").remove();
-            $(".rmClass_DeleteDetail").remove();
-            $("#rmTable_Header1").html("");
-            $("#rmTable_Header1").append("門市資訊")
-
-            let statusSpan = $("<span>", {
-                id: "APPROVE_FORM_STATUS_DESC",
-                class: "text-success",
-                style: "float:right;background-color: cornsilk;"
-            }).text("*目前表單狀態: 審單中");
-
-            $("#rmTable_Header1").append(statusSpan);
-        }
-    }
-
-    $(document).on("CategorySelected", function (event, data) {
-        $("#rmBtn_SelectItems").text(data.selectedItemText);
-    });
-
-    $(function () {
-        $("#FileUpload").on("click", function () {
-            var file = $("#File")[0].files[0];
-            if (!file) {
-                alert("請選擇檔案");
-                return;
+                return a;
             }
-
-            showLoader();
-
-            var formData = new FormData();
-            formData.append("file", file);
-            formData.append("formNo", '@form_no');
-
-            $.ajax({
-                url: '@(config.GetBackendUrl() + Url.Action("FileUpload", "Pending"))',
-                type: "POST",
-                data: formData,
-                processData: false,
-                contentType: false,
-                success: function (data) {
-                    hideLoader();
-                    if (data.Success) {
-                        alert('新增檔案完成');
-
-                        $('#fildTD').append(GetFileElement(data.Data.Text, data.Data.Value));
-
-                        $('#File').val('');
-                    } else {
-                        alert(data.Message);
-                        $('#File').val('');
-                    }
-                }
-            });
-
-        });
-        $(".initSelect2").select2({
-            allowClear: true
-        });
-
-        $('#COMPLETETIME_Shell').datetimepicker({
-            format: 'YYYY/MM/DD',
-        });
-
-        $('#PRECOMPLETETIME_Shell').datetimepicker({
-            format: 'YYYY/MM/DD',
-        });
-
-        $("#TT_CATEGORY").on("change", function (e) {
-            if ($('#TT_CATEGORY').val() == "緊急(補單)")
-                MyApp.Alert.warning("【除緊急故障發生，且已電話聯繫，廠商已到場處理者；否則請以「一般」報修處理】");
-        });
-
-        $("#SELECTSTATUS").on("change", function (e) {
-            $('#COMPLETE_PANEL').hide();
-            $('#VENDOR_ARRIVE_DATE_PANEL').hide();
-            $('#PENDING_PANEL').hide();
-            $('#OFFER_PANEL').hide();
-            $('#ASSETER_PANEL').hide();
-            $('#AMOUNT_PANEL').hide();
-
-            if ($('#SELECTSTATUS').val() != "") {
-                $('#STATUSWORDING').val($('#SELECTSTATUS').select2('data'));
-                $('#STATUS').val($('#SELECTSTATUS').val());
-                $('#TICKET_INFO').val($('#SELECTSTATUS').val());
-                disable_field($('#VENDOR_ARRIVE_DATE')[0]);
-
-                var RequireField = '';
-                switch ($('#SELECTSTATUS').val()) {
-                    case "COMPLETE":
-                        context.RequireField = convertToFormField(",DESCRIPTION,SELECTSTATUS,COMPLETETIME,VENDOR_ARRIVE_DATE,");
-                        $('#COMPLETE_PANEL').show();
-                        $('#VENDOR_ARRIVE_DATE_PANEL').show();
-                        $('#AMOUNT_PANEL').show();
-                        enable_field($('#VENDOR_ARRIVE_DATE')[0]);
-                        iFrameIsSubmit = false;
-                        break;
-                    case "PENDING":
-                        context.RequireField = convertToFormField(",DESCRIPTION,SELECTSTATUS,PRECOMPLETETIME,");
-                        $('#PENDING_PANEL').show();
-                        iFrameIsSubmit = true;
-                        break;
-                    case "OFFER":
-                        context.RequireField = convertToFormField(",DESCRIPTION,SELECTSTATUS,PRECOMPLETETIME,PRICE,QTY,");
-
-                        $('#AMOUNT_PANEL').show();
-                        $('#PENDING_PANEL').show();
-                        iFrameIsSubmit = false;
-                        break;
-
-                    case "ASSETER":
-                        context.RequireField = '';
-                        $('#ASSETER_PANEL').show();
-                        iFrameIsSubmit = false;
-                        break;
-
-                    case "NOSHOW":
-                        context.RequireField = convertToFormField(",DESCRIPTION,SELECTSTATUS,PRECOMPLETETIME,");
-                        $('#PENDING_PANEL').show();
-                        iFrameIsSubmit = true;
-                        break;
-
-                    default:
-                        break;
-                }
-
-                handleRequireField();
-            }
-        });
-
-        $('#EXPENSE_DESC_SEL').select2({
-            placeholder: {
-                id: '',
-                text: '請選擇',
-                selected: 'selected'
-            },
-            ajax: {
-                url: '@(config.GetBackendUrl() + Url.Action("SelectDesc", "Pending"))',
-                dataType: 'json',
-                type: 'POST',
-                delay: 200,
-                data: function (params) {
-                    var selectedTypeName = $('#EXPENSE_TYPE').val();
-                    var categoryID = $('#CATEGORY_ID').val();
-
-                    var query = {
-                        categoryID: categoryID,
-                        ExpenseType: selectedTypeName,
-                    }
-                    return query;
-                },
-                processResults: function (data) {
-                    SetControlEmpty();
-
-                    return {
-                        results: $.map(data, (item) => {
-                            return {
-                                text: item.Text,
-                                id: item.Value
-                            }
-                        })
-                    };
-                },
-            },
-        });
-
-        $("#EXPENSE_DESC_SEL").on("change", function (e) {
-            var selectedID = $('#EXPENSE_DESC_SEL :selected').val();
-
-            $.ajax({
-                type: 'POST',
-                url: '@(config.GetBackendUrl() + Url.Action("ShowDesc", "Pending"))',
-                data: {
-                    ID: selectedID,
-                },
-                dataType: 'json',
-                success: function (data) {
-                    $.each(data, function () {
-                        setConfigSettingList(this);
-                    });
-                },
-                error: function (msg) {
-                    console.log(msg);
-                    MyApp.Alert.error('呼叫 API 異常');
-                }
-            });
-        });
-
-        $('#SubmitFormAddAmount').on("click", function (e) {
-            var vm = {};
-            var vms = [];
-            var formNo = $('#FORM_NO').val();
-            vm.form_no = formNo;
-            vm.FORM_ACTION = $('#FORM_ACTION').val();
-
-            if (!$('[name="TableTR"]').length) {
-                MyApp.Alert.warning('請至少填寫一筆金額!');
-                return;
-            }
-
-            for (var i = 0; i < $('[name="TableTR"]').length; i++) {
-                var item = {};
-                item.form_no = formNo;
-                item.expense_type = $('[name="TableTR"]').eq(i).find('[name="EXPENSE_TYPE"]').val();
-                item.expense_desc = $('[name="TableTR"]').eq(i).find('[name="EXPENSE_DESC"]').val();
-                item.fault_reason = $('[name="TableTR"]').eq(i).find('[name="FAULT_REASON"]').val();
-                item.repair_action = $('[name="TableTR"]').eq(i).find('[name="REPAIR_ACTION"]').val();
-                item.qty = $('[name="TableTR"]').eq(i).find('[name="QTY"]').val();
-                item.unit = $('[name="TableTR"]').eq(i).find('[name="UNIT"]').val();
-                item.price = $('[name="TableTR"]').eq(i).find('[name="PRICE"]').val();
-                item.subtotal = $('[name="TableTR"]').eq(i).find('[name="SUBTOTAL"]').val();
-                item.orderid = i + 1;
-                vms.push(item);
-            }
-
-            vm.vms = vms;
-            showLoader();
-            $.ajax({
-                url: '@(config.GetBackendUrl() + Url.Action("Add_FTT_FORM_AMOUNT", "pending"))',
-                dataType: 'json',
-                type: 'POST',
-                data: { vm: vm },
-                cache: false
-            })
-                .done((response) => {
-                    if (response.Success) {
-                        // 更新金額彙總欄後送出表單
-                        $('#form1').trigger('submit');
-                    }
-                    else {
-                        MyApp.Alert.error(response['Message']);
-                    }
-                })
-                .fail((err) => {
-                    console.log(err);
-                    MyApp.Alert.error('呼叫 API 異常');
-                })
-                .always(() => {
-                    hideLoader();
+        if (!String.format) {
+            String.format = function (format, ...args) {
+                return format.replace(/{(\d+)}/g, function (match, number) {
+                    return typeof args[number] != 'undefined'
+                        ? args[number]
+                        : match
+                        ;
                 });
+            };
+        }
+
+        var context = context || {};
+        var iFrameIsSubmit = false;
+
+        //initModel.Type : 1.新開單  , 2.自行尋商
+        function initFormTable(initModel) {
+            if (initModel.Type === 1) {
+                $("#rmBtn_SelectItems").on("click", function () {
+                    $("#@(TreeModalId)").modal("show");
+                });
+                $("#SelfFindBussiness").text("N");
+            }
+            else if (initModel.Type === 2) {
+                $("#rmBtn_SelectItems").on("click", function () {
+                    $("#RMItemListSelfVendorModal").modal("show");
+                });
+                $("#SelfFindBussiness").text("Y");
+            }
+            else if (initModel.Type === 3) {
+                $("#rmBtn_SelectItems").remove();
+                $("#rmBtn_Add").remove();
+                $("#rmBtn_Create").remove();
+                $(".rmClass_DeleteDetail").remove();
+                $("#rmTable_Header1").html("");
+                $("#rmTable_Header1").append("門市資訊")
+
+                // 建立 span
+                const statusSpan = document.createElement("span");
+                statusSpan.id = "APPROVE_FORM_STATUS_DESC";
+                statusSpan.className = "text-success";
+                statusSpan.style.cssText = "float:right;background-color: cornsilk;";
+                statusSpan.textContent = "*目前表單狀態: 審單中";
+
+                // 安全加入 DOM
+                const header = document.getElementById("rmTable_Header1");
+                if (header) {
+                    header.appendChild(statusSpan);
+                }
+
+            }
+        }
+
+        $(document).on("CategorySelected", function (event, data) {
+            $("#rmBtn_SelectItems").text(data.selectedItemText);
         });
 
-        $("#form1").submit(function (e) {
-            e.preventDefault();
-            showLoader();
+        $(function () {
+            $("#FileUpload").on("click", function () {
+                var file = $("#File")[0].files[0];
+                if (!file) {
+                    alert("請選擇檔案");
+                    return;
+                }
 
-            if ($(this).is(':invalid')) {
-                hideLoader();
-            }
-            else {
-                var vm = {};
-                vm.form_no = '@form_no';
+                showLoader();
 
-                vm.TICKET_INFO = $('#TICKET_INFO').val();
-                vm.COMPLETETIME = $('#COMPLETETIME').val();
-                vm.PRECOMPLETETIME = $('#PRECOMPLETETIME').val();
-                vm.CATEGORY_ID = $('#CATEGORY_ID').val();
-                vm.CATEGORY_NAME = $('#CATEGORY_NAME').val();
-                vm.REMARK = $('#REMARK').val();
-                vm.DESCRIPTION = $('#DESCRIPTION').val();
-
-                vm.FORM_TYPE = $('#FORM_TYPE').val();
-                vm.STATUS = $('#STATUS').val();
+                var formData = new FormData();
+                formData.append("file", file);
+                formData.append("formNo", '@form_no');
 
                 $.ajax({
-                    url: '@(config.GetBackendUrl() + Url.Action("Detail", "Pending"))',
+                    url: '@(config.GetBackendUrl() + Url.Action("FileUpload", "Pending"))',
+                    type: "POST",
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        hideLoader();
+                        if (data.Success) {
+                            alert('新增檔案完成');
+
+                            $('#fildTD').append(GetFileElement(data.Data.Text, data.Data.Value));
+
+                            $('#File').val('');
+                        } else {
+                            alert(data.Message);
+                            $('#File').val('');
+                        }
+                    }
+                });
+
+            });
+            $(".initSelect2").select2({
+                allowClear: true
+            });
+
+            $('#COMPLETETIME_Shell').datetimepicker({
+                format: 'YYYY/MM/DD',
+            });
+
+            $('#PRECOMPLETETIME_Shell').datetimepicker({
+                format: 'YYYY/MM/DD',
+            });
+
+            $("#TT_CATEGORY").on("change", function (e) {
+                if ($('#TT_CATEGORY').val() == "緊急(補單)")
+                    MyApp.Alert.warning("【除緊急故障發生，且已電話聯繫，廠商已到場處理者；否則請以「一般」報修處理】");
+            });
+
+            $("#SELECTSTATUS").on("change", function (e) {
+                $('#COMPLETE_PANEL').hide();
+                $('#VENDOR_ARRIVE_DATE_PANEL').hide();
+                $('#PENDING_PANEL').hide();
+                $('#OFFER_PANEL').hide();
+                $('#ASSETER_PANEL').hide();
+                $('#AMOUNT_PANEL').hide();
+
+                if ($('#SELECTSTATUS').val() != "") {
+                    $('#STATUSWORDING').val($('#SELECTSTATUS').select2('data'));
+                    $('#STATUS').val($('#SELECTSTATUS').val());
+                    $('#TICKET_INFO').val($('#SELECTSTATUS').val());
+                    disable_field($('#VENDOR_ARRIVE_DATE')[0]);
+
+                    var RequireField = '';
+                    switch ($('#SELECTSTATUS').val()) {
+                        case "COMPLETE":
+                            context.RequireField = convertToFormField(",DESCRIPTION,SELECTSTATUS,COMPLETETIME,VENDOR_ARRIVE_DATE,");
+                            $('#COMPLETE_PANEL').show();
+                            $('#VENDOR_ARRIVE_DATE_PANEL').show();
+                            $('#AMOUNT_PANEL').show();
+                            enable_field($('#VENDOR_ARRIVE_DATE')[0]);
+                            iFrameIsSubmit = false;
+                            break;
+                        case "PENDING":
+                            context.RequireField = convertToFormField(",DESCRIPTION,SELECTSTATUS,PRECOMPLETETIME,");
+                            $('#PENDING_PANEL').show();
+                            iFrameIsSubmit = true;
+                            break;
+                        case "OFFER":
+                            context.RequireField = convertToFormField(",DESCRIPTION,SELECTSTATUS,PRECOMPLETETIME,PRICE,QTY,");
+
+                            $('#AMOUNT_PANEL').show();
+                            $('#PENDING_PANEL').show();
+                            iFrameIsSubmit = false;
+                            break;
+
+                        case "ASSETER":
+                            context.RequireField = '';
+                            $('#ASSETER_PANEL').show();
+                            iFrameIsSubmit = false;
+                            break;
+
+                        case "NOSHOW":
+                            context.RequireField = convertToFormField(",DESCRIPTION,SELECTSTATUS,PRECOMPLETETIME,");
+                            $('#PENDING_PANEL').show();
+                            iFrameIsSubmit = true;
+                            break;
+
+                        default:
+                            break;
+                    }
+
+                    handleRequireField();
+                }
+            });
+
+            $('#EXPENSE_DESC_SEL').select2({
+                placeholder: {
+                    id: '',
+                    text: '請選擇',
+                    selected: 'selected'
+                },
+                ajax: {
+                    url: '@(config.GetBackendUrl() + Url.Action("SelectDesc", "Pending"))',
+                    dataType: 'json',
+                    type: 'POST',
+                    delay: 200,
+                    data: function (params) {
+                        var selectedTypeName = $('#EXPENSE_TYPE').val();
+                        var categoryID = $('#CATEGORY_ID').val();
+
+                        var query = {
+                            categoryID: categoryID,
+                            ExpenseType: selectedTypeName,
+                        }
+                        return query;
+                    },
+                    processResults: function (data) {
+                        SetControlEmpty();
+
+                        return {
+                            results: $.map(data, (item) => {
+                                return {
+                                    text: item.Text,
+                                    id: item.Value
+                                }
+                            })
+                        };
+                    },
+                },
+            });
+
+            $("#EXPENSE_DESC_SEL").on("change", function (e) {
+                var selectedID = $('#EXPENSE_DESC_SEL :selected').val();
+
+                $.ajax({
+                    type: 'POST',
+                    url: '@(config.GetBackendUrl() + Url.Action("ShowDesc", "Pending"))',
+                    data: {
+                        ID: selectedID,
+                    },
+                    dataType: 'json',
+                    success: function (data) {
+                        $.each(data, function () {
+                            setConfigSettingList(this);
+                        });
+                    },
+                    error: function (msg) {
+                        console.log(msg);
+                        MyApp.Alert.error('呼叫 API 異常');
+                    }
+                });
+            });
+
+            $('#SubmitFormAddAmount').on("click", function (e) {
+                var vm = {};
+                var vms = [];
+                var formNo = $('#FORM_NO').val();
+                vm.form_no = formNo;
+                vm.FORM_ACTION = $('#FORM_ACTION').val();
+
+                if (!$('[name="TableTR"]').length) {
+                    MyApp.Alert.warning('請至少填寫一筆金額!');
+                    return;
+                }
+
+                for (var i = 0; i < $('[name="TableTR"]').length; i++) {
+                    var item = {};
+                    item.form_no = formNo;
+                    item.expense_type = $('[name="TableTR"]').eq(i).find('[name="EXPENSE_TYPE"]').val();
+                    item.expense_desc = $('[name="TableTR"]').eq(i).find('[name="EXPENSE_DESC"]').val();
+                    item.fault_reason = $('[name="TableTR"]').eq(i).find('[name="FAULT_REASON"]').val();
+                    item.repair_action = $('[name="TableTR"]').eq(i).find('[name="REPAIR_ACTION"]').val();
+                    item.qty = $('[name="TableTR"]').eq(i).find('[name="QTY"]').val();
+                    item.unit = $('[name="TableTR"]').eq(i).find('[name="UNIT"]').val();
+                    item.price = $('[name="TableTR"]').eq(i).find('[name="PRICE"]').val();
+                    item.subtotal = $('[name="TableTR"]').eq(i).find('[name="SUBTOTAL"]').val();
+                    item.orderid = i + 1;
+                    vms.push(item);
+                }
+
+                vm.vms = vms;
+                showLoader();
+                $.ajax({
+                    url: '@(config.GetBackendUrl() + Url.Action("Add_FTT_FORM_AMOUNT", "pending"))',
                     dataType: 'json',
                     type: 'POST',
                     data: { vm: vm },
@@ -712,10 +681,8 @@
                 })
                     .done((response) => {
                         if (response.Success) {
-                            MyApp.Alert.success(response['Data'])
-                                .then(() => {
-                                    window.location = "@(Url.Action("index"))";
-                                });
+                            // 更新金額彙總欄後送出表單
+                            $('#form1').trigger('submit');
                         }
                         else {
                             MyApp.Alert.error(response['Message']);
@@ -728,682 +695,782 @@
                     .always(() => {
                         hideLoader();
                     });
-            }
+            });
+
+            $("#form1").submit(function (e) {
+                e.preventDefault();
+                showLoader();
+
+                if ($(this).is(':invalid')) {
+                    hideLoader();
+                }
+                else {
+                    var vm = {};
+                    vm.form_no = '@form_no';
+
+                    vm.TICKET_INFO = $('#TICKET_INFO').val();
+                    vm.COMPLETETIME = $('#COMPLETETIME').val();
+                    vm.PRECOMPLETETIME = $('#PRECOMPLETETIME').val();
+                    vm.CATEGORY_ID = $('#CATEGORY_ID').val();
+                    vm.CATEGORY_NAME = $('#CATEGORY_NAME').val();
+                    vm.REMARK = $('#REMARK').val();
+                    vm.DESCRIPTION = $('#DESCRIPTION').val();
+
+                    vm.FORM_TYPE = $('#FORM_TYPE').val();
+                    vm.STATUS = $('#STATUS').val();
+
+                    $.ajax({
+                        url: '@(config.GetBackendUrl() + Url.Action("Detail", "Pending"))',
+                        dataType: 'json',
+                        type: 'POST',
+                        data: { vm: vm },
+                        cache: false
+                    })
+                        .done((response) => {
+                            if (response.Success) {
+                                MyApp.Alert.success(response['Data'])
+                                    .then(() => {
+                                        window.location = "@(Url.Action("index"))";
+                                    });
+                            }
+                            else {
+                                MyApp.Alert.error(response['Message']);
+                            }
+                        })
+                        .fail((err) => {
+                            console.log(err);
+                            MyApp.Alert.error('呼叫 API 異常');
+                        })
+                        .always(() => {
+                            hideLoader();
+                        });
+                }
+            });
+
+            TT_CATEGORY.disabled = true;
+
+            GetDetail();
         });
 
-        TT_CATEGORY.disabled = true;
+        function SetControlEmpty() {
+            $('#EXPENSE_DESC_TEXT').val("");
+            $('#EXPENSE_DESC_SEL').val("");
+            $('#FAULT_REASON').val("");
+            $('#REPAIR_ACTION').val("");
+            $('#QTY').val("");
+            $('#UNIT').val("");
+            $('#PRICE').val("");
+            $('#COMMENT').text("");
+        }
 
-        GetDetail();
-    });
+        function setConfigSettingList(ConfigSetting) {
+            $('#FAULT_REASON').val("");
+            $('#REPAIR_ACTION').val("");
+            $('#QTY').val(ConfigSetting.QTY);
+            $('#UNIT').val(ConfigSetting.UNIT);
+            $('#PRICE').val(ConfigSetting.PRICE);
+            $('#COMMENT').val(ConfigSetting.REMARK).text(ConfigSetting.REMARK);
+        }
 
-    function SetControlEmpty() {
-        $('#EXPENSE_DESC_TEXT').val("");
-        $('#EXPENSE_DESC_SEL').val("");
-        $('#FAULT_REASON').val("");
-        $('#REPAIR_ACTION').val("");
-        $('#QTY').val("");
-        $('#UNIT').val("");
-        $('#PRICE').val("");
-        $('#COMMENT').text("");
-    }
+        function GetDetail() {
+            showLoader();
+            var formNo = '@form_no';
+            // var data = { formNo: formNo };
+            $.ajax({
+                type: 'get',
+                url: '@(config.GetBackendUrl() + Url.Action("GetDetail", "Pending"))' + '?form_no=' + formNo,
+                // data: data,
+                dataType: 'json',
+                success: function (response) {
+                    if (response.Success == true) {
+                        var data = response.Data;
 
-    function setConfigSettingList(ConfigSetting) {
-        $('#FAULT_REASON').val("");
-        $('#REPAIR_ACTION').val("");
-        $('#QTY').val(ConfigSetting.QTY);
-        $('#UNIT').val(ConfigSetting.UNIT);
-        $('#PRICE').val(ConfigSetting.PRICE);
-        $('#COMMENT').val(ConfigSetting.REMARK).text(ConfigSetting.REMARK);
-    }
+                        if (data.FileItems != null && data.FileItems.length > 0) {
 
-    function GetDetail() {
-        showLoader();
-        var formNo = '@form_no';
-        // var data = { formNo: formNo };
-        $.ajax({
-            type: 'get',
-            url: '@(config.GetBackendUrl() + Url.Action("GetDetail", "Pending"))' + '?form_no=' + formNo,
-            // data: data,
-            dataType: 'json',
-            success: function (response) {
-                if (response.Success == true) {
-                    var data = response.Data;
+                            // 處理資料庫的金額彙整欄資料
+                            for (var i = 0; i < data.FileItems.length; i++) {
+                                $('#fildTD').append(GetFileElement(data.FileItems[i].Text, data.FileItems[i].Value));
+                            }
+                        }
 
-                    if (data.FileItems != null && data.FileItems.length > 0) {
+                        $('#StoreClass_Company').text(data.Store_profileDTO.Company);
+                        $('#StoreClass_StoreType').text(data.Store_profileDTO.StoreType);
+                        $('#StoreClass_IVRCode').text(data.Store_profileDTO.IVRCode);
+                        $('#StoreClass_Channel').text(data.Store_profileDTO.Channel);
+                        $('#StoreClass_Area').text(data.Store_profileDTO.Area);
+                        $('#StoreClass_StoreName').text(data.Store_profileDTO.StoreName);
+                        $('#StoreClass_eMail').text(data.Store_profileDTO.eMail);
+                        $('#StoreClass_Owner').text(data.Store_profileDTO.Owner);
+                        $('#StoreClass_PhoneUrgent').text(data.Store_profileDTO.PhoneUrgent);
+                        $('#StoreClass_Manager').text(data.Store_profileDTO.Manager);
+                        $('#StoreClass_Phone').text(data.Store_profileDTO.Phone);
+                        $('#StoreClass_BusinessTime1').text(data.Store_profileDTO.BusinessTime1);
+                        $('#StoreClass_BusinessTime2').text(data.Store_profileDTO.BusinessTime2);
+                        $('#StoreClass_BusinessTime3').text(data.Store_profileDTO.BusinessTime3);
+                        $('#StoreClass_BusinessTime4').text(data.Store_profileDTO.BusinessTime4);
+                        $('#StoreClass_DecorationCondition').text(data.Store_profileDTO.DecorationCondition);
+                        $('#StoreClass_PhoneFax').text(data.Store_profileDTO.PhoneFax);
+                        $('#StoreClass_Address').text(data.Store_profileDTO.Address);
+                        $('#StoreClass_Note').text(data.Store_profileDTO.Note);
+
+
+                        $('#ApprovalDate').text(data.ApprovalDate);
+                        $('#WarrantyTime').text(data.WarrantyTime);
+
+                        $('#APPROVE_FORM_STATUS_DESC').text('*目前表單狀態: ' + data.Status_Desc);
+                        $('#User_Type').val(data.User_Type);
+                        $('#STATUS_DESC').val(data.Status_Desc);
+                        $('#FORM').val(data.Form_Type);
+                        $('#FORM_TYPE').val(data.Form_Type);
+                        $('#STATUS').val(data.Status);
+                        $('#ACTION_NAME').val(data.ActionName);
+                        $('#STORE_TYPE').val(data.Store_profileDTO.StoreType);
+                        $('#IVRCODE').val(data.Store_profileDTO.IVRCode);
+
+                        var RequireField = data.RequireField;
+                        context.RequireField = RequireField;
+
+                        var UpdateField = data.UpdateField;
+                        // 表單權限處理
+                        form_access_control(document.form1, UpdateField);
+
+                        $('#PreHandleDesc').text(data.PreHandleDesc)
+
+                        if (data.FranchiseMsg != "" && data.FranchiseMsg != null) {
+                            MyApp.Alert.warning(data.FranchiseMsg);
+                        }
+
+                        if (data.Ftt_formDTO.tt_category == "緊急(新開單)") {
+
+                            var option = new Option('緊急(新開單)', '緊急(新開單)', true, true);
+                            $('#TT_CATEGORY').append(option).trigger('change');
+                        }
+
+                        $("#TT_CATEGORY").val(data.Ftt_formDTO.tt_category);
+                        $("#TT_CATEGORY").trigger('change');
+
+                        if (data.Ftt_formDTO.repair == 'Y') {
+                            $('[name="Repair"][value="Y"]').prop('checked', true);
+                        } else {
+                            $('[name="Repair"][value="N"]').prop('checked', true);
+                        }
+
+                        if (data.Ftt_formDTO.resupply == 'Y') {
+                            $('[name="Resupply"][value="Y"]').prop('checked', true);
+                        } else {
+                            $('[name="Resupply"][value="N"]').prop('checked', true);
+                        }
+
+                        $('#CREATE_TIME').text(data.Create_Time);
+
+                        $('#CIDesc').text(data.Ftt_formDTO.CIDesc);
+                        $('#EMPNAME').text(data.Ftt_formDTO.empname);
+                        $('#EMPTEL').text(data.Ftt_formDTO.emptel);
+                        $('#CATEGORY_ID').val(data.Ftt_formDTO.category_id);
+                        $('#CATEGORY_NAME').val(data.Ftt_formDTO.category_name);
+                        $('#VENDER_ID').val(data.Ftt_formDTO.vender_id);
+                        $('#SELFCONFIG').val(data.Ftt_formDTO.selfconfig);
+                        $('#SELFCONFIG_NOTE').text(data.Ftt_formDTO.selfconfig);
+                        $('#TT_CATEGORY_NOTE_PANNEL').text(data.Ftt_formDTO.checkitem);
+                        $('#TT_CATEGORY_DESC_PANNEL').text(data.Ftt_formDTO.descr);
+                        $('#REMARK').val(data.Ftt_formDTO.remark);
+
+                        if (data.Ftt_formDTO.category_id == '1275') {
+                            document.all.TT_CATEGORY_LABEL.innerHTML = "報修前確認事項及損壞狀況描述：";
+                            document.all.TT_CATEGORY_NOTE_LABEL.innerHTML = "報修前檢查事項：";
+                            document.all.TT_CATEGORY_DESC_LABEL.innerHTML = "報修機台編號：";
+                            document.all.REMARK_LABEL1.innerHTML = "報修問題描述：";
+                            $('#REMARK_LABEL2').show();
+                        }
+                        else {
+                            document.all.TT_CATEGORY_LABEL.innerHTML = "報修品項檢查事項及狀況描述：";
+                            document.all.TT_CATEGORY_NOTE_LABEL.innerHTML = "報修品項檢查事項：";
+                            document.all.TT_CATEGORY_DESC_LABEL.innerHTML = "報修品項狀況描述：";
+                            document.all.REMARK_LABEL1.innerHTML = "報修描述與備註：";
+                            $('#REMARK_LABEL2').hide();
+                        }
+
+                        if (data.Ftt_formDTO.selfconfig == "N") {
+                            $('#VENDER_ID').val(data.Ftt_formDTO.order_id);
+                            $('#VENDER_NAME').text(data.Ftt_formDTO.merchant_name);
+                            $('#CP_NAME').text(data.Ftt_formDTO.cp_name);
+                            $('#CP_TEL').text(data.Ftt_formDTO.cp_tel);
+                        }
+                        else {
+                            $('#VENDER_NAME').text(data.storename);
+                        }
+
+                        $('#FORM').text(data.Form);
+                        $('#STATUS').text(data.Status);
+                        $('#STATUS_DESC').text(data.Status_Desc);
+
+                        // 處理表單按鈕
+                        if (data['ShowOriginSubmitForm'] === true) {
+                            $('#SubmitForm').show();
+                        }
+                        else {
+                            let $tmpl = $('#tmplButton');
+                            let $parent = $tmpl.parent();
+                            // 刪除舊的動態元件
+                            $parent.find('.dynamic').remove();
+                            if (data['FormTableButtons'] && data['FormTableButtons'].length) {
+                                $.each(data['FormTableButtons'], function (index, value) {
+                                    if (value['@(nameof(FormTableButtonVO.IsApproveCommon))'] === true) {
+                                        let $label = $('<label>', {
+                                            class: 'col-form-label m-0 dynamic',
+                                            text: '建議／說明：',
+                                        });
+                                        let $input = $('<input>', {
+                                            name: 'approvecommon',
+                                            type: 'text',
+                                            class: 'form-control w-200p dynamic',
+                                            maxlength: 200,
+                                        });
+
+                                        $label.insertBefore($tmpl);
+                                        $input.insertBefore($tmpl);
+                                    }
+                                    else {
+                                        let $button = $('<button>', {
+                                            type: 'submit',
+                                            class: 'btn btn-primary dynamic',
+                                            text: value['@(nameof(FormTableButtonVO.StatusWording))'],
+                                        }).on('click', function (e) {
+                                            $('#STATUSWORDING').val(value['@(nameof(FormTableButtonVO.StatusWording))']);
+                                            $('#FORM_TYPE').val(value['@(nameof(FormTableButtonVO.FormType))']);
+                                            $('#STATUS').val(value['@(nameof(FormTableButtonVO.Status))']);
+                                            context.RequireField = convertToFormField(value['@(nameof(FormTableButtonVO.RequireField))']);
+                                            let approve = value['@(nameof(FormTableButtonVO.Approve))'];
+
+                                            if (approve === 'Y') {
+                                                $('#User_Type').val(value['@(nameof(FormTableButtonVO.UserType))']);
+                                                // 舊程式無找到 APPROVE 的 input
+                                                //$('#APPROVE').val(approve);
+                                            }
+
+                                            handleRequireField();
+                                        });
+                                        $button.insertBefore($tmpl);
+                                    }
+                                });
+                            }
+                        }
+
+                        $('#User_Type').val(data.User_Type);
+                        UpdateField = data.UpdateField;
+                        RequireField = data.RequireField;
+
+                        if (data.UpdateSELECTSTATUSOption2 == true) {
+                            $("#SELECTSTATUS option").eq(2).text("故障排除");
+                            $("#SELECTSTATUS").trigger("change.select2");
+                        }
+
+                        if (data.DeleteSELECTSTATUSOption3 == true) {
+                            $("#SELECTSTATUS option").eq(3).remove();
+                            $("#SELECTSTATUS").trigger("change.select2");
+                        }
+
+                        if (data.TempStatus == 'TICKET') {
+                            $('#SELECTSTATUS_PANEL').show();
+                        }
+
+                        if (data.DeleteSELECTSTATUS2ThreeTimes == true) {
+                            $("#SELECTSTATUS option").eq(2).remove();
+                            $("#SELECTSTATUS").trigger("change.select2");
+                            $("#SELECTSTATUS option").eq(2).remove();
+                            $("#SELECTSTATUS").trigger("change.select2");
+                            $("#SELECTSTATUS option").eq(2).remove();
+                            $("#SELECTSTATUS").trigger("change.select2");
+                        }
 
                         // 處理資料庫的金額彙整欄資料
-                        for (var i = 0; i < data.FileItems.length; i++) {
-                            $('#fildTD').append(GetFileElement(data.FileItems[i].Text, data.FileItems[i].Value));
+                        for (var i = 0; i < data.Ftt_form_amountDTOs.length; i++) {
+                            var item = data.Ftt_form_amountDTOs[i];
+                            addItemRow(item, data.HideAmountDel);
                         }
-                    }
 
-                    $('#StoreClass_Company').text(data.Store_profileDTO.Company);
-                    $('#StoreClass_StoreType').text(data.Store_profileDTO.StoreType);
-                    $('#StoreClass_IVRCode').text(data.Store_profileDTO.IVRCode);
-                    $('#StoreClass_Channel').text(data.Store_profileDTO.Channel);
-                    $('#StoreClass_Area').text(data.Store_profileDTO.Area);
-                    $('#StoreClass_StoreName').text(data.Store_profileDTO.StoreName);
-                    $('#StoreClass_eMail').text(data.Store_profileDTO.eMail);
-                    $('#StoreClass_Owner').text(data.Store_profileDTO.Owner);
-                    $('#StoreClass_PhoneUrgent').text(data.Store_profileDTO.PhoneUrgent);
-                    $('#StoreClass_Manager').text(data.Store_profileDTO.Manager);
-                    $('#StoreClass_Phone').text(data.Store_profileDTO.Phone);
-                    $('#StoreClass_BusinessTime1').text(data.Store_profileDTO.BusinessTime1);
-                    $('#StoreClass_BusinessTime2').text(data.Store_profileDTO.BusinessTime2);
-                    $('#StoreClass_BusinessTime3').text(data.Store_profileDTO.BusinessTime3);
-                    $('#StoreClass_BusinessTime4').text(data.Store_profileDTO.BusinessTime4);
-                    $('#StoreClass_DecorationCondition').text(data.Store_profileDTO.DecorationCondition);
-                    $('#StoreClass_PhoneFax').text(data.Store_profileDTO.PhoneFax);
-                    $('#StoreClass_Address').text(data.Store_profileDTO.Address);
-                    $('#StoreClass_Note').text(data.Store_profileDTO.Note);
+                        if (data.HideNewData == true) {
+                            $('#NewData').hide();
+                        }
 
+                        $('#CATEGORY_ID').val(data.Category_Id);
+                        $('#Totals').text(data.Amount_Cost);
+                        $('#AMOUNT_COST').val(data.Amount_Cost)
+                        $('#AMOUNT_CONFIG').val(data.Amount_Config);
 
-                    $('#ApprovalDate').text(data.ApprovalDate);
-                    $('#WarrantyTime').text(data.WarrantyTime);
+        const select = document.getElementById("EXPENSE_TYPE");
 
-                    $('#APPROVE_FORM_STATUS_DESC').text('*目前表單狀態: ' + data.Status_Desc);
-                    $('#User_Type').val(data.User_Type);
-                    $('#STATUS_DESC').val(data.Status_Desc);
-                    $('#FORM').val(data.Form_Type);
-                    $('#FORM_TYPE').val(data.Form_Type);
-                    $('#STATUS').val(data.Status);
-                    $('#ACTION_NAME').val(data.ActionName);
-                    $('#STORE_TYPE').val(data.Store_profileDTO.StoreType);
-                    $('#IVRCODE').val(data.Store_profileDTO.IVRCode);
+        for (let i = 0; i < data.Amount_SelectList.length; i++) {
+            const item = data.Amount_SelectList[i];
 
-                    var RequireField = data.RequireField;
-                    context.RequireField = RequireField;
+            const option = new Option(item.Text ?? "", item.Value ?? "", true, true);
+            // 避免 jQuery append，使用原生 DOM
+            select.add(option);
+        }
 
-                    var UpdateField = data.UpdateField;
-                    // 表單權限處理
-                    form_access_control(document.form1, UpdateField);
+        // 如果需要觸發 change 事件（原生方式）
+        select.dispatchEvent(new Event('change'));
 
-                    $('#PreHandleDesc').text(data.PreHandleDesc)
+                        if (data.UpdateAmount_Config == true) {
+                            $('.input_class').hide();
+                        }
+                        else {
+                            $('.select_class').next('.select2-container').hide();
+                        }
 
-                    if (data.FranchiseMsg != "" && data.FranchiseMsg != null) {
-                        MyApp.Alert.warning(data.FranchiseMsg);
-                    }
+                        var ticket_info = data.Ftt_formDTO.ticket_info;
+                        if (ticket_info != '' && ticket_info != null) {
+                            var panel = document.getElementById(ticket_info + "_PANEL");
+                            if (panel) {
+                                panel.style.display = ""; // 元素存在才操作
+                            } else {
+                                console.warn("找不到元素:", ticket_info + "_PANEL");
+                            }
 
-                    if (data.Ftt_formDTO.tt_category == "緊急(新開單)") {
+    //                        document.getElementById(ticket_info + "_PANEL").style.display = "";
+                            $('#TICKET_INFO').val(ticket_info);
 
-                        var option = new Option('緊急(新開單)', '緊急(新開單)', true, true);
-                        $('#TT_CATEGORY').append(option).trigger('change');
-                    }
+                            if (ticket_info == 'COMPLETE') {
+                                $('#AMOUNT_PANEL').show();
 
-                    $("#TT_CATEGORY").val(data.Ftt_formDTO.tt_category);
-                    $("#TT_CATEGORY").trigger('change');
+                                $("#COMPLETETIME_Shell").data().date = data.Ftt_formDTO.completetime;
+                                $("#COMPLETETIME_Shell input").val(data.Ftt_formDTO.completetime);
+                            }
+                            if (ticket_info == 'PENDING') {
+                                $('#AMOUNT_PANEL').hide();
 
-                    if (data.Ftt_formDTO.repair == 'Y') {
-                        $('[name="Repair"][value="Y"]').prop('checked', true);
+                                $("#PRECOMPLETETIME_Shell").data().date = data.Ftt_formDTO.precompletetime;
+                                $("#PRECOMPLETETIME_Shell input").val(data.Ftt_formDTO.precompletetime);
+                            }
+                            if (ticket_info == 'OFFER') {
+                                $('#AMOUNT_PANEL').show();
+                            }
+                            if (data.ShowAmountPanel) {
+                                $('#AMOUNT_PANEL').show();
+                            }
+                        }
+
+                        if (data.IsAdmin) {
+                            $('#FormEditTab3').show();
+                            $('#FormEditNavItem3').show();
+
+                        }
+                        else {
+                            $('#FormEditTab3').remove();
+                            $('#FormEditNavItem3').remove();
+                        }
+
+                        hideLoader();
                     } else {
-                        $('[name="Repair"][value="N"]').prop('checked', true);
+                        MyApp.Alert.error(response.Message);
+                        hideLoader();
                     }
-
-                    if (data.Ftt_formDTO.resupply == 'Y') {
-                        $('[name="Resupply"][value="Y"]').prop('checked', true);
-                    } else {
-                        $('[name="Resupply"][value="N"]').prop('checked', true);
-                    }
-
-                    $('#CREATE_TIME').text(data.Create_Time);
-
-                    $('#CIDesc').text(data.Ftt_formDTO.CIDesc);
-                    $('#EMPNAME').text(data.Ftt_formDTO.empname);
-                    $('#EMPTEL').text(data.Ftt_formDTO.emptel);
-                    $('#CATEGORY_ID').val(data.Ftt_formDTO.category_id);
-                    $('#CATEGORY_NAME').val(data.Ftt_formDTO.category_name);
-                    $('#VENDER_ID').val(data.Ftt_formDTO.vender_id);
-                    $('#SELFCONFIG').val(data.Ftt_formDTO.selfconfig);
-                    $('#SELFCONFIG_NOTE').text(data.Ftt_formDTO.selfconfig);
-                    $('#TT_CATEGORY_NOTE_PANNEL').text(data.Ftt_formDTO.checkitem);
-                    $('#TT_CATEGORY_DESC_PANNEL').text(data.Ftt_formDTO.descr);
-                    $('#REMARK').val(data.Ftt_formDTO.remark);
-
-                    if (data.Ftt_formDTO.category_id == '1275') {
-                        document.all.TT_CATEGORY_LABEL.innerHTML = "報修前確認事項及損壞狀況描述：";
-                        document.all.TT_CATEGORY_NOTE_LABEL.innerHTML = "報修前檢查事項：";
-                        document.all.TT_CATEGORY_DESC_LABEL.innerHTML = "報修機台編號：";
-                        document.all.REMARK_LABEL1.innerHTML = "報修問題描述：";
-                        $('#REMARK_LABEL2').show();
-                    }
-                    else {
-                        document.all.TT_CATEGORY_LABEL.innerHTML = "報修品項檢查事項及狀況描述：";
-                        document.all.TT_CATEGORY_NOTE_LABEL.innerHTML = "報修品項檢查事項：";
-                        document.all.TT_CATEGORY_DESC_LABEL.innerHTML = "報修品項狀況描述：";
-                        document.all.REMARK_LABEL1.innerHTML = "報修描述與備註：";
-                        $('#REMARK_LABEL2').hide();
-                    }
-
-                    if (data.Ftt_formDTO.selfconfig == "N") {
-                        $('#VENDER_ID').val(data.Ftt_formDTO.order_id);
-                        $('#VENDER_NAME').text(data.Ftt_formDTO.merchant_name);
-                        $('#CP_NAME').text(data.Ftt_formDTO.cp_name);
-                        $('#CP_TEL').text(data.Ftt_formDTO.cp_tel);
-                    }
-                    else {
-                        $('#VENDER_NAME').text(data.storename);
-                    }
-
-                    $('#FORM').text(data.Form);
-                    $('#STATUS').text(data.Status);
-                    $('#STATUS_DESC').text(data.Status_Desc);
-
-                    // 處理表單按鈕
-                    if (data['ShowOriginSubmitForm'] === true) {
-                        $('#SubmitForm').show();
-                    }
-                    else {
-                        let $tmpl = $('#tmplButton');
-                        let $parent = $tmpl.parent();
-                        // 刪除舊的動態元件
-                        $parent.find('.dynamic').remove();
-                        if (data['FormTableButtons'] && data['FormTableButtons'].length) {
-                            $.each(data['FormTableButtons'], function (index, value) {
-                                if (value['@(nameof(FormTableButtonVO.IsApproveCommon))'] === true) {
-                                    let $label = $('<label>', {
-                                        class: 'col-form-label m-0 dynamic',
-                                        text: '建議／說明：',
-                                    });
-                                    let $input = $('<input>', {
-                                        name: 'approvecommon',
-                                        type: 'text',
-                                        class: 'form-control w-200p dynamic',
-                                        maxlength: 200,
-                                    });
-
-                                    $label.insertBefore($tmpl);
-                                    $input.insertBefore($tmpl);
-                                }
-                                else {
-                                    let $button = $('<button>', {
-                                        type: 'submit',
-                                        class: 'btn btn-primary dynamic',
-                                        text: value['@(nameof(FormTableButtonVO.StatusWording))'],
-                                    }).on('click', function (e) {
-                                        $('#STATUSWORDING').val(value['@(nameof(FormTableButtonVO.StatusWording))']);
-                                        $('#FORM_TYPE').val(value['@(nameof(FormTableButtonVO.FormType))']);
-                                        $('#STATUS').val(value['@(nameof(FormTableButtonVO.Status))']);
-                                        context.RequireField = convertToFormField(value['@(nameof(FormTableButtonVO.RequireField))']);
-                                        let approve = value['@(nameof(FormTableButtonVO.Approve))'];
-
-                                        if (approve === 'Y') {
-                                            $('#User_Type').val(value['@(nameof(FormTableButtonVO.UserType))']);
-                                            // 舊程式無找到 APPROVE 的 input
-                                            //$('#APPROVE').val(approve);
-                                        }
-
-                                        handleRequireField();
-                                    });
-                                    $button.insertBefore($tmpl);
-                                }
-                            });
-                        }
-                    }
-
-                    $('#User_Type').val(data.User_Type);
-                    UpdateField = data.UpdateField;
-                    RequireField = data.RequireField;
-
-                    if (data.UpdateSELECTSTATUSOption2 == true) {
-                        $("#SELECTSTATUS option").eq(2).text("故障排除");
-                        $("#SELECTSTATUS").trigger("change.select2");
-                    }
-
-                    if (data.DeleteSELECTSTATUSOption3 == true) {
-                        $("#SELECTSTATUS option").eq(3).remove();
-                        $("#SELECTSTATUS").trigger("change.select2");
-                    }
-
-                    if (data.TempStatus == 'TICKET') {
-                        $('#SELECTSTATUS_PANEL').show();
-                    }
-
-                    if (data.DeleteSELECTSTATUS2ThreeTimes == true) {
-                        $("#SELECTSTATUS option").eq(2).remove();
-                        $("#SELECTSTATUS").trigger("change.select2");
-                        $("#SELECTSTATUS option").eq(2).remove();
-                        $("#SELECTSTATUS").trigger("change.select2");
-                        $("#SELECTSTATUS option").eq(2).remove();
-                        $("#SELECTSTATUS").trigger("change.select2");
-                    }
-
-                    // 處理資料庫的金額彙整欄資料
-                    for (var i = 0; i < data.Ftt_form_amountDTOs.length; i++) {
-                        var item = data.Ftt_form_amountDTOs[i];
-                        addItemRow(item, data.HideAmountDel);
-                    }
-
-                    if (data.HideNewData == true) {
-                        $('#NewData').hide();
-                    }
-
-                    $('#CATEGORY_ID').val(data.Category_Id);
-                    $('#Totals').text(data.Amount_Cost);
-                    $('#AMOUNT_COST').val(data.Amount_Cost)
-                    $('#AMOUNT_CONFIG').val(data.Amount_Config);
-
-                    for (var i = 0; i < data.Amount_SelectList.length; i++) {
-                        var item = data.Amount_SelectList[i];
-
-                        var option = new Option(escapeHtml(item.Text), escapeHtml(item.Value), true, true);
-                        $('#EXPENSE_TYPE').append(option).trigger('change');
-                    }
-
-                    if (data.UpdateAmount_Config == true) {
-                        $('.input_class').hide();
-                    }
-                    else {
-                        $('.select_class').next('.select2-container').hide();
-                    }
-
-                    var ticket_info = data.Ftt_formDTO.ticket_info;
-                    if (ticket_info != '' && ticket_info != null) {
-                        var panel = document.getElementById(ticket_info + "_PANEL");
-                        if (panel) {
-                            panel.style.display = ""; // 元素存在才操作
-                        } else {
-                            console.warn("找不到元素:", ticket_info + "_PANEL");
-                        }
-
-//                        document.getElementById(ticket_info + "_PANEL").style.display = "";
-                        $('#TICKET_INFO').val(ticket_info);
-
-                        if (ticket_info == 'COMPLETE') {
-                            $('#AMOUNT_PANEL').show();
-
-                            $("#COMPLETETIME_Shell").data().date = data.Ftt_formDTO.completetime;
-                            $("#COMPLETETIME_Shell input").val(data.Ftt_formDTO.completetime);
-                        }
-                        if (ticket_info == 'PENDING') {
-                            $('#AMOUNT_PANEL').hide();
-
-                            $("#PRECOMPLETETIME_Shell").data().date = data.Ftt_formDTO.precompletetime;
-                            $("#PRECOMPLETETIME_Shell input").val(data.Ftt_formDTO.precompletetime);
-                        }
-                        if (ticket_info == 'OFFER') {
-                            $('#AMOUNT_PANEL').show();
-                        }
-                        if (data.ShowAmountPanel) {
-                            $('#AMOUNT_PANEL').show();
-                        }
-                    }
-
-                    if (data.IsAdmin) {
-                        $('#FormEditTab3').show();
-                        $('#FormEditNavItem3').show();
-
-                    }
-                    else {
-                        $('#FormEditTab3').remove();
-                        $('#FormEditNavItem3').remove();
-                    }
-
-                    hideLoader();
-                } else {
-                    MyApp.Alert.error(response.Message);
+                },
+                error: function (msg) {
                     hideLoader();
                 }
-            },
-            error: function (msg) {
-                hideLoader();
-            }
-        });
+            });
+        }
+
+        function addItemRow(obj, hideAmountDel) {
+            if (obj == null && checkAddItem() == false)
+                return false;
+            else {
+                var _EXPENSE_TYPE = $('#EXPENSE_TYPE').val();
+                var _EXPENSE_DESC_SEL = $('#EXPENSE_DESC_SEL :selected').text();
+                var _EXPENSE_DESC_TEXT = $('#EXPENSE_DESC_TEXT').val();
+                var _FAULT_REASON = $('#FAULT_REASON').val();
+                var _REPAIR_ACTION = $('#REPAIR_ACTION').val();
+                var _QTY = $('#QTY').val();
+                var _UNIT = $('#UNIT').val();
+                var _PRICE = $('#PRICE').val();
+
+                if (obj != null) {
+                    _EXPENSE_TYPE = obj.expense_type || '';
+                    _EXPENSE_DESC_SEL = obj.expense_desc || '';
+                    _EXPENSE_DESC_TEXT = obj.expense_desc || '';
+                    _FAULT_REASON = obj.fault_reason || '';
+                    _REPAIR_ACTION = obj.repair_action || '';
+                    _QTY = obj.qty || '';
+                    _UNIT = obj.unit || '';
+                    _PRICE = obj.price || '';
+                }
+                    try {// 計算 index
+    const index = parseInt(document.getElementById('AMOUNT_MAX_IDX').value) + 1;
+
+    // 建立 tr
+    const tr = document.createElement('tr');
+    tr.id = 'AMOUNT_TR_' + index;
+    tr.setAttribute('name', 'TableTR');
+
+    // 刪除按鈕 td
+    const tdDel = document.createElement('td');
+    if (!hideAmountDel) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn-link text-danger icofont icofont-trash fs-6 p-1';
+        btn.style.cursor = 'pointer';
+        btn.addEventListener('click', () => DelAMOUNT(btn));
+        tdDel.appendChild(btn);
     }
+    tr.appendChild(tdDel);
 
-    function addItemRow(obj, hideAmountDel) {
-        if (obj == null && checkAddItem() == false)
-            return false;
-        else {
-            var _EXPENSE_TYPE = $('#EXPENSE_TYPE').val();
-            var _EXPENSE_DESC_SEL = $('#EXPENSE_DESC_SEL :selected').text();
-            var _EXPENSE_DESC_TEXT = $('#EXPENSE_DESC_TEXT').val();
-            var _FAULT_REASON = $('#FAULT_REASON').val();
-            var _REPAIR_ACTION = $('#REPAIR_ACTION').val();
-            var _QTY = $('#QTY').val();
-            var _UNIT = $('#UNIT').val();
-            var _PRICE = $('#PRICE').val();
+    // 費用種類
+    const tdExpenseType = document.createElement('td');
+    tdExpenseType.textContent = _EXPENSE_TYPE ?? '';
+    const inputExpenseType = document.createElement('input');
+    inputExpenseType.type = 'hidden';
+    inputExpenseType.id = 'EXPENSE_TYPE_' + index;
+    inputExpenseType.name = 'EXPENSE_TYPE';
+    inputExpenseType.value = _EXPENSE_TYPE ?? '';
+    tdExpenseType.appendChild(inputExpenseType);
+    tr.appendChild(tdExpenseType);
 
-            if (obj != null) {
-                _EXPENSE_TYPE = obj.expense_type || '';
-                _EXPENSE_DESC_SEL = obj.expense_desc || '';
-                _EXPENSE_DESC_TEXT = obj.expense_desc || '';
-                _FAULT_REASON = obj.fault_reason || '';
-                _REPAIR_ACTION = obj.repair_action || '';
-                _QTY = obj.qty || '';
-                _UNIT = obj.unit || '';
-                _PRICE = obj.price || '';
-            }
-            try {
-                var index = parseInt($('#AMOUNT_MAX_IDX').val()) + 1;
-                var $tr = $('<tr>', { id: 'AMOUNT_TR_' + index, name: 'TableTR' });
+    // 維修細項
+    const tdDesc = document.createElement('td');
+    tdDesc.textContent = _desc ?? '';
+    const inputDesc = document.createElement('input');
+    inputDesc.type = 'hidden';
+    inputDesc.id = 'EXPENSE_DESC_' + index;
+    inputDesc.name = 'EXPENSE_DESC';
+    inputDesc.value = _desc ?? '';
+    tdDesc.appendChild(inputDesc);
+    tr.appendChild(tdDesc);
 
-                // 刪除按鈕
-                var $tdDel = $('<td>');
-                if (!hideAmountDel) {
-                    var $btn = $('<button>', {
-                        type: 'button',
-                        class: 'btn btn-link text-danger icofont icofont-trash fs-6 p-1',
-                        style: 'cursor:pointer;',
-                        click: function () { DelAMOUNT(this); }
-                    });
-                    $tdDel.append($btn);
+    // 檢測故障原因
+    const tdFault = document.createElement('td');
+    tdFault.textContent = _FAULT_REASON ?? '';
+    const inputFault = document.createElement('input');
+    inputFault.type = 'hidden';
+    inputFault.id = 'FAULT_REASON_' + index;
+    inputFault.name = 'FAULT_REASON';
+    inputFault.value = _FAULT_REASON ?? '';
+    tdFault.appendChild(inputFault);
+    tr.appendChild(tdFault);
+
+    // 維修處理動作
+    const tdRepair = document.createElement('td');
+    tdRepair.textContent = _REPAIR_ACTION ?? '';
+    const inputRepair = document.createElement('input');
+    inputRepair.type = 'hidden';
+    inputRepair.id = 'REPAIR_ACTION_' + index;
+    inputRepair.name = 'REPAIR_ACTION';
+    inputRepair.value = _REPAIR_ACTION ?? '';
+    tdRepair.appendChild(inputRepair);
+    tr.appendChild(tdRepair);
+
+    // 數量
+    const tdQty = document.createElement('td');
+    tdQty.textContent = _QTY ?? '';
+    const inputQty = document.createElement('input');
+    inputQty.type = 'hidden';
+    inputQty.id = 'QTY_' + index;
+    inputQty.name = 'QTY';
+    inputQty.value = _QTY ?? '';
+    tdQty.appendChild(inputQty);
+    tr.appendChild(tdQty);
+
+    // 單位
+    const tdUnit = document.createElement('td');
+    tdUnit.textContent = _UNIT ?? '';
+    const inputUnit = document.createElement('input');
+    inputUnit.type = 'hidden';
+    inputUnit.id = 'UNIT_' + index;
+    inputUnit.name = 'UNIT';
+    inputUnit.value = _UNIT ?? '';
+    tdUnit.appendChild(inputUnit);
+    tr.appendChild(tdUnit);
+
+    // 單價
+    const tdPrice = document.createElement('td');
+    tdPrice.textContent = _PRICE ?? '';
+    const inputPrice = document.createElement('input');
+    inputPrice.type = 'hidden';
+    inputPrice.id = 'PRICE_' + index;
+    inputPrice.name = 'PRICE';
+    inputPrice.value = _PRICE ?? '';
+    tdPrice.appendChild(inputPrice);
+    tr.appendChild(tdPrice);
+
+    // 小計
+    const tmpTotal = parseInt(_QTY) * parseInt(_PRICE);
+    calSubTotal('Add', tmpTotal);
+    const tmpTotalDisplay = "$" + tmpTotal + ".-";
+
+    const tdSubtotal = document.createElement('td');
+    tdSubtotal.textContent = tmpTotalDisplay;
+    const inputSubtotal = document.createElement('input');
+    inputSubtotal.type = 'hidden';
+    inputSubtotal.id = 'SUBTOTAL_' + index;
+    inputSubtotal.name = 'SUBTOTAL';
+    inputSubtotal.value = tmpTotalDisplay;
+    tdSubtotal.appendChild(inputSubtotal);
+    tr.appendChild(tdSubtotal);
+
+    // 更新 index
+    document.getElementById('AMOUNT_MAX_IDX').value = index;
+
+    // 安全 append 到 container
+    document.getElementById('AMOUNT_LIST').appendChild(tr);
+
+
                 }
-                $tr.append($tdDel);
+                catch (ex) {
+                    MyApp.Alert.error(ex.message);
+                }
+            }
+        }
 
-                // 費用種類
-                var $tdExpenseType = $('<td>').text(_EXPENSE_TYPE);
-                $tdExpenseType.append(
-                    $('<input>', { type: 'hidden', id: 'EXPENSE_TYPE_' + index, name: 'EXPENSE_TYPE', value: _EXPENSE_TYPE })
-                );
-                $tr.append($tdExpenseType);
+        function checkAddItem() {
+            if ($('#EXPENSE_TYPE').val() == "") {
+                MyApp.Alert.warning('請選擇【費用種類】！');
+                return false;
+            }
+            else if (($('#EXPENSE_DESC_SEL').val() == "" || $('#EXPENSE_DESC_SEL').val() == "請選擇...") && $('#AMOUNT_CONFIG').val() == "Y") {
+                MyApp.Alert.warning('請選擇【維修細項】！');
+                return false;
+            }
+            else if ($('#EXPENSE_DESC_TEXT').val() == "" && $('#AMOUNT_CONFIG').val() == "N") {
+                MyApp.Alert.warning('請選擇【維修細項】！');
+                return false;
+            }
+            else if ($('#QTY').val() == "") {
+                MyApp.Alert.warning('請選擇【數量】！');
+                return false;
+            }
+            else if ($('#UNIT').val() == "") {
+                MyApp.Alert.warning('請選擇【單位】！');
+                return false;
+            }
+            else if ($('#PRICE').val() == "") {
+                MyApp.Alert.warning('請選擇【單價】！');
+                return false;
+            }
+            else
+                return true;
+        }
 
-                // 維修細項
-                var _desc = ($('#AMOUNT_CONFIG').val() === "Y") ? _EXPENSE_DESC_SEL : _EXPENSE_DESC_TEXT;
-                var $tdDesc = $('<td>').text(_desc);
-                $tdDesc.append(
-                    $('<input>', { type: 'hidden', id: 'EXPENSE_DESC_' + index, name: 'EXPENSE_DESC', value: _desc })
-                );
-                $tr.append($tdDesc);
+        function DelAMOUNT(obj) {
+            try {
+                var thisTR = $(obj).parents('[name="TableTR"]');
+                var delPrice = $(thisTR).find('[name="PRICE"]').val();
+                var delQty = $(thisTR).find('[name="QTY"]').val();
 
-                // 檢測故障原因
-                var $tdFault = $('<td>').text(_FAULT_REASON);
-                $tdFault.append(
-                    $('<input>', { type: 'hidden', id: 'FAULT_REASON_' + index, name: 'FAULT_REASON', value: _FAULT_REASON })
-                );
-                $tr.append($tdFault);
+                var tmpTotal = parseInt(delQty) * parseInt(delPrice);
 
-                // 維修處理動作
-                var $tdRepair = $('<td>').text(_REPAIR_ACTION);
-                $tdRepair.append(
-                    $('<input>', { type: 'hidden', id: 'REPAIR_ACTION_' + index, name: 'REPAIR_ACTION', value: _REPAIR_ACTION })
-                );
-                $tr.append($tdRepair);
+                calSubTotal('Del', tmpTotal);
 
-                // 數量、單位、單價
-                var $tdQty = $('<td>').text(_QTY);
-                $tdQty.append($('<input>', { type: 'hidden', id: 'QTY_' + index, name: 'QTY', value: _QTY }));
-                $tr.append($tdQty);
+                $('#AMOUNT_MAX_IDX').val(parseInt($('#AMOUNT_MAX_IDX').val()) - 1);
 
-                var $tdUnit = $('<td>').text(_UNIT);
-                $tdUnit.append($('<input>', { type: 'hidden', id: 'UNIT_' + index, name: 'UNIT', value: _UNIT }));
-                $tr.append($tdUnit);
-
-                var $tdPrice = $('<td>').text(_PRICE);
-                $tdPrice.append($('<input>', { type: 'hidden', id: 'PRICE_' + index, name: 'PRICE', value: _PRICE }));
-                $tr.append($tdPrice);
-
-                // 小計
-                var tmpTotal = parseInt(_QTY) * parseInt(_PRICE);
-                calSubTotal('Add', tmpTotal);
-                var tmpTotalDisplay = "$" + tmpTotal + ".-";
-
-                var $tdSubtotal = $('<td>').text(tmpTotalDisplay);
-                $tdSubtotal.append($('<input>', { type: 'hidden', id: 'SUBTOTAL_' + index, name: 'SUBTOTAL', value: tmpTotalDisplay }));
-                $tr.append($tdSubtotal);
-
-                // 更新 index
-                $('#AMOUNT_MAX_IDX').val(index);
-
-                // 安全 append
-                $('#AMOUNT_LIST').append($tr);
-
+                $(thisTR).remove();
             }
             catch (ex) {
                 MyApp.Alert.error(ex.message);
             }
         }
-    }
+        function calSubTotal(type, obj) {
+            var cost1 = parseInt(obj);
+            var cost2 = parseInt($('#AMOUNT_COST').val());
 
-    function checkAddItem() {
-        if ($('#EXPENSE_TYPE').val() == "") {
-            MyApp.Alert.warning('請選擇【費用種類】！');
-            return false;
-        }
-        else if (($('#EXPENSE_DESC_SEL').val() == "" || $('#EXPENSE_DESC_SEL').val() == "請選擇...") && $('#AMOUNT_CONFIG').val() == "Y") {
-            MyApp.Alert.warning('請選擇【維修細項】！');
-            return false;
-        }
-        else if ($('#EXPENSE_DESC_TEXT').val() == "" && $('#AMOUNT_CONFIG').val() == "N") {
-            MyApp.Alert.warning('請選擇【維修細項】！');
-            return false;
-        }
-        else if ($('#QTY').val() == "") {
-            MyApp.Alert.warning('請選擇【數量】！');
-            return false;
-        }
-        else if ($('#UNIT').val() == "") {
-            MyApp.Alert.warning('請選擇【單位】！');
-            return false;
-        }
-        else if ($('#PRICE').val() == "") {
-            MyApp.Alert.warning('請選擇【單價】！');
-            return false;
-        }
-        else
-            return true;
-    }
+            var total_cost;
+            if (type == 'Add') {
+                total_cost = parseInt(cost1) + parseInt(cost2);
+            }
+            else if (type == 'Del') {
+                total_cost = parseInt(cost2) - parseInt(cost1);
+            }
 
-    function DelAMOUNT(obj) {
-        try {
-            var thisTR = $(obj).parents('[name="TableTR"]');
-            var delPrice = $(thisTR).find('[name="PRICE"]').val();
-            var delQty = $(thisTR).find('[name="QTY"]').val();
-
-            var tmpTotal = parseInt(delQty) * parseInt(delPrice);
-
-            calSubTotal('Del', tmpTotal);
-
-            $('#AMOUNT_MAX_IDX').val(parseInt($('#AMOUNT_MAX_IDX').val()) - 1);
-
-            $(thisTR).remove();
-        }
-        catch (ex) {
-            MyApp.Alert.error(ex.message);
-        }
-    }
-    function calSubTotal(type, obj) {
-        var cost1 = parseInt(obj);
-        var cost2 = parseInt($('#AMOUNT_COST').val());
-
-        var total_cost;
-        if (type == 'Add') {
-            total_cost = parseInt(cost1) + parseInt(cost2);
-        }
-        else if (type == 'Del') {
-            total_cost = parseInt(cost2) - parseInt(cost1);
+            $('#AMOUNT_COST').val(total_cost);
+            $('#Totals').text(total_cost);
         }
 
-        $('#AMOUNT_COST').val(total_cost);
-        $('#Totals').text(total_cost);
-    }
+        function form_access_control(formobj, allowed_field) {
+            allowed_field = convertToFormField(allowed_field);
+            var ignoreFieldList = ['EXPENSE_TYPE', 'EXPENSE_DESC_SEL', 'FAULT_REASON', 'REPAIR_ACTION', 'QTY', 'UNIT', 'PRICE'];
+            var vobj = eval(formobj);
 
-    function form_access_control(formobj, allowed_field) {
-        allowed_field = convertToFormField(allowed_field);
-        var ignoreFieldList = ['EXPENSE_TYPE', 'EXPENSE_DESC_SEL', 'FAULT_REASON', 'REPAIR_ACTION', 'QTY', 'UNIT', 'PRICE'];
-        var vobj = eval(formobj);
+            if (vobj != null) {
+                for (var i = 0; i < vobj.length; i++) {
+                    let item = vobj[i];
+                    if (item.name != null) {
+                        if (item.name.length > 1) {
+                            if (item.type != 'hidden') {
+                                if (!ignoreFieldList.includes(item.name)) {
+                                    if (check_field_access(item.name, allowed_field) != true) {
+                                        //alert('Disable '+item.name);
+                                        disable_field(item);
+                                    } else {
+                                        //alert('Enable '+item.name);
+                                        enable_field(item);
+                                    }   // Check ACL
+                                }
+                            }      // != hidden
+                        }         // Name length > 2
+                    }           // Name != null
+                }              // for
+            }                // obj != null
+        }
 
-        if (vobj != null) {
-            for (var i = 0; i < vobj.length; i++) {
-                let item = vobj[i];
-                if (item.name != null) {
-                    if (item.name.length > 1) {
-                        if (item.type != 'hidden') {
-                            if (!ignoreFieldList.includes(item.name)) {
-                                if (check_field_access(item.name, allowed_field) != true) {
-                                    //alert('Disable '+item.name);
-                                    disable_field(item);
-                                } else {
-                                    //alert('Enable '+item.name);
-                                    enable_field(item);
-                                }   // Check ACL
-                            }
-                        }      // != hidden
-                    }         // Name length > 2
-                }           // Name != null
-            }              // for
-        }                // obj != null
-    }
+        function check_field_access(fldname, allow_string) {
+            var accessright = false;
 
-    function check_field_access(fldname, allow_string) {
-        var accessright = false;
-
-        if (fldname != null) {
-            if (allow_string != null) {
-                var arrobj = allow_string.split(',');
-                for (var i = 0; i < arrobj.length; i++) {
-                    if (fldname.toLowerCase() == arrobj[i].toLowerCase()) {
-                        accessright = true;
+            if (fldname != null) {
+                if (allow_string != null) {
+                    var arrobj = allow_string.split(',');
+                    for (var i = 0; i < arrobj.length; i++) {
+                        if (fldname.toLowerCase() == arrobj[i].toLowerCase()) {
+                            accessright = true;
+                        }
                     }
                 }
             }
+            return accessright;
         }
-        return accessright;
-    }
 
-    function disable_field(vobj) {
+        function disable_field(vobj) {
 
-        switch (vobj.tagName) {
-            case 'INPUT':
-                if (vobj.type == 'checkbox' || vobj.type == 'radio') {
-                    DisableRadio(vobj);
-                }
-                else if (vobj.type == 'button' || vobj.type == 'submit') {
-                    vobj.disabled = true;
-                }
-                else if (vobj.type != 'hidden') {
+            switch (vobj.tagName) {
+                case 'INPUT':
+                    if (vobj.type == 'checkbox' || vobj.type == 'radio') {
+                        DisableRadio(vobj);
+                    }
+                    else if (vobj.type == 'button' || vobj.type == 'submit') {
+                        vobj.disabled = true;
+                    }
+                    else if (vobj.type != 'hidden') {
+                        DisableKeyInText(vobj);
+                    }
+                    break;
+                case 'TEXTAREA':
                     DisableKeyInText(vobj);
-                }
-                break;
-            case 'TEXTAREA':
-                DisableKeyInText(vobj);
-                break;
-            case 'SELECT':
-                DisableSelect(vobj);
-                break;
-            case 'IMG':
-                vobj.style.visibility = 'hidden';
-                vobj.style.position = 'absolute';
-                break;
-            case 'SPAN':
-                if (vobj.className == 'selectButton') {
+                    break;
+                case 'SELECT':
+                    DisableSelect(vobj);
+                    break;
+                case 'IMG':
                     vobj.style.visibility = 'hidden';
                     vobj.style.position = 'absolute';
-                }
-                break;
-            default:
+                    break;
+                case 'SPAN':
+                    if (vobj.className == 'selectButton') {
+                        vobj.style.visibility = 'hidden';
+                        vobj.style.position = 'absolute';
+                    }
+                    break;
+                default:
+            }
         }
-    }
 
-    function enable_field(vobj) {
-        switch (vobj.tagName) {
-            case 'INPUT':
-                if (vobj.type == 'checkbox' || vobj.type == 'radio') {
-                    EnableRadio(vobj);
-                }
-                else if (vobj.type == 'button' || vobj.type == 'submit') {
-                    vobj.disabled = false;
-                }
-                else if (vobj.type != 'hidden') {
+        function enable_field(vobj) {
+            switch (vobj.tagName) {
+                case 'INPUT':
+                    if (vobj.type == 'checkbox' || vobj.type == 'radio') {
+                        EnableRadio(vobj);
+                    }
+                    else if (vobj.type == 'button' || vobj.type == 'submit') {
+                        vobj.disabled = false;
+                    }
+                    else if (vobj.type != 'hidden') {
+                        EnableKeyInText(vobj);
+                    }
+                    break;
+                case 'TEXTAREA':
                     EnableKeyInText(vobj);
-                }
-                break;
-            case 'TEXTAREA':
-                EnableKeyInText(vobj);
-                break;
-            case 'SELECT':
-                EnableSelect(vobj);
-                break;
-            case 'IMG':
-                vobj.style.visibility = 'visible';
-                vobj.style.position = 'relative';
-                break;
-            case 'SPAN':
-                if (vobj.className == 'selectButton') {
+                    break;
+                case 'SELECT':
+                    EnableSelect(vobj);
+                    break;
+                case 'IMG':
                     vobj.style.visibility = 'visible';
                     vobj.style.position = 'relative';
+                    break;
+                case 'SPAN':
+                    if (vobj.className == 'selectButton') {
+                        vobj.style.visibility = 'visible';
+                        vobj.style.position = 'relative';
+                    }
+                    break;
+                default:
+            }
+        }
+
+        function CheckFormInTicket(event) {
+            event.preventDefault(); // 阻止表單送出
+            $('#form1').addClass('was-validated');
+            if (!$('#form1')[0].checkValidity()) {
+                return;
+            }
+
+            console.log(iFrameIsSubmit);
+            if (!iFrameIsSubmit) {
+                $('#SubmitFormAddAmount').trigger('click');
+                return false;
+            }
+
+            $('#btnSubmit').trigger('click');
+        }
+
+        function deleteAllOptions(obj) {
+            for (var i = obj.options.length - 1; i > 0; i--)
+                obj.options[i] = null;
+        }
+
+        function EnableKeyInText(obj) {
+            obj.readOnly = false;
+            obj.style.background = "white";
+        }
+
+        function DisableKeyInText(obj) {
+            obj.readOnly = true;
+            obj.style.background = "#DDDDDD";
+        }
+
+        function EnableSelect(obj) {
+            obj.disabled = false;
+            obj.style.background = "white";
+        }
+
+        function DisableSelect(obj) {
+            obj.disabled = true;
+            obj.style.background = "#DDDDDD";
+        }
+
+        function EnableRadio(obj) {
+            obj.disabled = false;
+        }
+
+        function DisableRadio(obj) {
+            obj.disabled = true;
+        }
+
+        function EnableButton(obj) {
+            obj.disabled = false;
+            obj.style.background = "#CCCCCC";
+        }
+
+        function DisableButton(obj) {
+            obj.disabled = true;
+            obj.style.background = "#DDDDDD";
+        }
+
+        function getRadioValue(obj) {
+
+            for (i = 0; i < obj.length; i++) {
+                if (obj[i].checked) {
+                    return (obj[i].value);
                 }
-                break;
-            default:
-        }
-    }
-
-    function CheckFormInTicket(event) {
-        event.preventDefault(); // 阻止表單送出
-        $('#form1').addClass('was-validated');
-        if (!$('#form1')[0].checkValidity()) {
-            return;
-        }
-
-        console.log(iFrameIsSubmit);
-        if (!iFrameIsSubmit) {
-            $('#SubmitFormAddAmount').trigger('click');
-            return false;
-        }
-
-        $('#btnSubmit').trigger('click');
-    }
-
-    function deleteAllOptions(obj) {
-        for (var i = obj.options.length - 1; i > 0; i--)
-            obj.options[i] = null;
-    }
-
-    function EnableKeyInText(obj) {
-        obj.readOnly = false;
-        obj.style.background = "white";
-    }
-
-    function DisableKeyInText(obj) {
-        obj.readOnly = true;
-        obj.style.background = "#DDDDDD";
-    }
-
-    function EnableSelect(obj) {
-        obj.disabled = false;
-        obj.style.background = "white";
-    }
-
-    function DisableSelect(obj) {
-        obj.disabled = true;
-        obj.style.background = "#DDDDDD";
-    }
-
-    function EnableRadio(obj) {
-        obj.disabled = false;
-    }
-
-    function DisableRadio(obj) {
-        obj.disabled = true;
-    }
-
-    function EnableButton(obj) {
-        obj.disabled = false;
-        obj.style.background = "#CCCCCC";
-    }
-
-    function DisableButton(obj) {
-        obj.disabled = true;
-        obj.style.background = "#DDDDDD";
-    }
-
-    function getRadioValue(obj) {
-
-        for (i = 0; i < obj.length; i++) {
-            if (obj[i].checked) {
-                return (obj[i].value);
             }
         }
-    }
 
-    function getCheckBoxValue(obj) {
-        var m_result = "";
-        for (i = 0; i < obj.length; i++) {
-            if (obj[i].checked) {
-                m_result += (obj[i].value) + ",";
+        function getCheckBoxValue(obj) {
+            var m_result = "";
+            for (i = 0; i < obj.length; i++) {
+                if (obj[i].checked) {
+                    m_result += (obj[i].value) + ",";
+                }
             }
+            return m_result;
         }
-        return m_result;
-    }
 
 </script>
 <script>

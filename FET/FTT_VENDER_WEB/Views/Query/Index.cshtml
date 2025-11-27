@@ -430,19 +430,22 @@
                             return $("<div>操作<div>").attr({ class: 'd-flex' });
                         },
                         itemTemplate: (value, item) => {
-                            let $btnPrint = $('<button>', {
-                                'class': 'icofont icofont-print fs-5 m-0 p-0 btn btn-link',
-                                'title': '列印維修單',
-                            })
-                                .on('click', () => {
-                                    let formNo = item['@(nameof(QueryGridVO.FormNo))'];
-                                    printWp([formNo]);
-                                });
+        // 建立列印按鈕
+        const btnPrint = document.createElement("button");
+        btnPrint.className = "icofont icofont-print fs-5 m-0 p-0 btn btn-link";
+        btnPrint.title = "列印維修單";
 
-                            var result = $('<div>');
-                            result.append($btnPrint);
+        btnPrint.addEventListener("click", () => {
+            const formNo = item['@(nameof(QueryGridVO.FormNo))'] ?? "";
+            printWp([formNo]);
+        });
 
-                            return result;
+        // 建立容器
+        const container = document.createElement("div");
+        container.appendChild(btnPrint);
+
+        return container;
+
                         }
                     },
                     { name: '@(nameof(QueryGridVO.FormNo))', title: '工單號碼', type: 'text', width: 120, align: 'center' },

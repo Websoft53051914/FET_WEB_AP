@@ -146,60 +146,54 @@
                             return $("<div>操作<div>").attr({ class: 'd-flex' });
                         },
                         itemTemplate: (value, item) => {
-                            let safeId = $('<div>')
-                                .text(item['@(nameof(DispatchRuleMgtGridVO.Id))'])
-                                .text();
+                                    const safeId = item['@(nameof(DispatchRuleMgtGridVO.Id))'] ?? "";
 
-                            let safeEditUrl = '@(mapData.UrlEdit?.ToHtmlString())'
-                                .replace('tempId', encodeURIComponent(safeId));
+        // 安全編碼 URL
+        const safeEditUrl = '@(mapData.UrlEdit?.ToHtmlString())'.replace('tempId', encodeURIComponent(safeId));
 
-                            let $btnEdit = $('<a>')
-                                .attr({
-                                    'class': 'jsgrid-button jsgrid-edit-button d-inline-block',
-                                    'href': safeEditUrl,
-                                });
+        // 建立 Edit 按鈕
+        const btnEdit = document.createElement("a");
+        btnEdit.className = 'jsgrid-button jsgrid-edit-button d-inline-block';
+        btnEdit.href = safeEditUrl;
 
-                            let $btnDelete = $('<button>')
-                                .attr({
-                                    'class': 'jsgrid-button jsgrid-delete-button d-inline-block',
-                                    'type': 'button',
-                                })
-                                .on('click', () => {
-                                    const callDelete = () => {
-                                        $.ajax({
-                                            url: '@(mapData.UrlDelete?.ToHtmlString())',
-                                            dataType: 'json',
-                                            type: 'POST',
-                                            data: { id: safeId }
-                                        })
-                                            .done((response) => {
-                                                const safeMsg = $('<div>').text(response.Message).text();
+        // 建立 Delete 按鈕
+        const btnDelete = document.createElement("button");
+        btnDelete.className = 'jsgrid-button jsgrid-delete-button d-inline-block';
+        btnDelete.type = "button";
 
-                                                if (response.Success) {
-                                                    MyApp.Alert.success('刪除資料成功').then(() => ctxGrid.reload());
-                                                }
-                                                else {
-                                                    MyApp.Alert.error(safeMsg).then(() => ctxGrid.reload());
-                                                }
-                                            })
-                                            .fail((err) => console.log(err));
-                                    };
+        btnDelete.addEventListener("click", () => {
+            const callDelete = () => {
+                fetch('@(mapData.UrlDelete?.ToHtmlString())', {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ id: safeId })
+                })
+                .then(response => response.json())
+                .then(response => {
+                    const safeMsg = response.Message ?? "";
 
-                                    let safeConfirmMsg = $('<div>')
-                                        .text('@(config.GetMessage("BeforeDeleteMsg").ToHtmlString())')
-                                        .text();
+                    if (response.Success) {
+                        MyApp.Alert.success('刪除資料成功').then(() => ctxGrid.reload());
+                    } else {
+                        MyApp.Alert.error(safeMsg).then(() => ctxGrid.reload());
+                    }
+                })
+                .catch(err => console.error(err));
+            };
 
-                                    MyApp.Alert.confirm(safeConfirmMsg)
-                                        .then((result) => {
-                                            if (result) callDelete();
-                                        });
-                                });
+            const safeConfirmMsg = '@(config.GetMessage("BeforeDeleteMsg").ToHtmlString())' ?? "";
+            MyApp.Alert.confirm(safeConfirmMsg).then(result => {
+                if (result) callDelete();
+            });
+        });
 
-                            var result = $('<div>');
-                            result.append($btnEdit);
-                            result.append($btnDelete);
+        // 建立容器
+        const result = document.createElement("div");
+        result.appendChild(btnEdit);
+        result.appendChild(btnDelete);
 
-                            return result;
+        return result;
+
                         }
                     },
                     { name: '@(nameof(DispatchRuleMgtGridVO.Id))', title: '編號', type: 'text', width: 120, align: 'center' },

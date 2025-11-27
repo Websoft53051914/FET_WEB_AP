@@ -396,30 +396,35 @@
                             return '操作';
                         },
                         itemTemplate: (value, item) => {
-                            $selectButton = $('<button>')
-                                .attr({
-                                    'class': 'btn btn-secondary',
-                                })
-                                .text('選擇')
-                                .on('click', () => {
-                                    switch (dialogType) {
-                                        case "AS":
-                                            $('#as_cname').val(item["empname"]);
-                                            $('#as_empno').val(item["empno"]);
-                                            break;
-                                        default:
-                                            $('#owner_empno').val(item["empno"]);
-                                            $('#owner_cname').val(item["empname"]);
-                                            $('#owner_ename').val(item["engname"]);
-                                            $('#owner_tel').val(item["mobile"]);
+                                    // 建立按鈕
+        const selectButton = document.createElement("button");
+        selectButton.className = "btn btn-secondary";
+        selectButton.textContent = "選擇";
 
-                                            break;
-                                    }
+        selectButton.addEventListener("click", () => {
+            switch (dialogType) {
+                case "AS":
+                    document.getElementById("as_cname").value = item["empname"] ?? "";
+                    document.getElementById("as_empno").value = item["empno"] ?? "";
+                    break;
+                default:
+                    document.getElementById("owner_empno").value = item["empno"] ?? "";
+                    document.getElementById("owner_cname").value = item["empname"] ?? "";
+                    document.getElementById("owner_ename").value = item["engname"] ?? "";
+                    document.getElementById("owner_tel").value = item["mobile"] ?? "";
+                    break;
+            }
 
-                                    $('[class="btn-close"]').click();
-                                });
+            // 關閉 modal
+            document.querySelectorAll(".btn-close").forEach(btn => btn.click());
+        });
 
-                            return $('<div>').append($selectButton);
+        // 建立容器
+        const container = document.createElement("div");
+        container.appendChild(selectButton);
+
+        return container;
+
                         }
                     },
                     { name: "empno", type: "text", title: "員工編號", width: 130 },
@@ -470,59 +475,91 @@
                     if (data.Success == true) {
                         hideLoader();
                         var option;
-                        for (var i = 0; i < data.Data.company_leaves.length; i++) {
-                            var item = data.Data.company_leaves[i];
-                            var safeText = escapeHtml(item.Text);
-                            var safeValue = escapeHtml(item.Value);
-                            if (i == 0)
-                                option = new Option(safeText, safeValue, true, true);
-                            else
-                                option = new Option(safeText, safeValue, false, false);
-                            $('#company_leaves').append(option);
-                        }
-                        for (var i = 0; i < data.Data.store_types.length; i++) {
-                            var item = data.Data.store_types[i];
-                            var safeText = escapeHtml(item.Text);
-                            var safeValue = escapeHtml(item.Value);
-                            if (i == 0)
-                                option = new Option(safeText, safeValue, true, true);
-                            else
-                                option = new Option(safeText, safeValue, false, false);
-                            $('#store_type').append(option);
-                        }
+        const select = document.getElementById("company_leaves");
 
-                        $('#store_type').trigger("change");
+        for (let i = 0; i < data.Data.company_leaves.length; i++) {
+            const item = data.Data.company_leaves[i];
 
-                        for (var i = 0; i < data.Data.channels.length; i++) {
-                            var item = data.Data.channels[i];
-                            var safeText = escapeHtml(item.Text);
-                            var safeValue = escapeHtml(item.Value);
-                            if (i == 0)
-                                option = new Option(safeText, safeValue, true, true);
-                            else
-                                option = new Option(safeText, safeValue, false, false);
-                            $('#channel').append(option);
-                        }
-                        for (var i = 0; i < data.Data.area.length; i++) {
-                            var item = data.Data.area[i];
-                            var safeText = escapeHtml(item.Text);
-                            var safeValue = escapeHtml(item.Value);
-                            if (i == 0)
-                                option = new Option(safeText, safeValue, true, true);
-                            else
-                                option = new Option(safeText, safeValue, false, false);
-                            $('#area').append(option);
-                        }
-                        for (var i = 0; i < data.Data.decoration_conditions.length; i++) {
-                            var item = data.Data.decoration_conditions[i];
-                            var safeText = escapeHtml(item.Text);
-                            var safeValue = escapeHtml(item.Value);
-                            if (i == 0)
-                                option = new Option(safeText, safeValue, true, true);
-                            else
-                                option = new Option(safeText, safeValue, false, false);
-                            $('#decoration_condition').append(option);
-                        }
+            // new Option 自動 escape HTML
+            const option = new Option(
+                item.Text ?? "",
+                item.Value ?? "",
+                i === 0,  // selected
+                i === 0   // defaultSelected
+            );
+
+            // 原生 DOM 插入
+            select.add(option);
+        }
+                const select = document.getElementById("store_type");
+
+        for (let i = 0; i < data.Data.store_types.length; i++) {
+            const item = data.Data.store_types[i];
+
+            // new Option 自動 escape HTML
+            const option = new Option(
+                item.Text ?? "",
+                item.Value ?? "",
+                i === 0,  // selected
+                i === 0   // defaultSelected
+            );
+
+            // 原生 DOM 插入
+            select.add(option);
+        }
+
+        // 原生觸發 change 事件
+        select.dispatchEvent(new Event("change"));
+
+                const select = document.getElementById("channel");
+
+        for (let i = 0; i < data.Data.channels.length; i++) {
+            const item = data.Data.channels[i];
+
+            // new Option 自動 escape HTML
+            const option = new Option(
+                item.Text ?? "",
+                item.Value ?? "",
+                i === 0,  // selected
+                i === 0   // defaultSelected
+            );
+
+            // 原生 DOM 插入
+            select.add(option);
+        }
+                const select = document.getElementById("area");
+
+        for (let i = 0; i < data.Data.area.length; i++) {
+            const item = data.Data.area[i];
+
+            // new Option 自動 escape HTML
+            const option = new Option(
+                item.Text ?? "",
+                item.Value ?? "",
+                i === 0,  // selected
+                i === 0   // defaultSelected
+            );
+
+            // 安全插入 select
+            select.add(option);
+        }
+
+                const select = document.getElementById("decoration_condition");
+
+        for (let i = 0; i < data.Data.decoration_conditions.length; i++) {
+            const item = data.Data.decoration_conditions[i];
+
+            // new Option 自動 escape HTML
+            const option = new Option(
+                item.Text ?? "",
+                item.Value ?? "",
+                i === 0,  // selected
+                i === 0   // defaultSelected
+            );
+
+            // 安全插入 select
+            select.add(option);
+        }
 
                         if ('@action' == 'edit') {
                             GetDetail();
@@ -571,10 +608,16 @@
                         $('#channel').val(item.channel);
                         $('#channel').trigger("change");
 
-                        if ($('#area').find("option[value='" + item.area + "']").length === 0) {
-                            let safeArea = escapeHtml(item.area);
-                            $('#area').append(new Option(safeArea, safeArea, false, false));
-                        }
+        const select = document.getElementById("area");
+        const areaValue = item.area ?? "";
+
+        // 安全檢查是否已存在 option
+        let exists = Array.from(select.options).some(opt => opt.value === areaValue);
+        if (!exists) {
+            // 用 new Option 建立 DOM option
+            const option = new Option(areaValue, areaValue, false, false);
+            select.add(option);
+        }
 
                         $('#area').val(item.area);
                         $('#area').trigger("change");

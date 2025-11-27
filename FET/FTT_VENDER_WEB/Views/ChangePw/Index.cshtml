@@ -225,11 +225,11 @@
                         captchaId = data.Data.captchaId;
 
                     } else {
-                        $errorMsg.html(data.Message);
+                        $errorMsg.text(data.Message);
                     }
                 },
                 error: function (xhr, status, error) {
-                    $errorMsg.html("取得驗證碼失敗，請稍後再試。");
+                    $errorMsg.text("取得驗證碼失敗，請稍後再試。");
                 }
             }).always(() => {
             })
@@ -318,13 +318,13 @@
                             cptel = cptel.replace(/\D/g, ''); //只將數字的部分送往後端
 
                             if (!ac || !cptel || !newPD || !checkNewPD ) {
-                                $errorMsg.html("請填入帳號、聯絡電話、新密碼、確認密碼");
+                                $errorMsg.text("請填入帳號、聯絡電話、新密碼、確認密碼");
                                 return;
                             }
 
                             if (newPD !== checkNewPD)
                             {
-                                $errorMsg.html("新密碼及確認密碼須一致")
+                                $errorMsg.text("新密碼及確認密碼須一致")
                                 return
                             }
 
@@ -339,7 +339,7 @@
                                 })
                                 return;
                             }
-                            $errorMsg.html("");
+                            $errorMsg.text("");
                             //showLoader()
 
                             $.ajax({
@@ -384,17 +384,17 @@
                                     console.log(xhr)
                                     console.log(status)
                                     console.log(error)
-                                    $errorMsg.html("變更密碼失敗，請稍後再試。");
+                                    $errorMsg.text("變更密碼失敗，請稍後再試。");
                                 }
                             }).always(() => {
                                 //hideLoader();
                             })
                         } else {
-                            $errorMsg.html(data.Message);
+                            $errorMsg.text(data.Message);
                         }
                     },
                     error: function (xhr, status, error) {
-                        $errorMsg.html("驗證碼檢查失敗，請稍後再試。");
+                        $errorMsg.text("驗證碼檢查失敗，請稍後再試。");
                     }
                 }).always(() => {
 

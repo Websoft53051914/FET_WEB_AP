@@ -28,4 +28,8 @@
     <ProjectReference Include="..\Core.8.Utility\Core.8.Utility.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <Folder Include="Common\OriginClass\ModelClass\" />
+  </ItemGroup>
+
 </Project>

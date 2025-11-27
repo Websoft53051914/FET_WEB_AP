@@ -67,17 +67,15 @@ namespace FTT_WEB.ViewComponents
 
                 //直接在此呼叫筆數API
                 var sendPara = filteredTreeData.SelectMany(s => s.Value).ToList().Where(w => w.DataCount != null).Select(s => (int)s.FuncId).ToList();
-                var url = $"{Method.GetAppSettingsDataByName("BackendURL")}/Api/GetMenuDataCount";
+                //var url = $"{Method.GetAppSettingsDataByName("BackendURL")}/Api/GetMenuDataCount";
 
                 var jwtToken = Request.Cookies["FTT_Token"];
 
                 using HttpClient client = new HttpClient(new HttpClientHandler { });
                 //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
                 client.DefaultRequestHeaders.Add("Cookie", $"FTT_Token={jwtToken}");
-
-                HttpResponseMessage postResponse = await client.PostAsync(
-                    $"{Method.GetAppSettingsDataByName("BackendURL")}/Api/GetMenuDataCount",
-                    new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(sendPara), Encoding.UTF8, "application/json"));
+                var url = $"{Method.GetAppSettingsDataByName("BackendURL")}/Api/GetMenuDataCount";
+                HttpResponseMessage postResponse = await client.PostAsync(url, new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(sendPara), Encoding.UTF8, "application/json"));
                 string postResponseData = await postResponse.Content.ReadAsStringAsync();
 
                 var response = JsonConvert.DeserializeObject<ApiResponse>(postResponseData);
@@ -86,7 +84,7 @@ namespace FTT_WEB.ViewComponents
                 {
                     foreach (var item in response.Data)
                     {
-                        strMenuList.Add(((FuncID)int.Parse(item.Key)).ToString() , item.Value);
+                        strMenuList.Add(((FuncID)int.Parse(item.Key)).ToString(), item.Value);
                     }
                 }
 
@@ -114,7 +112,7 @@ namespace FTT_WEB.ViewComponents
             }
             catch (Exception ex)
             {
-                return View(new HomeMenuVM());
+                return View(new HomeMenuVM() { Exception = ex.ToString() });
             }
         }
     }

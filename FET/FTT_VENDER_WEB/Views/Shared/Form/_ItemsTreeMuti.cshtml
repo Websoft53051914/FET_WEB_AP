@@ -90,6 +90,7 @@ else
         };
         ctxModal.$Tree = $('#@(mapData.IdTree)');
         ctxModal.$Tree.jstree({
+                force_text:true,
             themes: {
                 icons: false
             },
@@ -167,32 +168,40 @@ else
         });
         ctxModal.Tree.instance = ctxModal.$Tree.jstree(true);
 
-        ctxModal.ModalSelectedPool = {};
-        ctxModal.ModalSelectedPool.init = function (selectedDatas) {
-            let $control = ctxModal.$ModalSelectedPool;
-            $control.empty();
-            ctxModal.Tree.selected = [];
-            ctxModal.Tree.selectedItem = [];
+    ctxModal.ModalSelectedPool = {};
+    ctxModal.ModalSelectedPool.init = function (selectedDatas) {
+        const control = ctxModal.$ModalSelectedPool;
+        control.innerHTML = ""; // 清空
 
-            $.each(selectedDatas, function (index, value) {
-                let $span = $('<span>', {
-                    class: 'partialTag',
-                    text: value.text,
-                });
-                let $btnDelete = $('<button>', {
-                    type: 'button',
-                    class: 'partialRemove',
-                    text: 'x',
-                }).on('click', function (e) {
-                    ctxModal.Tree.instance.deselect_node(value.id);
-                });
+        ctxModal.Tree.selected = [];
+        ctxModal.Tree.selectedItem = [];
 
-                $span.append($btnDelete);
-                $control.append($span);
-                ctxModal.Tree.selected.push(value.id);
-                ctxModal.Tree.selectedItem.push(value);
+        selectedDatas.forEach(value => {
+            // 建立 span
+            const span = document.createElement("span");
+            span.className = "partialTag";
+            span.textContent = value.text ?? "";
+
+            // 建立刪除按鈕
+            const btnDelete = document.createElement("button");
+            btnDelete.type = "button";
+            btnDelete.className = "partialRemove";
+            btnDelete.textContent = "x";
+
+            btnDelete.addEventListener("click", () => {
+                ctxModal.Tree.instance.deselect_node(value.id);
             });
-        }
+
+            // 安全地加入 span
+            span.appendChild(btnDelete);
+            control.appendChild(span);
+
+            // 更新選取陣列
+            ctxModal.Tree.selected.push(value.id);
+            ctxModal.Tree.selectedItem.push(value);
+        });
+    }
+
 
         ctxModal.$Select = $('#@(mapData.IdSelect)');
         ctxModal.Select = {};

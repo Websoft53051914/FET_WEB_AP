@@ -207,56 +207,67 @@ function previewImg(input, previewImgEl, acceptedFiles = [], notAcceptCallBack =
  * 容器：<div id="xxxContainer" class="form-check m-checkbox-inline" data-value=""></div>
  */
 function buildCheckbox(item) {
-    let $div = $('<div>', {
-        'class': 'checkbox checkbox-primary',
-    });
-    let inputId = uuidv4();
-    let inputClassNames = item.inputClassNames || '';
-    let $input = $('<input>', {
-        'type': 'checkbox',
-        'class': 'form-check-input ' + inputClassNames,
-        'value': item.id,
-        'id': inputId,
-        'name': item.name,
-        'data-group': item.dataGroup,
-    })
-        .prop('checked', item.selected || false);
-    let $label = $('<label>', {
-        'for': inputId,
-        'class': 'form-check-label mt-0 mb-0',
-    })
-        .text(item.text);
+    // 建立外層 div
+    const div = document.createElement("div");
+    div.className = "checkbox checkbox-primary";
 
-    $div.append($input).append($label);
+    // 生成 input id
+    const inputId = uuidv4();
 
-    return $div;
-};
+    // 建立 checkbox input
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.className = "form-check-input " + (item.inputClassNames || "");
+    input.value = item.id ?? "";
+    input.id = inputId;
+    input.name = item.name ?? "";
+    if (item.dataGroup) input.dataset.group = item.dataGroup;
+    input.checked = !!item.selected;
+
+    // 建立 label
+    const label = document.createElement("label");
+    label.htmlFor = inputId;
+    label.className = "form-check-label mt-0 mb-0";
+    label.textContent = item.text ?? "";
+
+    // 安全加入 DOM
+    div.appendChild(input);
+    div.appendChild(label);
+
+    return div;
+}
 
 function buildCheckboxSingle(item) {
-    let $div = $('<div>', {
-        'class': 'form-check checkbox checkbox-primary',
-    });
-    let inputId = uuidv4();
-    let inputClassNames = item.inputClassNames || '';
-    let $input = $('<input>', {
-        'type': 'checkbox',
-        'class': 'form-check-input ' + inputClassNames,
-        'value': item.id,
-        'id': inputId,
-        'name': item.name,
-        'data-group': item.dataGroup,
-    })
-        .prop('checked', item.selected || false);
-    let $label = $('<label>', {
-        'for': inputId,
-        'class': 'form-check-label',
-    })
-        .text(item.text);
+    // 建立外層 div
+    const div = document.createElement("div");
+    div.className = "form-check checkbox checkbox-primary";
 
-    $div.append($input).append($label);
+    // 生成 input id
+    const inputId = uuidv4();
 
-    return $div;
+    // 建立 checkbox input
+    const input = document.createElement("input");
+    input.type = "checkbox";
+    input.className = "form-check-input " + (item.inputClassNames || "");
+    input.value = item.id ?? "";
+    input.id = inputId;
+    input.name = item.name ?? "";
+    if (item.dataGroup) input.dataset.group = item.dataGroup;
+    input.checked = !!item.selected;
+
+    // 建立 label
+    const label = document.createElement("label");
+    label.htmlFor = inputId;
+    label.className = "form-check-label";
+    label.textContent = item.text ?? "";
+
+    // 安全加入 DOM
+    div.appendChild(input);
+    div.appendChild(label);
+
+    return div;
 };
+
 
 /**
  * 建立 Tempus Dominus 的 bootstrap-datetimepicker

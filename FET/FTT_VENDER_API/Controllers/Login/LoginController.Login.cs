@@ -56,7 +56,9 @@ namespace FTT_VENDER_API.Controllers.Login
                 if (!string.IsNullOrEmpty(resultVO.Token.TokenId))
                 {
                     resultVO.Token.TokenId = InputSanitizer.SanitizeForCookie(resultVO.Token.TokenId);
-                    Response.Cookies.Append("Token", resultVO.Token.TokenId, new CookieOptions
+                    // 安全編碼 Token
+                    string safeToken = string.IsNullOrEmpty(resultVO?.Token?.TokenId) ? string.Empty : Uri.EscapeDataString(resultVO.Token.TokenId);
+                    Response.Cookies.Append("Token", safeToken, new CookieOptions
                     {
                         HttpOnly = false,
                         Secure = false, // HTTP測試用false https用true
@@ -80,7 +82,10 @@ namespace FTT_VENDER_API.Controllers.Login
                     Secure = false, // HTTP測試用false https用true
                     SameSite = SameSiteMode.Lax, // http測試用Lax https用none
                 });
-                Response.Cookies.Append("userrole", userrole ?? string.Empty, new CookieOptions
+                // 對 userrole 進行編碼，防止特殊字元造成問題
+                string safeUserRole = string.IsNullOrEmpty(userrole) ? string.Empty : Uri.EscapeDataString(userrole);
+
+                Response.Cookies.Append("userrole", safeUserRole ?? string.Empty, new CookieOptions
                 {
                     HttpOnly = false,
                     Secure = false, // HTTP測試用false https用true

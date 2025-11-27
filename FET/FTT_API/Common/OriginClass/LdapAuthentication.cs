@@ -60,30 +60,41 @@ namespace FTT_API.Common.OriginClass
         }
         private bool ValidateUser(string domain, string username, string pwd)
         {
-            string username2 = domain + "\\" + username;
+            string username2 = $"{domain}\\{username}";
             DirectoryEntry directoryEntry = new DirectoryEntry(_path, username2, pwd);
+
             try
             {
-                object nativeObject = directoryEntry.NativeObject;
+                object nativeObject = directoryEntry.NativeObject; // 驗證帳密
+
                 DirectorySearcher directorySearcher = new DirectorySearcher(directoryEntry);
+
+                // 安全 escape 過的 username
                 string safeUsername = EscapeLdapSearchFilter(username);
-                directorySearcher.Filter = $"(SAMAccountName={safeUsername})";
+
+                // 僅匹配 SamAccountName 等值，不開放其他運算子
+                directorySearcher.Filter = $"(&(objectClass=user)(sAMAccountName={safeUsername}))";
+
+                directorySearcher.SearchScope = SearchScope.Subtree; // 建議加
+
+                directorySearcher.PropertiesToLoad.Clear();
                 directorySearcher.PropertiesToLoad.Add("cn");
+
                 SearchResult searchResult = directorySearcher.FindOne();
-                if (null == searchResult)
-                {
+
+                if (searchResult == null)
                     return false;
-                }
 
                 _path = searchResult.Path;
-                _filterAttribute = (string)searchResult.Properties["cn"][0];
+                _filterAttribute = searchResult.Properties["cn"][0]?.ToString();
             }
             catch (Exception ex)
             {
-                throw new Exception("驗證使用者錯誤： " + ex.Message);
+                throw new Exception("驗證使用者錯誤: " + ex.Message);
             }
 
             return true;
+
         }
 
         private string ExtractUserName(string path)

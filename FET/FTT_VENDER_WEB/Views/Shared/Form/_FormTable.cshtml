@@ -438,8 +438,18 @@
     <partial name="Form/_RMItemTree" view-data='new ViewDataDictionary(ViewData)' /> *@
 
 <script>
-    function GetFileElement(text, value) {
-        return '<a target="_blank" href="@(config.GetBackendUrl() + Url.Action("DownloadFile", "Pending"))?id=' + value + '" style="margin: 5px;">【' + text + '】</a>';
+    function GetFileElement(i, text, value) {
+        const a = document.createElement("a");
+        a.textContent = `【${text ?? ""}】`;    // 安全，自動 escape
+        a.setAttribute("val", value ?? "");
+        a.name = `TTItemList[1].FileIds[${i}]`;
+        a.target = "_blank";
+        a.style.margin = "5px";
+
+        a.href = '@(config.GetBackendUrl() + Url.Action("DownloadFile", "Pending"))'
+            + "?id=" + encodeURIComponent(value ?? "");
+
+        return a;
     }
     if (!String.format) {
         String.format = function (format, ...args) {
@@ -478,13 +488,19 @@
             $("#rmTable_Header1").html("");
             $("#rmTable_Header1").append("門市資訊")
 
-            let statusSpan = $("<span>", {
-                id: "APPROVE_FORM_STATUS_DESC",
-                class: "text-success",
-                style: "float:right;background-color: cornsilk;"
-            }).text("*目前表單狀態: 審單中");
 
-            $("#rmTable_Header1").append(statusSpan);
+                // 建立 span
+                const statusSpan = document.createElement("span");
+                statusSpan.id = "APPROVE_FORM_STATUS_DESC";
+                statusSpan.className = "text-success";
+                statusSpan.style.cssText = "float:right;background-color: cornsilk;";
+                statusSpan.textContent = "*目前表單狀態: 審單中";
+
+                // 安全加入 DOM
+                const header = document.getElementById("rmTable_Header1");
+                if (header) {
+                    header.appendChild(statusSpan);
+                }
         }
     }
 
@@ -1049,12 +1065,18 @@
                     $('#AMOUNT_COST').val(data.Amount_Cost)
                     $('#AMOUNT_CONFIG').val(data.Amount_Config);
 
-                    for (var i = 0; i < data.Amount_SelectList.length; i++) {
-                        var item = data.Amount_SelectList[i];
+    const select = document.getElementById("EXPENSE_TYPE");
 
-                        var option = new Option(escapeHtml(item.Text), escapeHtml(item.Value), true, true);
-                        $('#EXPENSE_TYPE').append(option).trigger('change');
-                    }
+    for (let i = 0; i < data.Amount_SelectList.length; i++) {
+        const item = data.Amount_SelectList[i];
+
+        const option = new Option(item.Text ?? "", item.Value ?? "", true, true);
+        // 避免 jQuery append，使用原生 DOM
+        select.add(option);
+    }
+
+    // 如果需要觸發 change 事件（原生方式）
+    select.dispatchEvent(new Event('change'));
 
                     if (data.UpdateAmount_Config == true) {
                         $('.input_class').hide();
@@ -1126,7 +1148,7 @@
 
                     hideLoader();
                 } else {
-                    MyApp.Alert.error(data.Message);
+                    MyApp.Alert.error(response.Message);
                     hideLoader();
                 }
             },
@@ -1160,79 +1182,123 @@
                 _PRICE = obj.price || '';
             }
 
-            try {
-                var index = parseInt($('#AMOUNT_MAX_IDX').val()) + 1;
-                var $tr = $('<tr>', { id: 'AMOUNT_TR_' + index, name: 'TableTR' });
+                try {// 計算 index
+    const index = parseInt(document.getElementById('AMOUNT_MAX_IDX').value) + 1;
 
-                // 刪除按鈕
-                var $tdDel = $('<td>');
-                if (!hideAmountDel) {
-                    var $btn = $('<button>', {
-                        type: 'button',
-                        class: 'btn btn-link text-danger icofont icofont-trash fs-6 p-1',
-                        style: 'cursor:pointer;',
-                        click: function () { DelAMOUNT(this); }
-                    });
-                    $tdDel.append($btn);
-                }
-                $tr.append($tdDel);
+    // 建立 tr
+    const tr = document.createElement('tr');
+    tr.id = 'AMOUNT_TR_' + index;
+    tr.setAttribute('name', 'TableTR');
 
-                // 費用種類
-                var $tdExpenseType = $('<td>').text(_EXPENSE_TYPE);
-                $tdExpenseType.append(
-                    $('<input>', { type: 'hidden', id: 'EXPENSE_TYPE_' + index, name: 'EXPENSE_TYPE', value: _EXPENSE_TYPE })
-                );
-                $tr.append($tdExpenseType);
+    // 刪除按鈕 td
+    const tdDel = document.createElement('td');
+    if (!hideAmountDel) {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'btn btn-link text-danger icofont icofont-trash fs-6 p-1';
+        btn.style.cursor = 'pointer';
+        btn.addEventListener('click', () => DelAMOUNT(btn));
+        tdDel.appendChild(btn);
+    }
+    tr.appendChild(tdDel);
 
-                // 維修細項
-                var _desc = ($('#AMOUNT_CONFIG').val() === "Y") ? _EXPENSE_DESC_SEL : _EXPENSE_DESC_TEXT;
-                var $tdDesc = $('<td>').text(_desc);
-                $tdDesc.append(
-                    $('<input>', { type: 'hidden', id: 'EXPENSE_DESC_' + index, name: 'EXPENSE_DESC', value: _desc })
-                );
-                $tr.append($tdDesc);
+    // 費用種類
+    const tdExpenseType = document.createElement('td');
+    tdExpenseType.textContent = _EXPENSE_TYPE ?? '';
+    const inputExpenseType = document.createElement('input');
+    inputExpenseType.type = 'hidden';
+    inputExpenseType.id = 'EXPENSE_TYPE_' + index;
+    inputExpenseType.name = 'EXPENSE_TYPE';
+    inputExpenseType.value = _EXPENSE_TYPE ?? '';
+    tdExpenseType.appendChild(inputExpenseType);
+    tr.appendChild(tdExpenseType);
 
-                // 檢測故障原因
-                var $tdFault = $('<td>').text(_FAULT_REASON);
-                $tdFault.append(
-                    $('<input>', { type: 'hidden', id: 'FAULT_REASON_' + index, name: 'FAULT_REASON', value: _FAULT_REASON })
-                );
-                $tr.append($tdFault);
+    // 維修細項
+    const tdDesc = document.createElement('td');
+    const descValue = (document.getElementById('AMOUNT_CONFIG').value === "Y") ? _EXPENSE_DESC_SEL : _EXPENSE_DESC_TEXT;
+    tdDesc.textContent = descValue ?? '';
+    const inputDesc = document.createElement('input');
+    inputDesc.type = 'hidden';
+    inputDesc.id = 'EXPENSE_DESC_' + index;
+    inputDesc.name = 'EXPENSE_DESC';
+    inputDesc.value = descValue ?? '';
+    tdDesc.appendChild(inputDesc);
+    tr.appendChild(tdDesc);
 
-                // 維修處理動作
-                var $tdRepair = $('<td>').text(_REPAIR_ACTION);
-                $tdRepair.append(
-                    $('<input>', { type: 'hidden', id: 'REPAIR_ACTION_' + index, name: 'REPAIR_ACTION', value: _REPAIR_ACTION })
-                );
-                $tr.append($tdRepair);
+    // 檢測故障原因
+    const tdFault = document.createElement('td');
+    tdFault.textContent = _FAULT_REASON ?? '';
+    const inputFault = document.createElement('input');
+    inputFault.type = 'hidden';
+    inputFault.id = 'FAULT_REASON_' + index;
+    inputFault.name = 'FAULT_REASON';
+    inputFault.value = _FAULT_REASON ?? '';
+    tdFault.appendChild(inputFault);
+    tr.appendChild(tdFault);
 
-                // 數量、單位、單價
-                var $tdQty = $('<td>').text(_QTY);
-                $tdQty.append($('<input>', { type: 'hidden', id: 'QTY_' + index, name: 'QTY', value: _QTY }));
-                $tr.append($tdQty);
+    // 維修處理動作
+    const tdRepair = document.createElement('td');
+    tdRepair.textContent = _REPAIR_ACTION ?? '';
+    const inputRepair = document.createElement('input');
+    inputRepair.type = 'hidden';
+    inputRepair.id = 'REPAIR_ACTION_' + index;
+    inputRepair.name = 'REPAIR_ACTION';
+    inputRepair.value = _REPAIR_ACTION ?? '';
+    tdRepair.appendChild(inputRepair);
+    tr.appendChild(tdRepair);
 
-                var $tdUnit = $('<td>').text(_UNIT);
-                $tdUnit.append($('<input>', { type: 'hidden', id: 'UNIT_' + index, name: 'UNIT', value: _UNIT }));
-                $tr.append($tdUnit);
+    // 數量
+    const tdQty = document.createElement('td');
+    tdQty.textContent = _QTY ?? '';
+    const inputQty = document.createElement('input');
+    inputQty.type = 'hidden';
+    inputQty.id = 'QTY_' + index;
+    inputQty.name = 'QTY';
+    inputQty.value = _QTY ?? '';
+    tdQty.appendChild(inputQty);
+    tr.appendChild(tdQty);
 
-                var $tdPrice = $('<td>').text(_PRICE);
-                $tdPrice.append($('<input>', { type: 'hidden', id: 'PRICE_' + index, name: 'PRICE', value: _PRICE }));
-                $tr.append($tdPrice);
+    // 單位
+    const tdUnit = document.createElement('td');
+    tdUnit.textContent = _UNIT ?? '';
+    const inputUnit = document.createElement('input');
+    inputUnit.type = 'hidden';
+    inputUnit.id = 'UNIT_' + index;
+    inputUnit.name = 'UNIT';
+    inputUnit.value = _UNIT ?? '';
+    tdUnit.appendChild(inputUnit);
+    tr.appendChild(tdUnit);
 
-                // 小計
-                var tmpTotal = parseInt(_QTY) * parseInt(_PRICE);
-                calSubTotal('Add', tmpTotal);
-                var tmpTotalDisplay = "$" + tmpTotal + ".-";
+    // 單價
+    const tdPrice = document.createElement('td');
+    tdPrice.textContent = _PRICE ?? '';
+    const inputPrice = document.createElement('input');
+    inputPrice.type = 'hidden';
+    inputPrice.id = 'PRICE_' + index;
+    inputPrice.name = 'PRICE';
+    inputPrice.value = _PRICE ?? '';
+    tdPrice.appendChild(inputPrice);
+    tr.appendChild(tdPrice);
 
-                var $tdSubtotal = $('<td>').text(tmpTotalDisplay);
-                $tdSubtotal.append($('<input>', { type: 'hidden', id: 'SUBTOTAL_' + index, name: 'SUBTOTAL', value: tmpTotalDisplay }));
-                $tr.append($tdSubtotal);
+    // 小計
+    const tmpTotal = parseInt(_QTY) * parseInt(_PRICE);
+    calSubTotal('Add', tmpTotal);
+    const tmpTotalDisplay = "$" + tmpTotal + ".-";
+    const tdSubtotal = document.createElement('td');
+    tdSubtotal.textContent = tmpTotalDisplay;
+    const inputSubtotal = document.createElement('input');
+    inputSubtotal.type = 'hidden';
+    inputSubtotal.id = 'SUBTOTAL_' + index;
+    inputSubtotal.name = 'SUBTOTAL';
+    inputSubtotal.value = tmpTotalDisplay;
+    tdSubtotal.appendChild(inputSubtotal);
+    tr.appendChild(tdSubtotal);
 
-                // 更新 index
-                $('#AMOUNT_MAX_IDX').val(index);
+    // 更新 index
+    document.getElementById('AMOUNT_MAX_IDX').value = index;
 
-                // 安全 append
-                $('#AMOUNT_LIST').append($tr);
+    // 安全 append
+    document.getElementById('AMOUNT_LIST').appendChild(tr);
 
             }
             catch (ex) {

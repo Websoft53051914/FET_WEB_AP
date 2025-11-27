@@ -1,6 +1,5 @@
 ﻿@using FTT_WEB.Common
 @using FTT_WEB.Common.OriginClass.EntiityClass
-@using FTT_WEB.Common.OriginClass.ModelClass
 @{
     var show = true;
     var isShowLayout = ViewData["IsShowLayout"];
@@ -16,41 +15,7 @@
     };
 
 }
-@functions {
-    protected string GetUserLoginName()
-    {
-        string UserType = "";
-        try
-        {
-            UserType = LoginSession.Current.usertype;
-            string userLoginName = string.Empty;
-            switch (UserType)
-            {
-                case "RETAIL":
-                case "EMPLOYEE":
-                    CEDS ceds = new CEDS();
-                    userLoginName = ceds.GetEmpName(Employee.RefType.EmpNo, Context.User.Identity.Name);
-                    if (UserType == "RETAIL")
-                        userLoginName += $"IVR Code：{LoginSession.Current.ivrcode} " ;
-                    ceds.Dispose();
-                    break;
-                case "VASS":
-                    userLoginName = $"IVR Code - {LoginSession.Current.ivrcode} ";
-                    break;
-                case "VENDOR":
-                    userLoginName = LoginSession.Current.engname;
-                    break;
-                default:
-                    break;
-            }
-            // userLoginName += $"IdentityName : {Context.User.Identity.Name}";
-            return userLoginName;
-        }
-        catch (Exception err)
-        {
-            return "Error";
-        }
-    }
+@functions { 
 }
 
 <style>
