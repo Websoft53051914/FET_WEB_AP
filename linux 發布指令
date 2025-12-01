@@ -1,1 +1,6 @@
 dotnet publish -c Release -r linux-x64 --self-contained false -o bin\Release\netcoreapp8.1\WebPublisher
+
+
+dotnet FTT_WEB.dll --urls "http://10.68.16.109:50102"
+
+dotnet FTT_API.dll --urls "http://10.68.16.109:50302"
