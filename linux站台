@@ -1,0 +1,3 @@
+dotnet FTT_WEB.dll --urls "http://10.68.16.109:50102"
+
+dotnet FTT_API.dll --urls "http://10.68.16.109:50302"
