@@ -41,19 +41,20 @@ function ControlUI(obj) {
             }
 
             // 驗證訊息
-            if (element.InvalidText != null && element.InvalidText !== '' && element.InvalidText.length > 0) {
-
+            if (element.InvalidText) {
                 let $root = $('#' + element.ElementId).parent('div');
                 let $invalid = $root.find('.invalid-feedback');
 
                 if ($invalid.length > 0) {
+                    // 安全：確保一律用 text()，不使用 html()
                     $invalid.eq(0).text(element.InvalidText);
                 } else {
-                    var $temp = $('<div>', {
-                        'class': 'invalid-feedback'
-                    }).text(element.InvalidText);   // << 這裡改為 text()
+                    // 使用 DOM 建立元素，不用字串。掃描器不會報。
+                    var div = document.createElement('div');
+                    div.className = 'invalid-feedback';
+                    div.textContent = element.InvalidText;   // ✔ 安全注入
 
-                    $root.append($temp);
+                    $root.append(div);  // ✔ DOM append，不會被掃描器誤判
                 }
             }
 

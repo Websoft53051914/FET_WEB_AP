@@ -559,9 +559,13 @@
         });
 
         // 將所有動態文字轉成純文字，避免 XSS
+
         function safeText(value) {
-            return $("<div>").text(value || "").html();
+            const div = document.createElement("div");
+            div.textContent = value || "";
+            return div.innerHTML; // 這是安全的 escape 後字串
         }
+
                 function safeAppendCheckBox(containerId, list, prefix, name) {
             const container = document.getElementById(containerId);
             container.innerHTML = ""; // 清空

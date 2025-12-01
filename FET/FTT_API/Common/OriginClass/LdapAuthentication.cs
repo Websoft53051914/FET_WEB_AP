@@ -1,5 +1,6 @@
 ﻿using System.DirectoryServices;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace FTT_API.Common.OriginClass
 {
@@ -51,6 +52,8 @@ namespace FTT_API.Common.OriginClass
         }
         public static string EscapeLdapSearchFilter(string filter)
         {
+            if (filter == null) return string.Empty;
+
             return filter
                 .Replace(@"\", @"\5c")
                 .Replace("*", @"\2a")
@@ -58,35 +61,41 @@ namespace FTT_API.Common.OriginClass
                 .Replace(")", @"\29")
                 .Replace("\u0000", @"\00");
         }
+
         private bool ValidateUser(string domain, string username, string pwd)
         {
-            string username2 = $"{domain}\\{username}";
-            DirectoryEntry directoryEntry = new DirectoryEntry(_path, username2, pwd);
+            // 1. 避免空 username 造成繞過
+            if (string.IsNullOrWhiteSpace(username))
+                return false;
+
+            // 2. Bind 用戶
+            string bindUser = $"{domain}\\{username}";
+            DirectoryEntry directoryEntry = new DirectoryEntry(_path, bindUser, pwd);
 
             try
             {
-                object nativeObject = directoryEntry.NativeObject; // 驗證帳密
+                // 3. 先測試 bind 成功（必須）
+                var nativeObject = directoryEntry.NativeObject;
 
-                DirectorySearcher directorySearcher = new DirectorySearcher(directoryEntry);
+                DirectorySearcher searcher = new DirectorySearcher(directoryEntry);
 
-                // 安全 escape 過的 username
+                // 4. Escape 使用者輸入（安全）
                 string safeUsername = EscapeLdapSearchFilter(username);
 
-                // 僅匹配 SamAccountName 等值，不開放其他運算子
-                directorySearcher.Filter = $"(&(objectClass=user)(sAMAccountName={safeUsername}))";
+                // 5. 僅使用等號查詢 → 100% 阻斷注入
+                searcher.Filter = $"(&(objectClass=user)(sAMAccountName={safeUsername}))";
 
-                directorySearcher.SearchScope = SearchScope.Subtree; // 建議加
+                searcher.SearchScope = SearchScope.Subtree;
 
-                directorySearcher.PropertiesToLoad.Clear();
-                directorySearcher.PropertiesToLoad.Add("cn");
+                searcher.PropertiesToLoad.Clear();
+                searcher.PropertiesToLoad.Add("cn");
 
-                SearchResult searchResult = directorySearcher.FindOne();
-
-                if (searchResult == null)
+                SearchResult result = searcher.FindOne();
+                if (result == null)
                     return false;
 
-                _path = searchResult.Path;
-                _filterAttribute = searchResult.Properties["cn"][0]?.ToString();
+                _path = result.Path;
+                _filterAttribute = result.Properties["cn"][0]?.ToString();
             }
             catch (Exception ex)
             {
@@ -94,7 +103,6 @@ namespace FTT_API.Common.OriginClass
             }
 
             return true;
-
         }
 
         private string ExtractUserName(string path)

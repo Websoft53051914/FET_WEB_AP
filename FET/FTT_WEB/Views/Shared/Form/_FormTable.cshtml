@@ -298,7 +298,7 @@
                         <td bgcolor="#FFDDEE">金額彙整欄：</td>
                         <td colspan="5">
                             @*原使用 table 呈現但會跑版，改為表單顯示*@
-                            @* <div id="NewData" class="row gy-2 row-cols-1 row-cols-md-2 row-cols-lg-3 mb-2">
+                            <div id="NewData" class="row gy-2 row-cols-1 row-cols-md-2 row-cols-lg-3 mb-2">
                             <div class="col">
                             <label class="col-form-label websoft-form-label pt-2">費用種類</label>
                             <select class="form-select initSelect2" id="EXPENSE_TYPE" name="EXPENSE_TYPE">
@@ -340,9 +340,9 @@
                             </div>
                             </div>
                             <div class="d-flex gap-2 mb-2">
-                            <button type="button" id="InsertButton" onclick="addItemRow(null,false);" class="btn btn-primary" style="width: 115px;">新增一筆</button>
+                            @* <button type="button" id="InsertButton" onclick="addItemRow(null,false);" class="btn btn-primary" style="width: 115px;">新增一筆</button> *@
                             <input id="AMOUNT_MAX_IDX" type="hidden" value="-1" />
-                            </div> *@
+                            </div>
                             <table width="100%" id="AMOUNT_LIST" style="background-color:#DEDEDE;" border=1>
                                 <tr>
                                     <th> </th>
@@ -1115,82 +1115,17 @@
     }
     tr.appendChild(tdDel);
 
-    // 費用種類
-    const tdExpenseType = document.createElement('td');
-    tdExpenseType.textContent = _EXPENSE_TYPE ?? '';
-    const inputExpenseType = document.createElement('input');
-    inputExpenseType.type = 'hidden';
-    inputExpenseType.id = 'EXPENSE_TYPE_' + index;
-    inputExpenseType.name = 'EXPENSE_TYPE';
-    inputExpenseType.value = _EXPENSE_TYPE ?? '';
-    tdExpenseType.appendChild(inputExpenseType);
-    tr.appendChild(tdExpenseType);
+    tr.appendChild(createSafeCell(_EXPENSE_TYPE, 'EXPENSE_TYPE', index));
+    const descValue = (document.getElementById('AMOUNT_CONFIG').value === "Y")
+                      ? _EXPENSE_DESC_SEL
+                      : _EXPENSE_DESC_TEXT;
+    tr.appendChild(createSafeCell(descValue, 'EXPENSE_DESC', index));
 
-    // 維修細項
-    const tdDesc = document.createElement('td');
-    tdDesc.textContent = _desc ?? '';
-    const inputDesc = document.createElement('input');
-    inputDesc.type = 'hidden';
-    inputDesc.id = 'EXPENSE_DESC_' + index;
-    inputDesc.name = 'EXPENSE_DESC';
-    inputDesc.value = _desc ?? '';
-    tdDesc.appendChild(inputDesc);
-    tr.appendChild(tdDesc);
-
-    // 檢測故障原因
-    const tdFault = document.createElement('td');
-    tdFault.textContent = _FAULT_REASON ?? '';
-    const inputFault = document.createElement('input');
-    inputFault.type = 'hidden';
-    inputFault.id = 'FAULT_REASON_' + index;
-    inputFault.name = 'FAULT_REASON';
-    inputFault.value = _FAULT_REASON ?? '';
-    tdFault.appendChild(inputFault);
-    tr.appendChild(tdFault);
-
-    // 維修處理動作
-    const tdRepair = document.createElement('td');
-    tdRepair.textContent = _REPAIR_ACTION ?? '';
-    const inputRepair = document.createElement('input');
-    inputRepair.type = 'hidden';
-    inputRepair.id = 'REPAIR_ACTION_' + index;
-    inputRepair.name = 'REPAIR_ACTION';
-    inputRepair.value = _REPAIR_ACTION ?? '';
-    tdRepair.appendChild(inputRepair);
-    tr.appendChild(tdRepair);
-
-    // 數量
-    const tdQty = document.createElement('td');
-    tdQty.textContent = _QTY ?? '';
-    const inputQty = document.createElement('input');
-    inputQty.type = 'hidden';
-    inputQty.id = 'QTY_' + index;
-    inputQty.name = 'QTY';
-    inputQty.value = _QTY ?? '';
-    tdQty.appendChild(inputQty);
-    tr.appendChild(tdQty);
-
-    // 單位
-    const tdUnit = document.createElement('td');
-    tdUnit.textContent = _UNIT ?? '';
-    const inputUnit = document.createElement('input');
-    inputUnit.type = 'hidden';
-    inputUnit.id = 'UNIT_' + index;
-    inputUnit.name = 'UNIT';
-    inputUnit.value = _UNIT ?? '';
-    tdUnit.appendChild(inputUnit);
-    tr.appendChild(tdUnit);
-
-    // 單價
-    const tdPrice = document.createElement('td');
-    tdPrice.textContent = _PRICE ?? '';
-    const inputPrice = document.createElement('input');
-    inputPrice.type = 'hidden';
-    inputPrice.id = 'PRICE_' + index;
-    inputPrice.name = 'PRICE';
-    inputPrice.value = _PRICE ?? '';
-    tdPrice.appendChild(inputPrice);
-    tr.appendChild(tdPrice);
+    tr.appendChild(createSafeCell(_FAULT_REASON, 'FAULT_REASON', index));
+    tr.appendChild(createSafeCell(_REPAIR_ACTION, 'REPAIR_ACTION', index));
+    tr.appendChild(createSafeCell(_QTY, 'QTY', index));
+    tr.appendChild(createSafeCell(_UNIT, 'UNIT', index));
+    tr.appendChild(createSafeCell(_PRICE, 'PRICE', index));
 
     // 小計
     const tmpTotal = parseInt(_QTY) * parseInt(_PRICE);
@@ -1471,7 +1406,29 @@
             }
             return m_result;
         }
+            function sanitizeText(str) {
+        if (typeof str !== "string") return "";
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+        function createSafeCell(value, name, index) {
+        const safeValue = sanitizeText(value ?? '');
+        const td = document.createElement('td');
+        td.textContent = safeValue;
 
+        const input = document.createElement('input');
+        input.type = 'hidden';
+        input.id = `${name}_${index}`;
+        input.name = name;
+        input.value = safeValue;
+
+        td.appendChild(input);
+        return td;
+    }
 </script>
 <script>
     /**

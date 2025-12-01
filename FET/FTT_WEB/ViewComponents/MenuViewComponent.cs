@@ -64,7 +64,7 @@ namespace FTT_WEB.ViewComponents
 
                 var filteredTreeData = RoleFunc.GetMenuByFuncIds(roleFunc);
                 vm.TreeData = filteredTreeData;
-
+                vm.Exception += $" userRole={userRole} ";
                 //直接在此呼叫筆數API
                 var sendPara = filteredTreeData.SelectMany(s => s.Value).ToList().Where(w => w.DataCount != null).Select(s => (int)s.FuncId).ToList();
                 //var url = $"{Method.GetAppSettingsDataByName("BackendURL")}/Api/GetMenuDataCount";
@@ -77,6 +77,8 @@ namespace FTT_WEB.ViewComponents
                 var url = $"{Method.GetAppSettingsDataByName("BackendURL")}/Api/GetMenuDataCount";
                 HttpResponseMessage postResponse = await client.PostAsync(url, new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(sendPara), Encoding.UTF8, "application/json"));
                 string postResponseData = await postResponse.Content.ReadAsStringAsync();
+
+                vm.Exception += $" postResponseData={postResponseData} ";
 
                 var response = JsonConvert.DeserializeObject<ApiResponse>(postResponseData);
                 Dictionary<string, int> strMenuList = new Dictionary<string, int>();

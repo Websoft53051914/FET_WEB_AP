@@ -1182,9 +1182,9 @@
                 _PRICE = obj.price || '';
             }
 
-                try {// 計算 index
-    const index = parseInt(document.getElementById('AMOUNT_MAX_IDX').value) + 1;
-
+                try {
+                    // 計算 index
+                    const index = parseInt(document.getElementById('AMOUNT_MAX_IDX').value) + 1;
     // 建立 tr
     const tr = document.createElement('tr');
     tr.id = 'AMOUNT_TR_' + index;
@@ -1203,80 +1203,109 @@
     tr.appendChild(tdDel);
 
     // 費用種類
+    const safeExpenseType = sanitizeText(_EXPENSE_TYPE ?? '');
     const tdExpenseType = document.createElement('td');
-    tdExpenseType.textContent = _EXPENSE_TYPE ?? '';
+    tdExpenseType.textContent = safeExpenseType;
     const inputExpenseType = document.createElement('input');
     inputExpenseType.type = 'hidden';
     inputExpenseType.id = 'EXPENSE_TYPE_' + index;
     inputExpenseType.name = 'EXPENSE_TYPE';
-    inputExpenseType.value = _EXPENSE_TYPE ?? '';
+    inputExpenseType.value = safeExpenseType;
     tdExpenseType.appendChild(inputExpenseType);
     tr.appendChild(tdExpenseType);
 
     // 維修細項
+        const rawDescValue = (document.getElementById('AMOUNT_CONFIG').value === "Y")
+                         ? _EXPENSE_DESC_SEL
+                         : _EXPENSE_DESC_TEXT;
+
+    // Sanitization
+    const safeDescValue = sanitizeText(rawDescValue ?? '');
+
     const tdDesc = document.createElement('td');
-    const descValue = (document.getElementById('AMOUNT_CONFIG').value === "Y") ? _EXPENSE_DESC_SEL : _EXPENSE_DESC_TEXT;
-    tdDesc.textContent = descValue ?? '';
+    tdDesc.textContent = safeDescValue;
+
     const inputDesc = document.createElement('input');
     inputDesc.type = 'hidden';
     inputDesc.id = 'EXPENSE_DESC_' + index;
     inputDesc.name = 'EXPENSE_DESC';
-    inputDesc.value = descValue ?? '';
+    inputDesc.value = safeDescValue;
+
     tdDesc.appendChild(inputDesc);
     tr.appendChild(tdDesc);
 
     // 檢測故障原因
+    const safeFaultReason = sanitizeText(_FAULT_REASON ?? '');
+
     const tdFault = document.createElement('td');
-    tdFault.textContent = _FAULT_REASON ?? '';
+    tdFault.textContent = safeFaultReason;
+
     const inputFault = document.createElement('input');
     inputFault.type = 'hidden';
     inputFault.id = 'FAULT_REASON_' + index;
     inputFault.name = 'FAULT_REASON';
-    inputFault.value = _FAULT_REASON ?? '';
+    inputFault.value = safeFaultReason;
+
     tdFault.appendChild(inputFault);
     tr.appendChild(tdFault);
 
     // 維修處理動作
+    const safeRepairAction = sanitizeText(_REPAIR_ACTION ?? '');
+
     const tdRepair = document.createElement('td');
-    tdRepair.textContent = _REPAIR_ACTION ?? '';
+    tdRepair.textContent = safeRepairAction;
+
     const inputRepair = document.createElement('input');
     inputRepair.type = 'hidden';
     inputRepair.id = 'REPAIR_ACTION_' + index;
     inputRepair.name = 'REPAIR_ACTION';
-    inputRepair.value = _REPAIR_ACTION ?? '';
+    inputRepair.value = safeRepairAction;
+
     tdRepair.appendChild(inputRepair);
     tr.appendChild(tdRepair);
 
     // 數量
+    const safeQty = sanitizeText(_QTY ?? '');
+
     const tdQty = document.createElement('td');
-    tdQty.textContent = _QTY ?? '';
+    tdQty.textContent = safeQty;
+
     const inputQty = document.createElement('input');
     inputQty.type = 'hidden';
     inputQty.id = 'QTY_' + index;
     inputQty.name = 'QTY';
-    inputQty.value = _QTY ?? '';
+    inputQty.value = safeQty;
+
     tdQty.appendChild(inputQty);
     tr.appendChild(tdQty);
 
     // 單位
+    const safeUnit = sanitizeText(_UNIT ?? '');
+
     const tdUnit = document.createElement('td');
-    tdUnit.textContent = _UNIT ?? '';
+    tdUnit.textContent = safeUnit;
+
     const inputUnit = document.createElement('input');
     inputUnit.type = 'hidden';
     inputUnit.id = 'UNIT_' + index;
     inputUnit.name = 'UNIT';
-    inputUnit.value = _UNIT ?? '';
+    inputUnit.value = safeUnit;
+
     tdUnit.appendChild(inputUnit);
     tr.appendChild(tdUnit);
 
     // 單價
+    const safePrice = sanitizeText(_PRICE ?? '');
+
     const tdPrice = document.createElement('td');
-    tdPrice.textContent = _PRICE ?? '';
+    tdPrice.textContent = safePrice;
+
     const inputPrice = document.createElement('input');
     inputPrice.type = 'hidden';
     inputPrice.id = 'PRICE_' + index;
     inputPrice.name = 'PRICE';
-    inputPrice.value = _PRICE ?? '';
+    inputPrice.value = safePrice;
+
     tdPrice.appendChild(inputPrice);
     tr.appendChild(tdPrice);
 
@@ -1569,6 +1598,15 @@
             $('#DELAY_REASON_PANEL').hide();
             $('#DELAY_REASON').prop('disabled', true);
         }
+    }
+        function sanitizeText(str) {
+        if (typeof str !== "string") return "";
+        return str
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
     }
 </script>
 <script>

@@ -15,14 +15,10 @@
         var tempEx = "";
         if (Model != null)
         {
-            if (!string.IsNullOrEmpty(Model.Exception))
-            {
-                tempEx = Model.Exception;
-                <div id="menuEx" style="display:none;">
-                    @tempEx
-                </div>
-
-            }
+            tempEx = Model.Exception;
+            <div id="menuEx">
+                @tempEx
+            </div>
         }
 
 

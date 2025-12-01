@@ -48,11 +48,12 @@ LIMIT 1
 SELECT *
 FROM TABLE(form_dispatch_get(@IVRCODE, @CISID, @IFWARRANT));
 ";
+
 //#if DEBUG
-            sql = $@"
-SELECT *
-FROM form_dispatch_get(@IVRCODE, @CISID, @IFWARRANT);
-";
+//            sql = $@"
+//SELECT *
+//FROM form_dispatch_get(@IVRCODE, @CISID, @IFWARRANT);
+//";
 //#endif
 
             return GetDBHelper().FindList<FormDispatchGetDTO>(sql, paras);
