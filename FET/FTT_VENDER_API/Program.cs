@@ -112,7 +112,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowLocalhost7234",
         policy =>
         {
-            policy.WithOrigins("https://192.168.1.107:8004") // 允許的來源
+            policy.WithOrigins("http://192.168.1.107:50402") // 允許的來源
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials();

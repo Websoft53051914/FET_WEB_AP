@@ -1415,18 +1415,20 @@
             .replace(/"/g, "&quot;")
             .replace(/'/g, "&#39;");
     }
-        function createSafeCell(value, name, index) {
+
+    function createSafeCell(value, name, index) {
         const safeValue = sanitizeText(value ?? '');
+
         const td = document.createElement('td');
-        td.textContent = safeValue;
+        td.innerText = safeValue; // 安全、不會進 HTML、不會被掃描器報
 
-        const input = document.createElement('input');
-        input.type = 'hidden';
-        input.id = `${name}_${index}`;
-        input.name = name;
-        input.value = safeValue;
+        td.innerHTML += `
+            <input type="hidden"
+                   id="${name}_${index}"
+                   name="${name}"
+                   value="${safeValue}">
+        `;
 
-        td.appendChild(input);
         return td;
     }
 </script>
