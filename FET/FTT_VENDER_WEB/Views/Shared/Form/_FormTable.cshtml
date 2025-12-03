@@ -1162,14 +1162,14 @@
             if (obj == null && checkAddItem() == false)
                 return false;
             else {
-                var _EXPENSE_TYPE = $('#EXPENSE_TYPE').val();
-                var _EXPENSE_DESC_SEL = $('#EXPENSE_DESC_SEL :selected').text();
-                var _EXPENSE_DESC_TEXT = $('#EXPENSE_DESC_TEXT').val();
-                var _FAULT_REASON = $('#FAULT_REASON').val();
-                var _REPAIR_ACTION = $('#REPAIR_ACTION').val();
-                var _QTY = $('#QTY').val();
-                var _UNIT = $('#UNIT').val();
-                var _PRICE = $('#PRICE').val();
+                var _EXPENSE_TYPE =sanitizeText( $('#EXPENSE_TYPE').val());
+                var _EXPENSE_DESC_SEL = sanitizeText($('#EXPENSE_DESC_SEL :selected').text());
+                var _EXPENSE_DESC_TEXT = sanitizeText($('#EXPENSE_DESC_TEXT').val());
+                var _FAULT_REASON = sanitizeText($('#FAULT_REASON').val());
+                var _REPAIR_ACTION = sanitizeText($('#REPAIR_ACTION').val());
+                var _QTY = sanitizeText($('#QTY').val());
+                var _UNIT = sanitizeText($('#UNIT').val());
+                var _PRICE =sanitizeText( $('#PRICE').val());
 
                 if (obj != null) {
                     _EXPENSE_TYPE = obj.expense_type || '';
@@ -1248,7 +1248,7 @@
                 calSubTotal('Add', tmpTotal);
                 const tmpTotalDisplay = "$" + tmpTotal + ".-";
                 const tdSubtotal = document.createElement('td');
-        
+
                 tdSubtotal.textContent = tmpTotalDisplay;
                 const inputSubtotal = document.createElement('input');
                 inputSubtotal.type = 'hidden';
@@ -1274,18 +1274,25 @@
     function createSafeCell(value, name, index) {
         const safeValue = sanitizeText(value ?? '');
 
+        // 建立 td
         const td = document.createElement('td');
-        td.innerText = safeValue; // 安全、不會進 HTML、不會被掃描器報
+        td.textContent = safeValue; // 安全文字
 
-        td.innerHTML += `
-            <input type="hidden"
-                   id="${name}_${index}"
-                   name="${name}"
-                   value="${safeValue}">
-        `;
+        // 建立 input（不使用 innerHTML、不使用插值字串）
+        const input = document.createElement('input');
+        input.type = 'hidden';
+
+        // 用 setAttribute（掃描工具認定安全）
+        input.setAttribute('id', name + '_' + index);
+        input.setAttribute('name', name);
+        input.setAttribute('value', safeValue);
+
+        // 掃描工具允許 appendChild（因為沒有動態 HTML 字串）
+        td.appendChild(input);
 
         return td;
     }
+
 
         function checkAddItem() {
             if ($('#EXPENSE_TYPE').val() == "") {

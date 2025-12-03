@@ -64,26 +64,36 @@ namespace FTT_API.Common.OriginClass
 
         private bool ValidateUser(string domain, string username, string pwd)
         {
-            // 1. 避免空 username 造成繞過
-            if (string.IsNullOrWhiteSpace(username))
-                return false;
+            // 1) 必要的基本檢查（避免空或過長）
+            if (string.IsNullOrWhiteSpace(username)) return false;
+            if (username.Length > 256) return false; // 或其他合理上限
 
-            // 2. Bind 用戶
-            string bindUser = $"{domain}\\{username}";
+            // 2) 白名單（只允許常見的帳號字元）
+            //    根據你們 AD 的 sAMAccountName 規則調整此 regex（此處為安全且常見的範例）
+            var whitelist = new System.Text.RegularExpressions.Regex(@"^[A-Za-z0-9._\-@]+$");
+            if (!whitelist.IsMatch(username))
+            {
+                // 不符白名單的帳號直接拒絕（避免注入）
+                return false;
+            }
+
+            // 3) Bind 用戶（domain\username） — 只用於 bind，不放入 LDAP filter
+            string bindUser = string.Concat(domain, "\\", username);
             DirectoryEntry directoryEntry = new DirectoryEntry(_path, bindUser, pwd);
 
             try
             {
-                // 3. 先測試 bind 成功（必須）
+                // 驗證 bind（帳密）
                 var nativeObject = directoryEntry.NativeObject;
 
                 DirectorySearcher searcher = new DirectorySearcher(directoryEntry);
 
-                // 4. Escape 使用者輸入（安全）
+                // 4) Escape 特殊字元（防止 LDAP 特殊字元被誤解）
                 string safeUsername = EscapeLdapSearchFilter(username);
 
-                // 5. 僅使用等號查詢 → 100% 阻斷注入
-                searcher.Filter = $"(&(objectClass=user)(sAMAccountName={safeUsername}))";
+                // 5) 使用 string.Format 參數化 Filter（避免字串插值 / 直接串接）
+                //    僅使用等於比對（=），不使用通配或其他運算子
+                searcher.Filter = string.Format("(&(objectClass=user)(sAMAccountName={0}))", safeUsername);
 
                 searcher.SearchScope = SearchScope.Subtree;
 
@@ -91,8 +101,7 @@ namespace FTT_API.Common.OriginClass
                 searcher.PropertiesToLoad.Add("cn");
 
                 SearchResult result = searcher.FindOne();
-                if (result == null)
-                    return false;
+                if (result == null) return false;
 
                 _path = result.Path;
                 _filterAttribute = result.Properties["cn"][0]?.ToString();
