@@ -218,31 +218,31 @@ else
             $control.val(value);
         };
 
-        $('#@(mapData.IdBtnOk)').on('click', function () {
-            if (ctxModal.firstShow === true && ctxModal.required === true) {
-                if (ctxModal.Tree.selected.length === 0) {
-                    MyApp.Alert.warning('請選擇一個品項');
-                    return;
-                }
+            $('#@(mapData.IdBtnOk)').on('click', function () {
+        if (ctxModal.firstShow === true && ctxModal.required === true) {
+            if (ctxModal.Tree.selected.length === 0) {
+                MyApp.Alert.warning('請選擇一個品項');
+                return;
             }
+        }
 
-            ctxModal.selected = ctxModal.Tree.selected;
-            ctxModal.selectedItem = ctxModal.Tree.selectedItem;
+        ctxModal.selected = ctxModal.Tree.selected;
+        ctxModal.selectedItem = ctxModal.Tree.selectedItem;
 
-            ctxModal.$SelectedPool.empty();
-            ctxModal.$SelectedPool.html(ctxModal.$ModalSelectedPool.html());
-            ctxModal.$SelectedPool.find('.partialRemove').remove();
+        ctxModal.$SelectedPool.empty();
+        ctxModal.$SelectedPool.append(ctxModal.$ModalSelectedPool.children().clone());
+        ctxModal.$SelectedPool.find('.partialRemove').remove();
 
-            ctxModal.Select.init($.map(ctxModal.selected, function (value, index) {
-                return {
-                    id: value,
-                    text: value,
-                };
-            }), ctxModal.selected);
+        ctxModal.Select.init($.map(ctxModal.selected, function (value, index) {
+            return {
+                id: value,
+                text: value,
+            };
+        }), ctxModal.selected);
 
-            ctxModal.result = '1';
-            $('#@mapData.IdModal').modal('hide');
-        });
+        ctxModal.result = '1';
+        $('#@mapData.IdModal').modal('hide');
+    });
 
         ctxModal.$Modal.on('show.bs.modal', async function () {
             ctxModal.firstShow = true;

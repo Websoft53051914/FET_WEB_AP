@@ -197,6 +197,7 @@
         const $Loder = $('#loader-mask');
 
         function changeCaptcha(img) {
+            let $errorMsg = $('#errorMsg');
             $.ajax({
                 url: '@(config.GetBackendUrl() + Url.Action("GetCaptcha", "Login"))',
                 type: 'Get',
