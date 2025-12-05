@@ -36,27 +36,54 @@ LIMIT 1
 
         public List<FormDispatchGetDTO> GetListFormDispatchGet(int cisid, int ivrCode, string ifWarrant)
         {
-            StringBuilder condition = new();
-            Dictionary<string, object> paras = new()
+            try
+            {
+                StringBuilder condition = new();
+                Dictionary<string, object> paras = new()
             {
                 {"CISID", cisid },
                 {"IVRCODE", ivrCode },
                 {"IFWARRANT", ifWarrant },
             };
 
-            string sql = $@"
-SELECT *
-FROM TABLE(form_dispatch_get(@IVRCODE, @CISID, @IFWARRANT));
-";
+                //客戶環境使用此SQL可通過
+                //開發環境會遇到錯誤所以catch後使用另一個SQL
+                string sql = $@"
+                                SELECT *
+                                FROM TABLE(form_dispatch_get(@IVRCODE, @CISID, @IFWARRANT));
+                                ";
 
-//#if DEBUG
-//            sql = $@"
-//SELECT *
-//FROM form_dispatch_get(@IVRCODE, @CISID, @IFWARRANT);
-//";
-//#endif
+                //#if DEBUG
+                //            sql = $@"
+                //SELECT *
+                //FROM form_dispatch_get(@IVRCODE, @CISID, @IFWARRANT);
+                //";
+                //#endif
 
-            return GetDBHelper().FindList<FormDispatchGetDTO>(sql, paras);
+                return GetDBHelper().FindList<FormDispatchGetDTO>(sql, paras);
+            }
+            catch (Exception)
+            {
+                StringBuilder condition = new();
+                Dictionary<string, object> paras = new()
+            {
+                {"CISID", cisid },
+                {"IVRCODE", ivrCode },
+                {"IFWARRANT", ifWarrant },
+            };
+
+                string sql = $@"
+                            SELECT *
+                            FROM TABLE(form_dispatch_get(@IVRCODE, @CISID, @IFWARRANT));
+                            ";
+
+                sql = $@"
+                        SELECT *
+                        FROM form_dispatch_get(@IVRCODE, @CISID, @IFWARRANT);
+                        ";
+
+                return GetDBHelper().FindList<FormDispatchGetDTO>(sql, paras);
+            }
         }
 
         public int GetCountVDispatchList(int cisid, string ivrCode)

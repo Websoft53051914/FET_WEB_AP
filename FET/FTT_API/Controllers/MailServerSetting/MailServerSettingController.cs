@@ -5,12 +5,14 @@ using static Const.Enums;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using FTT_API.Models.Handler;
 using FTT_API.Common.ConfigurationHelper;
+using Microsoft.AspNetCore.Cors;
 
 
 namespace FTT_API.Controllers.MailServerSetting
 {
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
+    [EnableCors("AllowLocalhost7234")]
     public class MailServerSettingController : BaseProjectController
     {
         private readonly IWebHostEnvironment _hostingEnvironment;

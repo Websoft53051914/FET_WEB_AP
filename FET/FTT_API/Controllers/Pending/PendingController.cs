@@ -5,6 +5,7 @@ using FTT_API.Common;
 using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models.Handler;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.StaticFiles;
@@ -16,6 +17,7 @@ namespace FTT_API.Controllers.Pending
 {
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
+    [EnableCors("AllowLocalhost7234")]
     public partial class PendingController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

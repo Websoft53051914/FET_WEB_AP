@@ -4,6 +4,7 @@ using FTT_API.Common;
 using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models.Handler;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
@@ -13,6 +14,7 @@ namespace FTT_API.Controllers.SecurityMgt
 {
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
+    [EnableCors("AllowLocalhost7234")]
     public partial class SecurityMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

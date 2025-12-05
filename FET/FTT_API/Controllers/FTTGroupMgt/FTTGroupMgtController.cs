@@ -1,6 +1,7 @@
 ﻿using Core.Utility.Helper.DB.Entity;
 using Core.Utility.Web.EX;
 using FTT_API.Common.OriginClass.EntiityClass;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
@@ -8,6 +9,7 @@ namespace FTT_API.Controllers.FTTGroupMgt
 {
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
+    [EnableCors("AllowLocalhost7234")]
     public partial class FTTGroupMgtController : BaseProjectController
     {
         [HttpPost("[action]")]

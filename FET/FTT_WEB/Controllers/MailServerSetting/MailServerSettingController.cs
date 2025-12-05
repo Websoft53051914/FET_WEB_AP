@@ -21,29 +21,7 @@ namespace FTT_WEB.Controllers.MailServerSetting
 
         public IActionResult Index()
         {
-            var MailServerHandler = new MailServerHandler(_configHelper, HttpContext);
-
-            MailServerSettingVM vm = MailServerHandler.GetEdit();
-            return View(vm);
+            return View(new MailServerSettingVM());
         }
-
-        //[HttpPost]
-        //public IActionResult Update(MailServerSettingVM vm)
-        //{
-        //    var MailServerHandler = new MailServerHandler(_configHelper, HttpContext);
-        //    try
-        //    {
-        //        MailServerHandler.Update(vm);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        return BadRequest();
-        //    }
-
-        //    //return BadRequest();
-        //    return JsonSuccess("資料儲存成功");
-        //}
-
-       
     }
 }

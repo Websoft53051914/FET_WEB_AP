@@ -26,10 +26,12 @@ using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.Fonts;
 using System.Text.RegularExpressions;
 using System.Web;
+using Microsoft.AspNetCore.Cors;
 
 namespace FTT_API.Controllers.Login
 {
     [Route("[controller]")]
+    [EnableCors("AllowLocalhost7234")]
     public partial class LoginController : BaseProjectController
     {
         private readonly IWebHostEnvironment _hostingEnvironment;

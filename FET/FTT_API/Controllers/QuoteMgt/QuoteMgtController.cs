@@ -1,6 +1,7 @@
 ﻿using FTT_API.Common;
 using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Models.Handler;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
@@ -12,6 +13,7 @@ namespace FTT_API.Controllers.QuoteMgt
 {
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
+    [EnableCors("AllowLocalhost7234")]
     public class QuoteMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

@@ -184,7 +184,7 @@ namespace FTT_VENDER_API.Controllers
         /// </summary>
         /// <returns></returns>
         [ApiExplorerSettings(IgnoreApi = true)]
-        public StoreVenderProfileVM GetStoreVenderProfile(string AC, string PD, bool isPassPWD = false)
+        public StoreVenderProfileVM GetStoreVenderProfile(string AC, string PD, bool isPass = false)
         {
             BaseDBHandler _BaseDBHandler = new BaseDBHandler();
             string sql = @"SELECT 
@@ -205,7 +205,7 @@ FROM STORE_VENDER_PROFILE WHERE MERCHANT_LOGIN= @AC AND MERCHANT_PASSWORD= @PD";
                 { "PD", PD }
             };
 
-            if (isPassPWD == true)
+            if (isPass == true)
             {
                 sql = @"SELECT 
 merchant_name ,
@@ -262,7 +262,7 @@ FROM STORE_VENDER_PROFILE WHERE MERCHANT_LOGIN= @AC ";
         /// </summary>
         /// <returns></returns>
         [ApiExplorerSettings(IgnoreApi = true)]
-        public TokenInfoVO? GetTokenInfo(string token)
+        public TokenInfoVO_OnlyStatus? GetTokenInfo(string token)
         {
             string sql = "SELECT Status FROM tb_token WHERE tokenid = @tokenid";
             Dictionary<string, object> parameters = new Dictionary<string, object>
@@ -270,7 +270,7 @@ FROM STORE_VENDER_PROFILE WHERE MERCHANT_LOGIN= @AC ";
                 { "tokenid", token }
             };
             BaseDBHandler _BaseDBHandler = new BaseDBHandler();
-            TokenInfoVO? result = _BaseDBHandler.GetDBHelper().Find<TokenInfoVO>(sql, parameters);
+            TokenInfoVO_OnlyStatus? result = _BaseDBHandler.GetDBHelper().Find<TokenInfoVO_OnlyStatus>(sql, parameters);
             return result;
         }
 

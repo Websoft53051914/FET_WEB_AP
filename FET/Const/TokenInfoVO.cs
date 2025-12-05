@@ -20,4 +20,10 @@ namespace Const
 
         public int Status { get; set; }
     }
+
+
+    public class TokenInfoVO_OnlyStatus
+    {
+        public int Status { get; set; }
+    }
 }

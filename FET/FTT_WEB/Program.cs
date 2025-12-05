@@ -6,6 +6,14 @@ using FTT_WEB.Models.Handler;
 
 
 var builder = WebApplication.CreateBuilder(args);
+
+// 加入 HSTS
+builder.Services.AddHsts(options =>
+{
+    options.Preload = true;
+    options.IncludeSubDomains = true;
+    options.MaxAge = TimeSpan.FromDays(365); // 1 年
+});
 // Add services to the container.
 #region Localization
 var localizationoptions = new RequestLocalizationOptions();
@@ -85,7 +93,7 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    //app.UseHsts(); //架設http 非 https 要註解
+    app.UseHsts(); //架設http 非 https 要註解
 }
 
 app.UseHttpsRedirection();

@@ -1,12 +1,14 @@
 ﻿using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Models.Handler;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FTT_API.Controllers
 {
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
+    [EnableCors("AllowLocalhost7234")]
     public class LogoutController : BaseProjectController
     {
         private readonly IWebHostEnvironment _hostingEnvironment;
