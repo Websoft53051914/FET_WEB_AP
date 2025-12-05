@@ -10,6 +10,7 @@ namespace FTT_VENDER_API.Controllers.Pending
     /// 
     /// </summary>
     [Route("[controller]")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public partial class PendingController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

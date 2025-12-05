@@ -12,6 +12,7 @@ namespace FTT_VENDER_API.Controllers.InProcess
     /// 處理中 API
     /// </summary>
     [Route("[controller]")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public class InProcessController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

@@ -21,6 +21,7 @@ namespace FTT_API.Controllers.NewOrder
     /// </summary>
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public partial class NewOrderController : BaseProjectController
     {
         /// <summary>

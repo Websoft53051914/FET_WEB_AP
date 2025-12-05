@@ -9,6 +9,7 @@ namespace FTT_API.Controllers.CIMgt
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
     [EnableCors("AllowLocalhost7234")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public partial class  CIMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

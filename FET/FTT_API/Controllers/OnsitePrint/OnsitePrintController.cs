@@ -19,6 +19,7 @@ namespace FTT_API.Controllers.OnsitePrint
     /// </summary>
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public partial class OnsitePrintController : BaseProjectController
     {
         /// <summary>

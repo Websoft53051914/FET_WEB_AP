@@ -21,6 +21,7 @@ namespace FTT_VENDER_API.Controllers.Query
     /// 門市報修管理-查詢
     /// </summary>
     [Route("[controller]")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public partial class QueryController : BaseProjectController
     {
         /// <summary>

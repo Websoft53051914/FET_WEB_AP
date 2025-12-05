@@ -1,10 +1,12 @@
 
 using FTT_VENDER_API.Common.ConfigurationHelper;
-using Microsoft.Extensions.FileProviders;
 using FTT_VENDER_API.Models.Handler;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.FileProviders;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using System.Text;
 
 
 IConfiguration Config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
@@ -39,15 +41,15 @@ builder.Services.AddSwaggerGen(c =>
     c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
 });
 
-builder.Services.AddAuthentication(options =>
-{
-    options.DefaultScheme = Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme;
-})
- .AddCookie(options =>
- {
-     options.Cookie.HttpOnly = true;
-     //options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解
- });
+//builder.Services.AddAuthentication(options =>
+//{
+//    options.DefaultScheme = Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme;
+//})
+// .AddCookie(options =>
+// {
+//     options.Cookie.HttpOnly = true;
+//     //options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解
+// });
 
 builder.Services.AddSession(options =>
 {
@@ -77,6 +79,9 @@ builder.Services.AddControllersWithViews()
 builder.Configuration.AddJsonFile("appsettings.json", optional: false, reloadOnChange: true);
 builder.Configuration.AddJsonFile("message.json", optional: true, reloadOnChange: true);
 
+var secret = builder.Configuration["JwtConfig:Secret"];
+var key = Encoding.UTF8.GetBytes(secret);
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
@@ -86,6 +91,19 @@ builder.Services.AddAuthentication(options =>
 .AddJwtBearer(jwt =>
 {
     jwt.SaveToken = true;
+
+    jwt.TokenValidationParameters = new TokenValidationParameters
+    {
+        ValidateIssuer = true,
+        ValidIssuer = builder.Configuration["JwtConfig:Issuer"],
+
+        ValidateAudience = false,
+
+        ValidateIssuerSigningKey = true,
+        IssuerSigningKey = new SymmetricSecurityKey(key),
+
+        ValidateLifetime = true
+    };
 });
 
 
@@ -145,12 +163,12 @@ if (Config.GetValue<string>("EnableSwaggerUI") == "Y")
 
 
 // Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
-{
+//if (!app.Environment.IsDevelopment())
+//{
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    //app.UseHsts(); //架設http 非 https 要註解
-}
+    app.UseHsts(); //架設http 非 https 要註解
+//}
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

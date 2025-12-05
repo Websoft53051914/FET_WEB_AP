@@ -12,6 +12,7 @@ namespace FTT_VENDER_API.Controllers.Dispatched
     /// 已派工 API
     /// </summary>
     [Route("[controller]")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public partial class DispatchedController : BaseProjectController
     {
         /// <summary>

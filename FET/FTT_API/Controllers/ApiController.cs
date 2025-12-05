@@ -21,6 +21,7 @@ namespace FTT_API.Controllers
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
     [EnableCors("AllowLocalhost7234")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public class ApiController : BaseProjectController
     {
         private readonly ConfigurationHelper _configHelper;

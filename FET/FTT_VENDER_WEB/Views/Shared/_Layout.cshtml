@@ -402,12 +402,23 @@
 
     </script>
     <script>
+
+        // 讀取 Cookie 的 JWT
+        function getCookie(name) {
+            const value = `; ${document.cookie}`;
+            const parts = value.split(`; ${name}=`);
+            if (parts.length === 2) return parts.pop().split(';').shift();
+            return null;
+        }
+
+        const token = getCookie('Token'); // 你的 JWT 存放位置
+
         var hasout = false;
         $(document)
         $.ajaxSetup({
-            headers: {
-                
-            },
+        headers: {
+            "Authorization": `Bearer ${token}` // 放在 Header
+        },
             xhrFields: {
                 withCredentials: true
             },

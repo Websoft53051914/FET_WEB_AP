@@ -11,6 +11,7 @@ namespace FTT_API.Controllers.CaseClosed
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
     [EnableCors("AllowLocalhost7234")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public class CaseClosedController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

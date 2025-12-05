@@ -15,6 +15,7 @@ namespace FTT_API.Controllers.SecurityMgt
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
     [EnableCors("AllowLocalhost7234")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public partial class SecurityMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

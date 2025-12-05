@@ -18,6 +18,7 @@ namespace FTT_API.Controllers.CIConfig
     /// </summary>
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public partial class CIConfigController : BaseProjectController
     {
         /// <summary>

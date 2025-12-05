@@ -6,6 +6,7 @@ using MathNet.Numerics;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Graph.Models;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using System.Net;
 using System.Net.Http.Headers;
 using System.Text;
@@ -72,7 +73,7 @@ namespace FTT_WEB.ViewComponents
                 var jwtToken = Request.Cookies["FTT_Token"];
 
                 using HttpClient client = new HttpClient(new HttpClientHandler { });
-                //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
                 client.DefaultRequestHeaders.Add("Cookie", $"FTT_Token={jwtToken}");
                 var url = $"{Method.GetAppSettingsDataByName("BackendURL")}/Api/GetMenuDataCount";
                 HttpResponseMessage postResponse = await client.PostAsync(url, new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(sendPara), Encoding.UTF8, "application/json"));

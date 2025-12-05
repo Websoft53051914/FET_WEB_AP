@@ -18,6 +18,7 @@ namespace FTT_API.Controllers.Pending
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
     [EnableCors("AllowLocalhost7234")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public partial class PendingController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

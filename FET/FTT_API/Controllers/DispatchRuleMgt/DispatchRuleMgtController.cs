@@ -19,6 +19,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
     /// </summary>
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public partial class DispatchRuleMgtController : BaseProjectController
     {
         /// <summary>

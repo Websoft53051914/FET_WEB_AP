@@ -182,6 +182,7 @@ namespace FTT_API.Controllers.Login
         [Common.Attribute.CustomAuthorization]
         [HttpPost("[action]")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        [ValidateAntiForgeryToken]
         public ActionResult CheckSSO(SSOVM vm)
         {
             try
@@ -468,8 +469,9 @@ namespace FTT_API.Controllers.Login
 
         private static ConcurrentDictionary<string, string> _captchaStore = new ConcurrentDictionary<string, string>();
 
-        [HttpGet("[action]")]
+        [HttpPost("[action]")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        [ValidateAntiForgeryToken]
         public IActionResult GetCaptcha()
         {
             var code = GenerateCode(4); // 4位隨機碼

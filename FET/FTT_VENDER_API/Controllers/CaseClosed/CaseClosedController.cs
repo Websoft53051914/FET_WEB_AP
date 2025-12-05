@@ -12,6 +12,7 @@ namespace FTT_VENDER_API.Controllers.CaseClosed
     /// 已結案 API
     /// </summary>
     [Route("[controller]")]
+    [Microsoft.AspNetCore.Authorization.Authorize]
     public class CaseClosedController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

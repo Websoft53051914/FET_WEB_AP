@@ -1,6 +1,8 @@
 ﻿using Core.Utility.Helper.DB.Entity;
 using Core.Utility.Web.EX;
 using FTT_API.Common.OriginClass.EntiityClass;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -8,8 +10,9 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 namespace FTT_API.Controllers.FTTGroupMgt
 {
     [Route("[controller]")]
-    [Common.Attribute.CustomAuthorization]
+    //[Common.Attribute.CustomAuthorization]
     [EnableCors("AllowLocalhost7234")]
+    [Authorize]
     public partial class FTTGroupMgtController : BaseProjectController
     {
         [HttpPost("[action]")]
