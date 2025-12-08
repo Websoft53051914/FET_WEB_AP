@@ -419,9 +419,6 @@
         headers: {
             "Authorization": `Bearer ${token}` // 放在 Header
         },
-            xhrFields: {
-                withCredentials: true
-            },
             complete: function (x, e) {
                 if (x.status === 440 || x.status == 401) {
                     if (hasout == false) {

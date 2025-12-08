@@ -44,16 +44,6 @@ builder.Services.AddSwaggerGen(c =>
     c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
 });
 
-//builder.Services.AddAuthentication(options =>
-//{
-//    options.DefaultScheme = Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme;
-//})
-// .AddCookie(options =>
-// {
-//     options.Cookie.HttpOnly = true;
-//     //options.Cookie.SecurePolicy = CookieSecurePolicy.Always;  //架設http 非 https 要註解
-// });
-
 builder.Services.AddSession(options =>
 {
     options.Cookie.Name = ".net.core.Session";

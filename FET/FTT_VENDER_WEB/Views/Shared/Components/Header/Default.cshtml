@@ -90,9 +90,6 @@
             $.ajax({
                 type: 'post',
                 url: '@(config.GetBackendUrl() + Url.Action("Logout", "Logout"))',
-                xhrFields: {
-                    withCredentials: true
-                },
                 headers: {
                     'Content-from': 'Logout'
                 },

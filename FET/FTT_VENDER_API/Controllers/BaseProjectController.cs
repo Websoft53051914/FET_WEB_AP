@@ -10,6 +10,7 @@ using FTT_VENDER_API.Models.Handler;
 using FTT_VENDER_API.Models.ViewModel.StoreVenderProfile;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using System.Text.RegularExpressions;
 using static Const.Enums;
 
 namespace FTT_VENDER_API.Controllers
@@ -32,7 +33,13 @@ namespace FTT_VENDER_API.Controllers
             var authorization = context.HttpContext.Request.Headers["Authorization"].ToString();
             if (!string.IsNullOrEmpty(authorization) && authorization.StartsWith("Bearer "))
             {
-                token = authorization.Substring("Bearer ".Length).Trim();
+                var rawToken = authorization.Substring("Bearer ".Length).Trim();
+
+                // 僅允許 A-Z,a-z,0-9,-,_  (JWT Base64Url 格式)
+                if (Regex.IsMatch(rawToken, @"^[A-Za-z0-9\-_\.]+$"))
+                {
+                    token = rawToken;
+                }
             }
 
             if (!string.IsNullOrEmpty(token) && from != "Logout")

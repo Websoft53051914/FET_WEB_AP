@@ -86,15 +86,25 @@ builder.Services.AddSingleton<ConfigurationHelper>();
 //builder.Services.AddHangfireServer();
 //builder.Services.AddSingleton<SendMailHandler>();
 
+builder.Services.AddHsts(options =>
+{
+    options.Preload = true;
+    options.IncludeSubDomains = true;
+    options.MaxAge = TimeSpan.FromDays(365); // 1年
+});
+
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (!app.Environment.IsDevelopment())
+// 只有 HTTPS 才啟用 HSTS
+app.Use(async (context, next) =>
 {
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts(); //架設http 非 https 要註解
-}
+    if (context.Request.IsHttps)
+    {
+        app.UseHsts();
+    }
+
+    await next();
+});
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
