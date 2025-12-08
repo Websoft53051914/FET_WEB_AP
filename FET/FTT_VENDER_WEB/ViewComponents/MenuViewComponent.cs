@@ -3,6 +3,7 @@ using FTT_VENDER_WEB.Common;
 using FTT_VENDER_WEB.Models;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System.Net.Http.Headers;
 using System.Text;
 using static Const.Enums;
 
@@ -38,8 +39,8 @@ namespace FTT_VENDER_WEB.ViewComponents
                 var jwtToken = Request.Cookies["Token"];
 
                 using HttpClient client = new HttpClient(new HttpClientHandler { });
-                //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
-                client.DefaultRequestHeaders.Add("Cookie", $"Token={jwtToken}");
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
+                //client.DefaultRequestHeaders.Add("Cookie", $"Token={jwtToken}");
 
                 HttpResponseMessage postResponse = await client.PostAsync(
                     $"{Method.GetAppSettingsDataByName("BackendURL")}/Api/GetMenuDataCount",

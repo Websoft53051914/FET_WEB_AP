@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using NPOI.SS.UserModel;
 using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace FTT_API.Controllers.DispatchRuleMgt
 {
@@ -19,7 +20,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
     /// </summary>
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public partial class DispatchRuleMgtController : BaseProjectController
     {
         /// <summary>

@@ -13,6 +13,7 @@ using FTT_API.Models.Handler;
 using FTT_API.Models.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace FTT_API.Controllers.NewOrder
 {
@@ -21,7 +22,7 @@ namespace FTT_API.Controllers.NewOrder
     /// </summary>
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public partial class NewOrderController : BaseProjectController
     {
         /// <summary>

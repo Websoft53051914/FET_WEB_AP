@@ -4,13 +4,14 @@ using FTT_API.Common;
 using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models.Handler;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FTT_API.Controllers.SupplierMgt
 {
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public partial class SupplierMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

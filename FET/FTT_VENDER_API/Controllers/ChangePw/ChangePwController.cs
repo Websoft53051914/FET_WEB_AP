@@ -2,6 +2,7 @@
 using FTT_VENDER_API.Common.ConfigurationHelper;
 using FTT_VENDER_API.Models.Handler;
 using FTT_VENDER_API.Models.ViewModel.ChangePw;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Concurrent;
 using System.Drawing;
@@ -14,6 +15,7 @@ using static FTT_VENDER_API.Models.AlertMsgRedirection;
 namespace FTT_VENDER_API.Controllers.ChangePw
 {
     [Route("[controller]")]
+    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ChangePwController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

@@ -7,13 +7,14 @@ using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models.Handler;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace FTT_API.Controllers.InProcess
 {
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
     [EnableCors("AllowLocalhost7234")]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class InProcessController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

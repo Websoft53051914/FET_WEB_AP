@@ -8,13 +8,14 @@ using NPOI.SS.UserModel;
 using NPOI.XSSF.UserModel;
 using System.Data;
 using static Org.BouncyCastle.Math.EC.ECCurve;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace FTT_API.Controllers.QuoteMgt
 {
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
     [EnableCors("AllowLocalhost7234")]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class QuoteMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

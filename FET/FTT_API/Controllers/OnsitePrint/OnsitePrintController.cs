@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Reporting.NETCore;
 using Newtonsoft.Json;
 using System.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace FTT_API.Controllers.OnsitePrint
 {
@@ -19,7 +20,7 @@ namespace FTT_API.Controllers.OnsitePrint
     /// </summary>
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public partial class OnsitePrintController : BaseProjectController
     {
         /// <summary>

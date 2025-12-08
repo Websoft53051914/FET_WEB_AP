@@ -9,13 +9,14 @@ using Microsoft.AspNetCore.Mvc;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using System.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace FTT_API.Controllers.SecurityMgt
 {
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
     [EnableCors("AllowLocalhost7234")]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public partial class SecurityMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

@@ -74,7 +74,7 @@ namespace FTT_WEB.ViewComponents
 
                 using HttpClient client = new HttpClient(new HttpClientHandler { });
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
-                client.DefaultRequestHeaders.Add("Cookie", $"FTT_Token={jwtToken}");
+                //client.DefaultRequestHeaders.Add("Cookie", $"FTT_Token={jwtToken}");
                 var url = $"{Method.GetAppSettingsDataByName("BackendURL")}/Api/GetMenuDataCount";
                 HttpResponseMessage postResponse = await client.PostAsync(url, new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(sendPara), Encoding.UTF8, "application/json"));
                 string postResponseData = await postResponse.Content.ReadAsStringAsync();

@@ -2,6 +2,7 @@
 using Core.Utility.Web.EX;
 using FTT_VENDER_API.Common.ConfigurationHelper;
 using FTT_VENDER_API.Common.OriginClass.EntiityClass;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FTT_VENDER_API.Controllers.Pending
@@ -10,7 +11,7 @@ namespace FTT_VENDER_API.Controllers.Pending
     /// 
     /// </summary>
     [Route("[controller]")]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public partial class PendingController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

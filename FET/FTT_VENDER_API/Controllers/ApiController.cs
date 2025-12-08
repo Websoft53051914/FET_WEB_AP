@@ -8,6 +8,7 @@ using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_VENDER_API.Common.ConfigurationHelper;
 using FTT_VENDER_API.Common.OriginClass.EntiityClass;
 using FTT_VENDER_API.Models.Handler;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FTT_VENDER_API.Controllers
@@ -16,6 +17,7 @@ namespace FTT_VENDER_API.Controllers
     /// API
     /// </summary>
     [Route("[controller]")]
+    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ApiController : BaseProjectController
     {
         private readonly ConfigurationHelper _configHelper;

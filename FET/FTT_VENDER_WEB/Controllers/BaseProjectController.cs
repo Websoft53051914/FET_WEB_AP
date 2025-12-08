@@ -14,14 +14,6 @@ namespace FTT_VENDER_WEB.Controllers
     {
         public override void OnActionExecuting(ActionExecutingContext context)
         {
-            base.OnActionExecuting(context);
-            if (LoginSession.Current != null)
-            {
-                ViewData["acc"] = LoginSession.Current.username;
-                ViewData["userrole"] = LoginSession.Current.userrole;
-                ViewData["ivrcode"] = LoginSession.Current.ivrcode;
-                ViewData["usertype"] = LoginSession.Current.usertype;
-            }
         }
 
         #region -- Instance --

@@ -10,6 +10,7 @@ using FTT_API.Models.Handler;
 using FTT_API.Models.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Filters;
+using System.Net;
 using static Const.Enums;
 
 namespace FTT_API.Controllers
@@ -21,6 +22,12 @@ namespace FTT_API.Controllers
         {
             var headers = context.HttpContext.Request.Headers;
             context.HttpContext.Request.Cookies.TryGetValue(FTT_API.Common.Const.TOKEN_NAME, out string? token);
+            var authorization = context.HttpContext.Request.Headers["Authorization"].ToString();
+            if (!string.IsNullOrEmpty(authorization) && authorization.StartsWith("Bearer "))
+            {
+                token = authorization.Substring("Bearer ".Length).Trim();
+            }
+
             context.HttpContext.Request.Headers.TryGetValue("Content-From", out var from);
             if (!string.IsNullOrEmpty(token) && from != "Logout")
             {
@@ -200,7 +207,7 @@ namespace FTT_API.Controllers
                 {
 
                 }
-                else if(from != "Login" && from != "Logout" && from != "CheckSSO")
+                else if (from != "Login" && from != "Logout" && from != "CheckSSO")
                 {
                     context.Result = new UnauthorizedObjectResult(JsonValiFail("無權限進入"));
                     return;

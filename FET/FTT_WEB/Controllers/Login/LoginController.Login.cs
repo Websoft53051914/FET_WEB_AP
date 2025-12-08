@@ -40,25 +40,7 @@ namespace FTT_WEB.Controllers.Login
             }
 
             return View();
-        }
-
-        /// <summary>
-        /// 畫出 圖形驗證碼
-        /// </summary>
-        /// <returns></returns>
-        public ActionResult CaptchaCode()
-        {
-            //自製的土炮驗證碼
-            CaptchaCodeHelper_ImageSharp captchaCode = new()
-            {
-                Width = 100
-            };
-
-            CaptchaResult result = captchaCode.Result();
-            TempData[CaptchaCodeHelper_ImageSharp.CAPTCHA_CODE] = result.ResultCode;
-
-            return File(result.CaptchaImage, "image/jpeg");
-        }
+        } 
 
     }
 }

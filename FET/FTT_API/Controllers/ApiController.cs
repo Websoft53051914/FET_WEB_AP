@@ -9,6 +9,8 @@ using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models.Handler;
 using FTT_API.Models.ViewModel;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
@@ -21,7 +23,7 @@ namespace FTT_API.Controllers
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
     [EnableCors("AllowLocalhost7234")]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ApiController : BaseProjectController
     {
         private readonly ConfigurationHelper _configHelper;

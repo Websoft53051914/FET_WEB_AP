@@ -4,6 +4,7 @@ using FTT_VENDER_API.Common;
 using FTT_VENDER_API.Common.ConfigurationHelper;
 using FTT_VENDER_API.Common.OriginClass.EntiityClass;
 using FTT_VENDER_API.Models.Handler;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FTT_VENDER_API.Controllers.InProcess
@@ -12,7 +13,7 @@ namespace FTT_VENDER_API.Controllers.InProcess
     /// 處理中 API
     /// </summary>
     [Route("[controller]")]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class InProcessController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

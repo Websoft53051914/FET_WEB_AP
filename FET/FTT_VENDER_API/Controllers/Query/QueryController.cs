@@ -14,6 +14,7 @@ using FTT_VENDER_API.Common.ConfigurationHelper;
 using Core.Utility.Extensions;
 using System.Data;
 using Microsoft.Reporting.NETCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace FTT_VENDER_API.Controllers.Query
 {
@@ -21,7 +22,7 @@ namespace FTT_VENDER_API.Controllers.Query
     /// 門市報修管理-查詢
     /// </summary>
     [Route("[controller]")]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public partial class QueryController : BaseProjectController
     {
         /// <summary>

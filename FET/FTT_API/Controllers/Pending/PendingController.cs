@@ -12,13 +12,14 @@ using Microsoft.AspNetCore.StaticFiles;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using System.Runtime.Intrinsics.X86;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 
 namespace FTT_API.Controllers.Pending
 {
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
     [EnableCors("AllowLocalhost7234")]
-    [Microsoft.AspNetCore.Authorization.Authorize]
+    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public partial class PendingController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

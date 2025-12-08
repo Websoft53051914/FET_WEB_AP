@@ -136,9 +136,7 @@ builder.Services.AddHangfireServer();
 builder.Services.AddScoped<SendMailHandler>();
 //builder.Services.AddScoped<CheckVenderPWLoginTimeHandler>();
 
-
 // 註冊 CORS
-#if DEBUG
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost7234",
@@ -150,33 +148,14 @@ builder.Services.AddCors(options =>
                   .AllowCredentials()
               .WithExposedHeaders("Content-Disposition"); // <- 重要;
         });
-});
-#else
+}); 
 
-builder.Services.AddCors(options =>
+builder.Services.AddHsts(options =>
 {
-    options.AddPolicy("AllowLocalhost7234",
-        policy =>
-        {
-            policy.WithOrigins("http://192.168.1.107:50102") // 允許的來源
-                  .AllowAnyHeader()
-                  .AllowAnyMethod()
-                  .AllowCredentials();
-        });
+    options.Preload = true;
+    options.IncludeSubDomains = true;
+    options.MaxAge = TimeSpan.FromDays(365); // 1年
 });
-
-#endif
-
-//builder.Services.AddCors(options =>
-//{
-//    options.AddPolicy("AllowLocalhost7234", policy =>
-//    {
-//        policy
-//            .AllowAnyOrigin()
-//            .AllowAnyHeader()
-//            .AllowAnyMethod();
-//    });
-//});
 
 var app = builder.Build();
 
@@ -191,12 +170,18 @@ if (Config.GetValue<string>("EnableSwaggerUI") == "Y")
 
 
 // Configure the HTTP request pipeline.
-//if (!app.Environment.IsDevelopment())
-//{
-    app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts(); //架設http 非 https 要註解
-//}
+app.UseExceptionHandler("/Home/Error");
+
+// 只有 HTTPS 才啟用 HSTS
+app.Use(async (context, next) =>
+{
+    if (context.Request.IsHttps)
+    {
+        app.UseHsts();
+    }
+
+    await next();
+});
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();

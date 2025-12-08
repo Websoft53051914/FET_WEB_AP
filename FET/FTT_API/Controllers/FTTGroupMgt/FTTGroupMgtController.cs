@@ -12,7 +12,7 @@ namespace FTT_API.Controllers.FTTGroupMgt
     [Route("[controller]")]
     //[Common.Attribute.CustomAuthorization]
     [EnableCors("AllowLocalhost7234")]
-    [Authorize]
+    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public partial class FTTGroupMgtController : BaseProjectController
     {
         [HttpPost("[action]")]
