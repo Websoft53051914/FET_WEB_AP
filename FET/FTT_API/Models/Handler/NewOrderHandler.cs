@@ -152,7 +152,8 @@ update tb_file set formno=@form_no where id in @fileids
             {
                 GetDBHelper().Execute(sqlInsert, data);
                 GetDBHelper().Execute(sqlApprovalGenerate, data);
-                GetDBHelper().Execute(sqlLinkFile, data);
+                if ((data["fileids"] as List<string>).Count != 0)
+                    GetDBHelper().Execute(sqlLinkFile, data);
             }
 
             GetDBHelper().Commit();

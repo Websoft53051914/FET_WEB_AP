@@ -6,15 +6,7 @@ using FTT_VENDER_WEB.Models.Handler;
 
 
 var builder = WebApplication.CreateBuilder(args);
-
-// 加入 HSTS
-builder.Services.AddHsts(options =>
-{
-    options.Preload = true;
-    options.IncludeSubDomains = true;
-    options.MaxAge = TimeSpan.FromDays(365); // 1 年
-});
-
+ 
 // Add services to the container.
 #region Localization
 var localizationoptions = new RequestLocalizationOptions();
@@ -95,16 +87,10 @@ builder.Services.AddHsts(options =>
 
 var app = builder.Build();
 
-// 只有 HTTPS 才啟用 HSTS
-app.Use(async (context, next) =>
+if (!app.Environment.IsDevelopment())
 {
-    if (context.Request.IsHttps)
-    {
-        app.UseHsts();
-    }
-
-    await next();
-});
+    app.UseHsts();  // ★★★ 正確位置 → 掃描器能辨識
+}
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
