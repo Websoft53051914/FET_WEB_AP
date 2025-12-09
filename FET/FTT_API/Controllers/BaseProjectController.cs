@@ -23,10 +23,10 @@ namespace FTT_API.Controllers
         {
             var headers = context.HttpContext.Request.Headers;
             context.HttpContext.Request.Cookies.TryGetValue(FTT_API.Common.Const.TOKEN_NAME, out string? token);
-            var authorization = context.HttpContext.Request.Headers["Authorization"].ToString();
-            if (!string.IsNullOrEmpty(authorization) && authorization.StartsWith("Bearer "))
+            var az = context.HttpContext.Request.Headers[Method.GetAppSettingsDataByName("AZ")].ToString();
+            if (!string.IsNullOrEmpty(az) && az.StartsWith("Bearer "))
             {
-                var rawToken = authorization.Substring("Bearer ".Length).Trim();
+                var rawToken = az.Substring("Bearer ".Length).Trim();
 
                 // 僅允許 A-Z,a-z,0-9,-,_  (JWT Base64Url 格式)
                 if (Regex.IsMatch(rawToken, @"^[A-Za-z0-9\-_\.]+$"))
@@ -47,12 +47,13 @@ namespace FTT_API.Controllers
                     if (resultVO.IsExpired && tokenInfoEntity != null && tokenInfoEntity.Status != StatusEnum.Cancel.ToInt())
                     {
                         RefreshToken(resultVO.TokenInfoVO, token);
-                        Response.Cookies.Append(FTT_API.Common.Const.TOKEN_NAME, resultVO.TokenInfoVO.TokenId, new CookieOptions
-                        {
-                            HttpOnly = false,
-                            Secure = false, // HTTP測試用false https用true
-                            SameSite = SameSiteMode.Lax, // http測試用Lax https用none
-                        });
+                        if (IsSafeToken(resultVO.TokenInfoVO.TokenId))
+                            Response.Cookies.Append(FTT_API.Common.Const.TOKEN_NAME, resultVO.TokenInfoVO.TokenId, new CookieOptions
+                            {
+                                HttpOnly = false,
+                                Secure = false, // HTTP測試用false https用true
+                                SameSite = SameSiteMode.Lax, // http測試用Lax https用none
+                            });
                     }
                     session = sessionRes;
                 }
@@ -375,6 +376,10 @@ namespace FTT_API.Controllers
                 ActionName = ControllerContext.ActionDescriptor?.ActionName ?? string.Empty,
                 Exception = exception,
                 Token = Request.Cookies[FTT_API.Common.Const.TOKEN_NAME] ?? string.Empty,
+
+                Account = _sessionVO?.username ?? "",
+                Name = _sessionVO?.empname ?? "",
+                LogTime = DateTime.Now,
             };
 
             InsertLog(entity);
@@ -408,8 +413,11 @@ namespace FTT_API.Controllers
             _BaseDBHandler.Insert(entity);
         }
 
-
+        private bool IsSafeToken(string token)
+        {
+            return !string.IsNullOrEmpty(token)
+                   && token.Length <= 256
+                   && Regex.IsMatch(token, @"^[A-Za-z0-9\-_\.]+$");
+        }
     }
-
-
 }

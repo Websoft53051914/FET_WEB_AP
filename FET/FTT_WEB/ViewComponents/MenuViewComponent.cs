@@ -65,30 +65,30 @@ namespace FTT_WEB.ViewComponents
 
                 var filteredTreeData = RoleFunc.GetMenuByFuncIds(roleFunc);
                 vm.TreeData = filteredTreeData;
-                vm.Exception += $" userRole={userRole} ";
-                //直接在此呼叫筆數API
-                var sendPara = filteredTreeData.SelectMany(s => s.Value).ToList().Where(w => w.DataCount != null).Select(s => (int)s.FuncId).ToList();
+                //vm.Exception += $" userRole={userRole} ";
+                ////直接在此呼叫筆數API
+                //var sendPara = filteredTreeData.SelectMany(s => s.Value).ToList().Where(w => w.DataCount != null).Select(s => (int)s.FuncId).ToList();
+                ////var url = $"{Method.GetAppSettingsDataByName("BackendURL")}/Api/GetMenuDataCount";
+
+                //var jwtToken = Request.Cookies["FTT_Token"];
+
+                //using HttpClient client = new HttpClient(new HttpClientHandler { });
+                //client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
                 //var url = $"{Method.GetAppSettingsDataByName("BackendURL")}/Api/GetMenuDataCount";
+                //HttpResponseMessage postResponse = await client.PostAsync(url, new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(sendPara), Encoding.UTF8, "application/json"));
+                //string postResponseData = await postResponse.Content.ReadAsStringAsync();
 
-                var jwtToken = Request.Cookies["FTT_Token"];
+                //vm.Exception += $" postResponseData={postResponseData} ";
 
-                using HttpClient client = new HttpClient(new HttpClientHandler { });
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwtToken);
-                var url = $"{Method.GetAppSettingsDataByName("BackendURL")}/Api/GetMenuDataCount";
-                HttpResponseMessage postResponse = await client.PostAsync(url, new StringContent(Newtonsoft.Json.JsonConvert.SerializeObject(sendPara), Encoding.UTF8, "application/json"));
-                string postResponseData = await postResponse.Content.ReadAsStringAsync();
-
-                vm.Exception += $" postResponseData={postResponseData} ";
-
-                var response = JsonConvert.DeserializeObject<ApiResponse>(postResponseData);
-                Dictionary<string, int> strMenuList = new Dictionary<string, int>();
-                if (response.Success == true && response.Data.Count > 0)
-                {
-                    foreach (var item in response.Data)
-                    {
-                        strMenuList.Add(((FuncID)int.Parse(item.Key)).ToString(), item.Value);
-                    }
-                }
+                //var response = JsonConvert.DeserializeObject<ApiResponse>(postResponseData);
+                //Dictionary<string, int> strMenuList = new Dictionary<string, int>();
+                //if (response.Success == true && response.Data.Count > 0)
+                //{
+                //    foreach (var item in response.Data)
+                //    {
+                //        strMenuList.Add(((FuncID)int.Parse(item.Key)).ToString(), item.Value);
+                //    }
+                //}
 
                 //檢查目前在哪個頁面
                 var currentUrl = HttpContext.Request.Path.Value;
@@ -103,10 +103,10 @@ namespace FTT_WEB.ViewComponents
                                 menu.IsActive = true;
                             }
 
-                            if (response.Success == true && strMenuList.ContainsKey(menu.FuncId.ToString()))
-                            {
-                                menu.DataCount = strMenuList[menu.FuncId.ToString()];
-                            }
+                            //if (response.Success == true && strMenuList.ContainsKey(menu.FuncId.ToString()))
+                            //{
+                            //    menu.DataCount = strMenuList[menu.FuncId.ToString()];
+                            //}
                         }
                     }
                 }

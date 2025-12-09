@@ -30,10 +30,10 @@ namespace FTT_VENDER_API.Controllers
             var headers = context.HttpContext.Request.Headers;
             context.HttpContext.Request.Cookies.TryGetValue("Token", out string? token);
             context.HttpContext.Request.Headers.TryGetValue("Content-From", out var from);
-            var authorization = context.HttpContext.Request.Headers["Authorization"].ToString();
-            if (!string.IsNullOrEmpty(authorization) && authorization.StartsWith("Bearer "))
+            var az = context.HttpContext.Request.Headers[Method.GetAppSettingsDataByName("AZ")].ToString();
+            if (!string.IsNullOrEmpty(az) && az.StartsWith("Bearer "))
             {
-                var rawToken = authorization.Substring("Bearer ".Length).Trim();
+                var rawToken = az.Substring("Bearer ".Length).Trim();
 
                 // 僅允許 A-Z,a-z,0-9,-,_  (JWT Base64Url 格式)
                 if (Regex.IsMatch(rawToken, @"^[A-Za-z0-9\-_\.]+$"))
