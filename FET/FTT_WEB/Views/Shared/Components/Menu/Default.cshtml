@@ -122,9 +122,6 @@
             return $(value).data('funcId');
         });
 
-        let data = {
-            funcIdList
-        };
         $.ajax({
             url: '@(mapData.UrlGetMenuDataCount?.ToHtmlString())',
             dataType: 'json',
