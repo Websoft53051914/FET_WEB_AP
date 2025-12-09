@@ -406,7 +406,7 @@
     <partial name="Form/_RMItemTree" view-data='new ViewDataDictionary(ViewData)' /> *@
 
 <script>
-            function GetFileElement(i, text, value) {
+            function GetFileElement(text, value,i) {
                 const a = document.createElement("a");
                 a.textContent = `【${text ?? ""}】`;    // 安全，自動 escape
                 a.setAttribute("val", value ?? "");
@@ -790,7 +790,7 @@
 
                             // 處理資料庫的金額彙整欄資料
                             for (var i = 0; i < data.FileItems.length; i++) {
-                                $('#fildTD').append(GetFileElement(data.FileItems[i].Text, data.FileItems[i].Value));
+                            $('#fildTD').append(GetFileElement(data.FileItems[i].Text, data.FileItems[i].Value, i));
                             }
                         }
 
