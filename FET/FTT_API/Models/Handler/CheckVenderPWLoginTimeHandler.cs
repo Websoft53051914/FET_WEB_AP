@@ -85,7 +85,7 @@ namespace FTT_API.Models.Handler
             
             string queryForPWChangeRemind = $@"Select * from store_vender_profile where pw_chgtime < @EndTime
             AND pw_chgtime > @StartTime
-            and locked = @Locked and is_pwchange_remind <> @IsPwChangeRemind";
+            and locked = @Locked and (is_pwchange_remind <> 'Y' OR is_pwchange_remind is null)";
 
             Dictionary<string, object> Paras = new();
            
@@ -174,29 +174,19 @@ VALUES(@Subject, @Content, @EstimateSendTime, @RealSendTime, @SendStatus, @Error
                 { "Subject", MailSubject},
                 { "Content", MailContent},
                 { "EstimateSendTime",  DateTime.Now },
-                { "RealSendTime",  DateTime.Now  },
-                { "Status",(int)StatusEnum.Cancel },
+               { "SendStatus",  (int)MailSendStatusEnum.UnSent },
+                { "Status",(int)StatusEnum.Enabled },
+                { "RealSendTime",  null },
+                 { "ErrorMsg", "" },
                 { "Creator", -1 },
                 { "CreateTime",  DateTime.Now },
                 { "Updater",  -1},
-                 { "UpdateTime",  DateTime.Now },
-                 { "DestinationEmail", MailTo },        
+                  { "UpdateTime",  DateTime.Now },
+                 { "DestinationEmail", MailTo },       
             };
 
 
-            try
-            {
-                mailHelper.Send();
-                Paras.Add("SendStatus",  (int)MailSendStatusEnum.Sent);
-                Paras.Add("ErrorMsg", "");
-
-            }
-            catch (Exception ex)
-            {
-                Paras.Add("SendStatus", (int)MailSendStatusEnum.Error);
-                Paras.Add("ErrorMsg", ex.Message);
-              
-            }
+            
             GetDBHelper().Execute(InsertMailPoolCmd, Paras);
         }
 
