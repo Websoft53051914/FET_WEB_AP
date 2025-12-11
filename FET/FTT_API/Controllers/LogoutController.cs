@@ -1,6 +1,7 @@
 ﻿using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Models.Handler;
 using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,7 +19,9 @@ namespace FTT_API.Controllers
             _hostingEnvironment = hostingEnvironment;
             _configHelper = configHelper;
         }
+        
         [HttpPost("[action]")]
+        [Authorize]
         public IActionResult Logout()
         {
             try

@@ -4,6 +4,7 @@ using FTT_API.Common.OriginClass;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models;
 using FTT_API.Models.Handler;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using System.Data;
@@ -12,6 +13,7 @@ namespace FTT_API.Controllers.Pending
 {
     public partial class PendingController : BaseProjectController
     {
+        [Authorize]
         [HttpGet("[action]")]
         public IActionResult GetDetail(string form_no)
         {
@@ -493,6 +495,7 @@ namespace FTT_API.Controllers.Pending
             return _Ftt_formDTO;
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         public ActionResult Add_Ftt_form_amount(Add_Ftt_form_amount_VM vm)
         {
@@ -548,6 +551,7 @@ namespace FTT_API.Controllers.Pending
         /// 表單送出
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult Detail(Ftt_formDTO vm)
         {
@@ -739,6 +743,7 @@ form_no=@form_no
             public string ExpenseType { get; set; }
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         public ActionResult SelectDesc(SelectDescVM vm)
         {
@@ -759,6 +764,7 @@ form_no=@form_no
             }
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         public ActionResult ShowDesc(TemplateConfigVM vm)
         {

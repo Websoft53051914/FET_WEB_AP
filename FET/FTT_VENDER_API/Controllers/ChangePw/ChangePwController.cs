@@ -3,6 +3,7 @@ using FTT_VENDER_API.Common.ConfigurationHelper;
 using FTT_VENDER_API.Models.Handler;
 using FTT_VENDER_API.Models.ViewModel.ChangePw;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Concurrent;
 using System.Drawing;

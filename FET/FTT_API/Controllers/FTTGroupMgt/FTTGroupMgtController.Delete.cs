@@ -1,12 +1,14 @@
 ﻿using Core.Utility.Helper.DB.Entity;
 using Core.Utility.Web.EX;
 using FTT_API.Common.OriginClass.EntiityClass;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FTT_API.Controllers.FTTGroupMgt
 {
     public partial class FTTGroupMgtController : BaseProjectController
     {
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult Delete(string empno)
         {

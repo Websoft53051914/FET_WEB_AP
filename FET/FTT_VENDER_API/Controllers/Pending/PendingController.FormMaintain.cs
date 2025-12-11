@@ -4,6 +4,7 @@ using FTT_VENDER_API.Common;
 using FTT_VENDER_API.Common.OriginClass.EntiityClass;
 using FTT_VENDER_API.Models.Handler;
 using FTT_VENDER_API.Models.Partial;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FTT_VENDER_API.Controllers.Pending
@@ -15,6 +16,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// </summary>
         /// <param name="vm"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult UpdateEmpnoDeptCode(FormMaintainVM vm)
         {
@@ -59,6 +61,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// <param name="request"></param>
         /// <param name="vm"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_V_ACCESS_ROLE(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -100,6 +103,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// <param name="request"></param>
         /// <param name="vm"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_Access(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -141,6 +145,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// <param name="request"></param>
         /// <param name="vm"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_Vender(DataSourceRequest request, v_ftt_form2DTO vm)
         {

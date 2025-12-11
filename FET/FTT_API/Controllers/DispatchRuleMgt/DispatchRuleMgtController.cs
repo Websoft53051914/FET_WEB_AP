@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using NPOI.SS.UserModel;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FTT_API.Controllers.DispatchRuleMgt
 {
@@ -40,6 +41,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
         /// 取得分頁資料<para/>
         /// [/Dispatch/Config_Dispatch.aspx]
         /// </summary>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult GetPageList(DataSourceRequest request)
         {
@@ -85,6 +87,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
         /// <summary>
         /// 取得頁面資料
         /// </summary>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult GetInitEditData(int? id)
         {
@@ -136,6 +139,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
         /// <summary>
         /// 取得頁面資料
         /// </summary>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult GetInitDataQuery()
         {
@@ -178,6 +182,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
         /// 取得分頁資料<para/>
         /// [/pool/queryDispatch.aspx]SearchCode_Click
         /// </summary>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult GetPageListQuery(DataSourceRequest request, DispatchRuleMgtQueryVO vm)
         {
@@ -240,6 +245,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
         /// [/pool/queryDispatch.aspx]ExportToExcel_Click()<para/>
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult ExportExcelQuery(string jsonData)
         {
@@ -349,6 +355,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
         /// 新增<para/>
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult Create(DispatchRuleMgtVO vm)
         {
@@ -376,6 +383,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
         /// 編輯<para/>
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult Edit(DispatchRuleMgtVO vm)
         {
@@ -404,6 +412,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
         /// 編輯<para/>
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult Delete(int? id)
         {

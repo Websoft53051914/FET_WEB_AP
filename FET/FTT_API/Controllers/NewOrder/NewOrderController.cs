@@ -14,6 +14,7 @@ using FTT_API.Models.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FTT_API.Controllers.NewOrder
 {
@@ -42,6 +43,7 @@ namespace FTT_API.Controllers.NewOrder
         /// <summary>
         /// 取得頁面資料
         /// </summary>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult GetInitData()
         {
@@ -129,6 +131,7 @@ namespace FTT_API.Controllers.NewOrder
         /// </summary>
         /// <param name="vm"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult Create(NewOrderVM vm)
         {
@@ -213,6 +216,7 @@ namespace FTT_API.Controllers.NewOrder
         /// </summary>
         /// <param name="parentId"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult RetrieveTTCount(int cisid, string ivrCode)
         {
@@ -235,6 +239,7 @@ namespace FTT_API.Controllers.NewOrder
         /// 取得廠商清單
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult GetSelectListVender(int cisid, string ivrCode, string ifWarrant)
         {
@@ -294,6 +299,7 @@ namespace FTT_API.Controllers.NewOrder
         /// [Form/checkdata.asp]檢查報修項目是否已報修
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult CheckRepairReported(int categoryId)
         {

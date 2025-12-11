@@ -9,6 +9,7 @@ using NPOI.XSSF.UserModel;
 using System.Data;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FTT_API.Controllers.QuoteMgt
 {
@@ -26,6 +27,7 @@ namespace FTT_API.Controllers.QuoteMgt
             _hostingEnvironment = hostingEnvironment;
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult Import(IFormFile file)
         {
@@ -82,6 +84,7 @@ namespace FTT_API.Controllers.QuoteMgt
             }
         }
 
+        [Authorize]
         [HttpGet("[action]")]
         public IActionResult Export()
         {
@@ -189,6 +192,7 @@ namespace FTT_API.Controllers.QuoteMgt
             return dtTable;
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult ImportStore(IFormFile file)
         {
@@ -245,6 +249,7 @@ namespace FTT_API.Controllers.QuoteMgt
             }
         }
 
+        [Authorize]
         [HttpGet("[action]")]
         public IActionResult ExportStore()
         {
@@ -305,6 +310,7 @@ namespace FTT_API.Controllers.QuoteMgt
             return dtTable;
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult SaveMarquee(string content)
         {
@@ -322,6 +328,7 @@ namespace FTT_API.Controllers.QuoteMgt
             }
         }
 
+        [Authorize]
         [HttpGet("[action]")]
         public IActionResult GetMarquee()
         {

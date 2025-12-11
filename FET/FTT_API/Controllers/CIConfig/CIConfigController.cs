@@ -11,6 +11,7 @@ using Newtonsoft.Json;
 using NPOI.SS.UserModel;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FTT_API.Controllers.CIConfig
 {
@@ -40,6 +41,7 @@ namespace FTT_API.Controllers.CIConfig
         /// [/Storemgt/CIConfig.aspx.cs]gridView_DataBind()
         /// </summary>
         [HttpPost("[action]")]
+        [Authorize]
         public IActionResult GetPageList(DataSourceRequest request, CIConfigIndexVO vm)
         {
             try
@@ -92,6 +94,7 @@ namespace FTT_API.Controllers.CIConfig
         /// </summary>
         /// <returns></returns>
         [HttpPost("[action]")]
+        [Authorize]
         public IActionResult ExportExcel(string jsonData)
         {
             try
@@ -332,6 +335,7 @@ namespace FTT_API.Controllers.CIConfig
         /// </summary>
         /// <returns></returns>
         [HttpPost("[action]")]
+        [Authorize]
         public IActionResult ImportExcel(IFormFile? file)
         {
             try

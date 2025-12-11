@@ -1,4 +1,5 @@
 ﻿using FTT_API.Models.Handler;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using static Org.BouncyCastle.Math.EC.ECCurve;
 
@@ -6,6 +7,7 @@ namespace FTT_API.Controllers.SupplierMgt
 {
     public partial class SupplierMgtController : BaseProjectController
     {
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult Delete(string order_id)
         {

@@ -15,6 +15,7 @@ namespace FTT_API.Controllers.FTTGroupMgt
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public partial class FTTGroupMgtController : BaseProjectController
     {
+        [Authorize]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, ftt_groupDTO vm)
        {

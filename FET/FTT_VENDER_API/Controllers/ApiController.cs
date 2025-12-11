@@ -9,6 +9,7 @@ using FTT_VENDER_API.Common.ConfigurationHelper;
 using FTT_VENDER_API.Common.OriginClass.EntiityClass;
 using FTT_VENDER_API.Models.Handler;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FTT_VENDER_API.Controllers
@@ -38,6 +39,7 @@ namespace FTT_VENDER_API.Controllers
         /// 取得維修品項指定 parentId 下的子項目資料
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult GetListTreeChildrenCi(int? parentId, string reqSrc = "ALL", string acType = "")
         {
@@ -99,6 +101,7 @@ namespace FTT_VENDER_API.Controllers
         /// 取得維修品項指定 id 下的項目資料與其階層資料
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult GetListTreeItemCi(List<int> idList, string reqSrc = "ALL", string acType = "")
         {
@@ -160,6 +163,7 @@ namespace FTT_VENDER_API.Controllers
         /// <summary>
         /// 取得門市分頁資料
         /// </summary>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult GetPageListStore(DataSourceRequest request, DialogIvrCodeGridVO vm)
         {
@@ -218,6 +222,7 @@ namespace FTT_VENDER_API.Controllers
         /// 取得選單待處理筆數資料
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult GetMenuDataCount([FromBody] List<int> funcIdList)
         {

@@ -1,6 +1,7 @@
 ﻿using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models.Handler;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using static Org.BouncyCastle.Math.EC.ECCurve;
@@ -14,6 +15,7 @@ namespace FTT_API.Controllers.CIMgt
             public List<SelectListItem> reqsrcs { get; set; } = new List<SelectListItem>();
             public List<SelectListItem> actypes { get; set; } = new List<SelectListItem>();
         }
+        [Authorize]
         [HttpGet("[action]")]
         public async Task<IActionResult> GetDefault()
         {
@@ -33,6 +35,7 @@ namespace FTT_API.Controllers.CIMgt
             }
         }
 
+        [Authorize]
         [HttpGet("[action]")]
         public async Task<IActionResult> GetDetail(string cisid)
         {
@@ -50,6 +53,7 @@ namespace FTT_API.Controllers.CIMgt
             }
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         public async Task<IActionResult> CreateDetail(ci_relations_categoryDTO vm)
         {
@@ -67,6 +71,7 @@ namespace FTT_API.Controllers.CIMgt
             }
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         public async Task<IActionResult> EditDetail(ci_relations_categoryDTO vm)
         {
@@ -84,6 +89,7 @@ namespace FTT_API.Controllers.CIMgt
             }
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         public async Task<IActionResult> DeleteDetail(int cisid)
         {

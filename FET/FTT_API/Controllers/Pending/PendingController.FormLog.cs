@@ -2,12 +2,14 @@
 using Core.Utility.Web.EX;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models.Handler;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FTT_API.Controllers.Pending
 {
     public partial class PendingController : BaseProjectController
     {
+        [Authorize]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_Log(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -43,6 +45,7 @@ namespace FTT_API.Controllers.Pending
             }
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_Desc(DataSourceRequest request, v_ftt_form2DTO vm)
         {

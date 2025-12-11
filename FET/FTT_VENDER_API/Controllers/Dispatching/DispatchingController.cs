@@ -5,6 +5,7 @@ using Core.Utility.Web.EX;
 using FTT_VENDER_API.Common.ConfigurationHelper;
 using FTT_VENDER_API.Models.Handler;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FTT_VENDER_API.Controllers.Dispatching
@@ -34,6 +35,7 @@ namespace FTT_VENDER_API.Controllers.Dispatching
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult GetPageList(DataSourceRequest request)
         {

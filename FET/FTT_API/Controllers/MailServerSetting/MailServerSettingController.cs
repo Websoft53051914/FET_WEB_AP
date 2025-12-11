@@ -7,6 +7,7 @@ using FTT_API.Models.Handler;
 using FTT_API.Common.ConfigurationHelper;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 
 namespace FTT_API.Controllers.MailServerSetting
@@ -25,6 +26,7 @@ namespace FTT_API.Controllers.MailServerSetting
             _configHelper = configHelper;
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult Update(MailServerSettingVM vm)
         {

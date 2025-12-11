@@ -3,6 +3,7 @@ using Core.Utility.Web.EX;
 using FTT_VENDER_API.Common.ConfigurationHelper;
 using FTT_VENDER_API.Common.OriginClass.EntiityClass;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FTT_VENDER_API.Controllers.Pending
@@ -31,6 +32,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// <param name="request"></param>
         /// <param name="vm"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, v_ftt_form2DTO vm)
         {

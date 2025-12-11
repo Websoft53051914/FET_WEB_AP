@@ -24,6 +24,7 @@ namespace FTT_API.Controllers.CaseClosed
             _hostingEnvironment = hostingEnvironment;
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, v_ftt_form2DTO vm)
         {

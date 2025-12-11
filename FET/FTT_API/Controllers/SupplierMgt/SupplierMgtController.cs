@@ -5,6 +5,7 @@ using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models.Handler;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FTT_API.Controllers.SupplierMgt
@@ -22,6 +23,7 @@ namespace FTT_API.Controllers.SupplierMgt
             _hostingEnvironment = hostingEnvironment;
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, store_vender_profileDTO vm)
         {
@@ -57,6 +59,7 @@ namespace FTT_API.Controllers.SupplierMgt
             }
         }
 
+        [Authorize]
         [HttpGet("[action]")]
         public async Task<IActionResult> GetDetail(string order_id)
         {
@@ -74,6 +77,7 @@ namespace FTT_API.Controllers.SupplierMgt
             }
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult SendPWD(string order_id)
         {

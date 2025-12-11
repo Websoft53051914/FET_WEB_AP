@@ -51,7 +51,7 @@ namespace FTT_API.Controllers.Login
         /// </summary>
         /// <param name="vm"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentNullException"></exception>        
         [HttpPost("[action]")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Login(LoginVM vm)
@@ -156,6 +156,7 @@ namespace FTT_API.Controllers.Login
         /// 畫出 圖形驗證碼
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpGet("[action]")]
         public ActionResult CaptchaCode()
         {
@@ -174,6 +175,7 @@ namespace FTT_API.Controllers.Login
 
         //[CustomAuthorization(FuncID.Home_View)]
         [Common.Attribute.CustomAuthorization]
+        [Authorize]
         [HttpGet("[action]")]
         public ActionResult CheckLogin()
         {
@@ -480,6 +482,7 @@ namespace FTT_API.Controllers.Login
         }
 
         // 測試用 API - 檢查快取狀態
+        [Authorize]
         [HttpGet("[action]")]
         [AllowAnonymous] // 允許匿名訪問，用於除錯
         public IActionResult TestCache()
