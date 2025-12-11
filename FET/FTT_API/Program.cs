@@ -132,7 +132,12 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowLocalhost7234",
         policy =>
         {
-            policy.WithOrigins("https://localhost:50102") // 允許的來源
+                policy.WithOrigins(
+                      "https://localhost:50102",           // Windows 開發環境
+                      "https://10.68.16.109:50102",       // Ubuntu HTTPS
+                      "http://10.68.16.109:50102",        // Ubuntu HTTP (備用)
+                      "http://192.168.1.107:50102"        // 原有設定
+                  )
                   .AllowAnyHeader()
                   .AllowAnyMethod()
                   .AllowCredentials()
