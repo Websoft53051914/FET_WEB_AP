@@ -161,30 +161,36 @@
         btnDelete.className = 'jsgrid-button jsgrid-delete-button d-inline-block';
         btnDelete.type = "button";
 
-        btnDelete.addEventListener("click", () => {
-            const callDelete = () => {
-                fetch('@(mapData.UrlDelete?.ToHtmlString())', {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ id: safeId })
-                })
-                .then(response => response.json())
-                .then(response => {
-                    const safeMsg = response.Message ?? "";
+                btnDelete.addEventListener("click", async () => {
+            const callDelete = async () => {
+                try {
+                    const response = await fetch('@(mapData.UrlDelete?.ToHtmlString())', {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ id: safeId })
+                    });
 
-                    if (response.Success) {
-                        MyApp.Alert.success('刪除資料成功').then(() => ctxGrid.reload());
+                    const result = await response.json();
+                    const safeMsg = result.Message ?? "";
+
+                    if (result.Success) {
+                        await MyApp.Alert.success('刪除資料成功');
+                        ctxGrid.reload();
                     } else {
-                        MyApp.Alert.error(safeMsg).then(() => ctxGrid.reload());
+                        await MyApp.Alert.error(safeMsg);
+                        ctxGrid.reload();
                     }
-                })
-                .catch(err => console.error(err));
+                } catch (err) {
+                    console.error(err);
+                }
             };
 
             const safeConfirmMsg = '@(config.GetMessage("BeforeDeleteMsg").ToHtmlString())' ?? "";
-            MyApp.Alert.confirm(safeConfirmMsg).then(result => {
-                if (result) callDelete();
-            });
+            const result = await MyApp.Alert.confirm(safeConfirmMsg);
+
+            if (result) {
+                await callDelete();
+            }
         });
 
         // 建立容器
