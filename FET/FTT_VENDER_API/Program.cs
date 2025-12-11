@@ -161,6 +161,7 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy.WithOrigins(
+                  "https://localhost:50402",
                   "https://localhost:50902",           // Windows 開發環境
                   "https://10.68.16.109:50902",       // Ubuntu HTTPS
                   "http://10.68.16.109:50902",        // Ubuntu HTTP (備用)
