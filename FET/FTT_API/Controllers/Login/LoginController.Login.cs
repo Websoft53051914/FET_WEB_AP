@@ -18,28 +18,32 @@ using NPOI.SS.Formula.Functions;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
 using SixLabors.ImageSharp;
+using System.Linq;
 using System.Collections.Concurrent;
 using System.Data;
 using static Const.Enums;
 using SixLabors.ImageSharp.Processing;
+using Microsoft.Extensions.Caching.Memory;
 using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.Fonts;
 using System.Text.RegularExpressions;
 using System.Web;
-using Microsoft.AspNetCore.Cors;
 
 namespace FTT_API.Controllers.Login
 {
     [Route("[controller]")]
-    [EnableCors("AllowLocalhost7234")]
     public partial class LoginController : BaseProjectController
     {
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly ConfigurationHelper _configHelper;
-        public LoginController(IWebHostEnvironment hostingEnvironment, ConfigurationHelper configHelper)
+        // 使用 IMemoryCache 替代 static ConcurrentDictionary，避免重啟後資料遺失
+        private readonly IMemoryCache _memoryCache;
+        
+        public LoginController(IWebHostEnvironment hostingEnvironment, ConfigurationHelper configHelper, IMemoryCache memoryCache)
         {
             _hostingEnvironment = hostingEnvironment;
             _configHelper = configHelper;
+            _memoryCache = memoryCache;
         }
 
         /// <summary>
@@ -132,8 +136,40 @@ namespace FTT_API.Controllers.Login
             catch (Exception ex)
             {
                 this.LogError(ex.ToString());
-                return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
+                //20251208 mark return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
+
+                //20251208 Add begin
+                // 為了快速除錯，臨時將例外訊息回傳給前端 (注意安全性，除錯完畢後移除)
+                #if DEBUG // 假設您在 Production 環境沒有使用 DEBUG
+                    return JsonValidFail(ex.Message + " | Trace: " + ex.StackTrace);
+                #else
+                    return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg")); // 恢復為通用錯誤
+                #endif
+                //20251208 Add end
+
             }
+        }
+
+
+
+        /// <summary>
+        /// 畫出 圖形驗證碼
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("[action]")]
+        public ActionResult CaptchaCode()
+        {
+            //自製的土炮驗證碼
+            CaptchaCodeHelper_ImageSharp captchaCode = new()
+            {
+                Width = 100
+            };
+
+            CaptchaResult result = captchaCode.Result();
+            TempData[CaptchaCodeHelper_ImageSharp.CAPTCHA_CODE] = result.ResultCode;
+
+            this.LogSuccess();
+            return File(result.CaptchaImage, "image/jpeg");
         }
 
         //[CustomAuthorization(FuncID.Home_View)]
@@ -160,7 +196,6 @@ namespace FTT_API.Controllers.Login
         [Common.Attribute.CustomAuthorization]
         [HttpPost("[action]")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
-        [ValidateAntiForgeryToken]
         public ActionResult CheckSSO(SSOVM vm)
         {
             try
@@ -444,17 +479,69 @@ namespace FTT_API.Controllers.Login
             public string CaptchaCode { get; set; }
         }
 
-
-        private static ConcurrentDictionary<string, string> _captchaStore = new ConcurrentDictionary<string, string>();
+        // 測試用 API - 檢查快取狀態
+        [HttpGet("[action]")]
+        [AllowAnonymous] // 允許匿名訪問，用於除錯
+        public IActionResult TestCache()
+        {
+            try
+            {
+                var testKey = "test_key";
+                var testValue = "test_value_" + DateTime.Now.ToString("HHmmss");
+                
+                // 測試寫入
+                _memoryCache.Set(testKey, testValue, TimeSpan.FromMinutes(1));
+                Console.WriteLine($"[TestCache] Set: {testKey} = {testValue}");
+                
+                // 測試讀取
+                var retrieved = _memoryCache.TryGetValue(testKey, out var value);
+                Console.WriteLine($"[TestCache] Get: Found={retrieved}, Value={value}");
+                
+                // 清理
+                _memoryCache.Remove(testKey);
+                
+                return JsonSuccess(new
+                {
+                    platform = Environment.OSVersion.Platform.ToString(),
+                    machine = Environment.MachineName,
+                    set = testValue,
+                    retrieved = retrieved,
+                    value = value?.ToString()
+                });
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"[TestCache] Exception: {ex}");
+                return JsonValidFail($"Cache test failed: {ex.Message}");
+            }
+        }
 
         [HttpPost("[action]")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
-        [ValidateAntiForgeryToken]
+        [AllowAnonymous] // 允許匿名訪問，登入前需要使用
         public IActionResult GetCaptcha()
         {
             var code = GenerateCode(4); // 4位隨機碼
             var id = Guid.NewGuid().ToString();
-            _captchaStore[id] = code;
+            
+            // 使用 MemoryCache 存儲驗證碼，設定 5 分鐘過期時間
+            var cacheOptions = new MemoryCacheEntryOptions
+            {
+                AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
+                Priority = CacheItemPriority.Normal
+            };
+            
+            var cacheKey = $"captcha_{id}";
+            _memoryCache.Set(cacheKey, code, cacheOptions);
+
+            // 詳細日誌記錄
+            Console.WriteLine($"[GetCaptcha] Generated: ID={id}, Code={code}, Key={cacheKey}");
+            Console.WriteLine($"[GetCaptcha] Platform: {Environment.OSVersion.Platform}");
+            Console.WriteLine($"[GetCaptcha] Machine: {Environment.MachineName}");
+            
+            // 立即驗證快取是否存在
+            var testResult = _memoryCache.TryGetValue(cacheKey, out var testCode);
+            Console.WriteLine($"[GetCaptcha] Cache test: Found={testResult}, Value={testCode}");
 
             var imageBytes = GenerateCaptchaImage(code);
 
@@ -467,17 +554,77 @@ namespace FTT_API.Controllers.Login
 
         [HttpPost("[action]")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        [AllowAnonymous] // 允許匿名訪問，登入前需要使用
         public IActionResult VerifyCaptcha(CaptchaVerifyRequest request)
         {
-            if (_captchaStore.TryGetValue(request.CaptchaId, out var code))
+            // 詳細日誌記錄
+            Console.WriteLine($"[VerifyCaptcha] === 開始驗證 ===");
+            Console.WriteLine($"[VerifyCaptcha] Platform: {Environment.OSVersion.Platform}");
+            Console.WriteLine($"[VerifyCaptcha] Request: ID={request?.CaptchaId ?? "NULL"}, Code={request?.CaptchaCode ?? "NULL"}");
+
+            if (string.IsNullOrEmpty(request?.CaptchaId) || string.IsNullOrEmpty(request?.CaptchaCode))
             {
-                if (string.Equals(code, request.CaptchaCode, StringComparison.OrdinalIgnoreCase))
+                Console.WriteLine("[VerifyCaptcha] Error: Empty captcha ID or code");
+                return JsonValidFail("驗證碼不能為空");
+            }
+
+            var cacheKey = $"captcha_{request.CaptchaId}";
+            Console.WriteLine($"[VerifyCaptcha] Looking for key: {cacheKey}");
+
+            // 檢查快取是否存在（不移除）
+            if (_memoryCache.TryGetValue(cacheKey, out var code))
+            {
+                Console.WriteLine($"[VerifyCaptcha] Found in cache: '{code}'");
+                
+                var expectedCode = code.ToString();
+                var inputCode = request.CaptchaCode;
+                
+                Console.WriteLine($"[VerifyCaptcha] Comparing (case-insensitive):");
+                Console.WriteLine($"  Expected: '{expectedCode}' (length={expectedCode.Length})");
+                Console.WriteLine($"  Input:    '{inputCode}' (length={inputCode.Length})");
+                
+                // 移除已使用的驗證碼
+                _memoryCache.Remove(cacheKey);
+                Console.WriteLine($"[VerifyCaptcha] Removed cache key: {cacheKey}");
+                
+                if (string.Equals(expectedCode, inputCode, StringComparison.OrdinalIgnoreCase))
                 {
-                    _captchaStore.TryRemove(request.CaptchaId, out _);
+                    Console.WriteLine("[VerifyCaptcha] SUCCESS: Captcha verified!");
                     return JsonSuccess("");
+                }
+                else
+                {
+                    Console.WriteLine("[VerifyCaptcha] FAIL: Code mismatch");
+                    // 檢查每個字符
+                    for (int i = 0; i < Math.Max(expectedCode.Length, inputCode.Length); i++)
+                    {
+                        var expectedChar = i < expectedCode.Length ? expectedCode[i] : '?';
+                        var inputChar = i < inputCode.Length ? inputCode[i] : '?';
+                        Console.WriteLine($"  [{i}] Expected='{expectedChar}'({(int)expectedChar}) Input='{inputChar}'({(int)inputChar})");
+                    }
+                }
+            }
+            else
+            {
+                Console.WriteLine($"[VerifyCaptcha] NOT FOUND in cache for key: {cacheKey}");
+                
+                // 嘗試列出所有快取項目
+                Console.WriteLine("[VerifyCaptcha] Attempting to list cache contents...");
+                try
+                {
+                    var field = _memoryCache.GetType().GetField("_store", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    if (field != null)
+                    {
+                        Console.WriteLine("[VerifyCaptcha] Cache store exists");
+                    }
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"[VerifyCaptcha] Cache inspection failed: {ex.Message}");
                 }
             }
 
+            Console.WriteLine("[VerifyCaptcha] === 驗證失敗 ===");
             return JsonValidFail("驗證碼錯誤或過期");
         }
 
@@ -500,7 +647,37 @@ namespace FTT_API.Controllers.Login
             image.Mutate(ctx =>
             {
                 ctx.Fill(Color.White);
-                var font = SystemFonts.CreateFont("Arial", 30, FontStyle.Bold);
+                
+                // 嘗試使用多種字型作為備選方案
+                SixLabors.Fonts.Font font;
+                var fontNames = new[] { "Arial", "Liberation Sans", "DejaVu Sans", "sans-serif" };
+                
+                font = null;
+                foreach (var fontName in fontNames)
+                {
+                    try
+                    {
+                        font = SystemFonts.CreateFont(fontName, 30, FontStyle.Bold);
+                        break;
+                    }
+                    catch (FontFamilyNotFoundException)
+                    {
+                        if (fontName == fontNames.Last())
+                        {
+                            // 如果都找不到，使用系統預設字型
+                            var families = SystemFonts.Families;
+                            if (!families.Any())
+                                throw new InvalidOperationException("系統無可用字型");
+                            
+                            var defaultFamily = families.First();
+                            font = SystemFonts.CreateFont(defaultFamily.Name, 30, FontStyle.Bold);
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                }
 
                 // 在圖片上畫文字
                 ctx.DrawText(code, font, Color.Black, new PointF(10, 5));

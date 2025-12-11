@@ -9,9 +9,6 @@ using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models.Handler;
 using FTT_API.Models.ViewModel;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using System.Linq;
 
@@ -22,8 +19,6 @@ namespace FTT_API.Controllers
     /// </summary>
     [Route("[controller]")]
     [Common.Attribute.CustomAuthorization]
-    [EnableCors("AllowLocalhost7234")]
-    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ApiController : BaseProjectController
     {
         private readonly ConfigurationHelper _configHelper;
@@ -75,7 +70,19 @@ namespace FTT_API.Controllers
 
                         // 2️⃣ 指定固定資料夾
                         var filePath = Path.Combine("Item", safeFileName);
-                        var path = Path.Combine(_env.WebRootPath, filePath);
+                        var path = "";
+                        // ⭐ 修復：檢查 _env.WebRootPath 是否為 null
+                        if (string.IsNullOrEmpty(_env.WebRootPath))
+                        {
+                            // 🚨 選擇 ContentRootPath 作為備用路徑 (更穩定)
+                             path = Path.Combine(_env.ContentRootPath, "wwwroot", filePath);
+                            // 建議同時檢查並建立 'wwwroot' 目錄如果它不存在
+                            // Directory.CreateDirectory(Path.Combine(_env.ContentRootPath, "wwwroot"));
+                        }
+                        else
+                        {
+                             path = Path.Combine(_env.WebRootPath, filePath);
+                        }
 
                         // 3️⃣ 驗證檔案存在
                         if (System.IO.File.Exists(path))
@@ -202,7 +209,19 @@ namespace FTT_API.Controllers
 
                         // 2️⃣ 指定固定資料夾
                         var filePath = Path.Combine("images", "Item", safeFileName);
-                        var path = Path.Combine(_env.WebRootPath, filePath);
+                        var path = "";
+                        // ⭐ 修復：檢查 _env.WebRootPath 是否為 null
+                        if (string.IsNullOrEmpty(_env.WebRootPath))
+                        {
+                            // 🚨 選擇 ContentRootPath 作為備用路徑 (更穩定)
+                            path = Path.Combine(_env.ContentRootPath, "wwwroot", filePath);
+                            // 建議同時檢查並建立 'wwwroot' 目錄如果它不存在
+                            // Directory.CreateDirectory(Path.Combine(_env.ContentRootPath, "wwwroot"));
+                        }
+                        else
+                        {
+                            path = Path.Combine(_env.WebRootPath, filePath);
+                        }
 
                         // 3️⃣ 驗證檔案存在
                         if (System.IO.File.Exists(path))

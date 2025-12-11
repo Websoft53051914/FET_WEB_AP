@@ -3,10 +3,10 @@ using FTT_WEB.Common.ConfigurationHelper;
 using Microsoft.Extensions.FileProviders;
 //using Hangfire;
 using FTT_WEB.Models.Handler;
+using Microsoft.AspNetCore.DataProtection;
 
 
 var builder = WebApplication.CreateBuilder(args);
-
 // Add services to the container.
 #region Localization
 var localizationoptions = new RequestLocalizationOptions();
@@ -28,6 +28,19 @@ builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 builder.Services.AddDistributedMemoryCache();
 
+// 加入 Data Protection 設定 - 跨平台相容
+var dataProtectionKeysPath = Environment.OSVersion.Platform == PlatformID.Win32NT
+    ? Path.Combine(Directory.GetCurrentDirectory(), "DataProtectionKeys")
+    : "/home/wmliou75/FTT/DataProtectionKeys";
+
+// 確保目錄存在
+Directory.CreateDirectory(dataProtectionKeysPath);
+
+builder.Services.AddDataProtection()
+    .SetApplicationName("FTT_API")
+    .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath));
+
+
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme;
@@ -42,16 +55,15 @@ builder.Services.AddSession(options =>
 {
     options.Cookie.Name = ".net.core.Session";
     options.IdleTimeout = TimeSpan.FromMinutes(15);
-    //options.Cookie.IsEssential = true; //架設http 非 https 要註解
+    options.Cookie.IsEssential = true; //架設http 非 https 要註解
 
-    //options.Cookie.HttpOnly = true; //架設http 非 https 要註解
-    //options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解
+    options.Cookie.HttpOnly = true; //架設http 非 https 要註解
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解
 });
 
 builder.Services.AddAntiforgery(options =>
 {
-
-    //options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解
 });
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -77,20 +89,16 @@ builder.Services.AddSingleton<ConfigurationHelper>();
 //          );
 //builder.Services.AddHangfireServer();
 //builder.Services.AddSingleton<SendMailHandler>();
-builder.Services.AddScoped<SendMailHandler>();
-
-builder.Services.AddHsts(options =>
-{
-    options.Preload = true;
-    options.IncludeSubDomains = true;
-    options.MaxAge = TimeSpan.FromDays(365); // 1年
-});
+builder.Services.AddScoped<SendMailHandler>(); 
 
 var app = builder.Build();
 
+// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseHsts();  // ★★★ 正確位置 → 掃描器能辨識
+    app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts(); //架設http 非 https 要註解
 }
 
 app.UseHttpsRedirection();

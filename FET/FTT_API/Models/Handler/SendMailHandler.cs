@@ -78,7 +78,7 @@ namespace FTT_API.Models.Handler
 
                     var parameters = new Dictionary<string, object>
                         {
-                            { "@Status", StatusEnum.Cancel.ToInt() },
+                            { "@Status", StatusEnum.Enabled.ToInt() },
                             { "@SendStatus", (int)MailSendStatusEnum.Sent },
                             { "@RealSendTime", DateTime.Now },
                             { "@ErrorMsg", string.Empty},
@@ -97,7 +97,7 @@ namespace FTT_API.Models.Handler
                             { "@Status", StatusEnum.Cancel.ToInt() },
                             { "@SendStatus", (int)MailSendStatusEnum.Error },
                             { "@RealSendTime", DateTime.Now },
-                            { "@ErrorMsg", iex.Message },
+                            { "@ErrorMsg", iex },
                             { "@Id", UnSentMails[i].Id },
                             { "@UpdateTime", DateTime.Now },
                             { "@updater", 0}

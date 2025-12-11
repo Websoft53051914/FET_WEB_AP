@@ -10,6 +10,7 @@ using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
+using Microsoft.AspNetCore.DataProtection;
 
 
 IConfiguration Config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
@@ -44,14 +45,30 @@ builder.Services.AddSwaggerGen(c =>
     c.IncludeXmlComments(xmlPath, includeControllerXmlComments: true);
 });
 
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = Microsoft.AspNetCore.Authentication.Cookies.CookieAuthenticationDefaults.AuthenticationScheme;
+})
+ .AddCookie(options =>
+ {
+     options.Cookie.HttpOnly = true;
+     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;  //架設http 非 https 要註解 2025-12-08 解除
+
+     // ⭐ 新增：跨埠/跨站點傳輸必須設定為 None
+     options.Cookie.SameSite = SameSiteMode.None;
+ });
+
 builder.Services.AddSession(options =>
 {
     options.Cookie.Name = ".net.core.Session";
     options.IdleTimeout = TimeSpan.FromMinutes(15);
-    //options.Cookie.IsEssential = true; //架設http 非 https 要註解
+    options.Cookie.IsEssential = true; //架設http 非 https 要註解 2025/12/8解除
 
-    //options.Cookie.HttpOnly = true; //架設http 非 https 要註解
-    //options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解
+    options.Cookie.HttpOnly = true; //架設http 非 https 要註解 2025/12/8解除
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解 2025/12/8解除
+
+    // ⭐ 新增：跨埠/跨站點傳輸必須設定為 None
+    options.Cookie.SameSite = SameSiteMode.None;
 });
 
 builder.Services.AddAntiforgery(options =>
@@ -65,8 +82,7 @@ builder.Services.AddAntiforgery(options =>
     options.Cookie.SameSite = SameSiteMode.None;
 
     // 🌟 錯誤點 1：設置為 None 時，Secure 必須為 Always
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-    //options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解  2025/12/8解除
 });
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -112,6 +128,18 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddSingleton<FETTaskService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<FETTaskService>());
 
+// 加入 Data Protection 設定 - 跨平台相容
+var dataProtectionKeysPath = Environment.OSVersion.Platform == PlatformID.Win32NT
+    ? Path.Combine(Directory.GetCurrentDirectory(), "DataProtectionKeys")
+    : "/home/wmliou75/FTT/DataProtectionKeys";
+
+// 確保目錄存在
+Directory.CreateDirectory(dataProtectionKeysPath);
+
+builder.Services.AddDataProtection()
+    .SetApplicationName("FTT_API")
+    .PersistKeysToFileSystem(new DirectoryInfo(dataProtectionKeysPath));
+
 
 builder.Services.AddSingleton<ConfigurationHelper>();
 
@@ -126,7 +154,7 @@ builder.Services.AddHangfireServer();
 builder.Services.AddScoped<SendMailHandler>();
 //builder.Services.AddScoped<CheckVenderPWLoginTimeHandler>();
 
-// 註冊 CORS
+// 註冊 CORS - 統一設定，適用於所有環境
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost7234",
@@ -143,7 +171,7 @@ builder.Services.AddCors(options =>
                   .AllowCredentials()
               .WithExposedHeaders("Content-Disposition"); // <- 重要;
         });
-}); 
+});
 
 builder.Services.AddHsts(options =>
 {
@@ -165,18 +193,12 @@ if (Config.GetValue<string>("EnableSwaggerUI") == "Y")
 
 
 // Configure the HTTP request pipeline.
-app.UseExceptionHandler("/Home/Error");
-
-// 只有 HTTPS 才啟用 HSTS
-app.Use(async (context, next) =>
+if (!app.Environment.IsDevelopment())
 {
-    if (context.Request.IsHttps)
-    {
-        app.UseHsts();
-    }
-
-    await next();
-});
+    app.UseExceptionHandler("/Home/Error");
+    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
+    app.UseHsts(); //架設http 非 https 要註解
+}
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
