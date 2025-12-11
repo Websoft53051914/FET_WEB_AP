@@ -87,7 +87,7 @@ WHERE  statusid IN ( 'CLOSE', 'CANCEL', 'REJECT' )
  where 1=1 
 ";
 
-            var result = dbHelper.FindPageList<v_ftt_form2DTO>(originSQL, countSQL, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
+            var result = dbHelper.FindPageList<v_ftt_form2DTO>(countSQL, countSQL, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
             return result;
         }
 

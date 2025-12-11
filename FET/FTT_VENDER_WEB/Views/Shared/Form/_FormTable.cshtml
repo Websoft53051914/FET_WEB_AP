@@ -438,19 +438,67 @@
     <partial name="Form/_RMItemTree" view-data='new ViewDataDictionary(ViewData)' /> *@
 
 <script>
-        function GetFileElement(i, text, value) {
-            const a = document.createElement("a");
-            a.textContent = `【${text ?? ""}】`;    // 安全，自動 escape
-            a.setAttribute("val", value ?? "");
-            a.name = `TTItemList[1].FileIds[${i}]`;
-            a.target = "_blank";
-            a.style.margin = "5px";
 
-            a.href = '@(config.GetBackendUrl() + Url.Action("DownloadFile", "Pending"))'
-                + "?id=" + encodeURIComponent(value ?? "");
+    function GetFileElement(text, value, i) {
+        const a = document.createElement("a");
+        a.textContent = `【${text ?? ""}】`;
+        a.style.margin = "5px";
+        a.href = "javascript:void(0)";
+        a.dataset.fileId = value ?? "";
 
-            return a;
-        }
+        a.addEventListener("click", async function (e) {
+            e.preventDefault();
+            const fileId = this.dataset.fileId;
+
+            try {
+                const response = await fetch(
+                    '@(config.GetBackendUrl() + Url.Action("DownloadFile", "Pending"))' +
+                    "?id=" + encodeURIComponent(fileId),
+                    {
+                        method: "GET", credentials: "include",
+                        headers: {
+                            "Authorization": "Bearer " + token
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    alert("下載失敗");
+                    return;
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
+                // 安全抓取 filename
+                let filename = "download";
+                const disposition = response.headers.get("Content-Disposition");
+                if (disposition) {
+                    const match = disposition.match(/filename\*?=(?:UTF-8'')?["']?([^;"']+)["']?/i);
+                    if (match && match[1]) {
+                        filename = decodeURIComponent(match[1].replace(/\+/g, ' '));
+                    }
+                }
+
+                const temp = document.createElement("a");
+                temp.style.display = "none";
+                temp.href = url;
+                temp.download = filename;
+                document.body.appendChild(temp);
+                temp.click();
+
+                URL.revokeObjectURL(url);
+                temp.remove();
+
+            } catch (ex) {
+                console.error(ex);
+                alert("下載過程發生錯誤");
+            }
+        });
+
+        return a;
+    }
+
         if (!String.format) {
             String.format = function (format, ...args) {
                 return format.replace(/{(\d+)}/g, function (match, number) {

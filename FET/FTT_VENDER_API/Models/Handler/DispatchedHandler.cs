@@ -112,7 +112,7 @@ WHERE
     1 = 1
 ";
 
-            return GetDBHelper().FindPageList<VFttForm2DTO>(sql, sqlCount, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
+            return GetDBHelper().FindPageList<VFttForm2DTO>(sqlCount, sqlCount, pageEntity.CurrentPage, pageEntity.PageDataSize, paras);
         }
     }
 }
