@@ -31,6 +31,7 @@ namespace FTT_VENDER_API.Controllers.ChangePw
         }
 
         [HttpPost("[action]")]
+        [AllowAnonymous] // 允許匿名訪問，登入前需要使用
         public IActionResult Submit(ChangePwVM vm)
         {
             try
@@ -56,8 +57,9 @@ namespace FTT_VENDER_API.Controllers.ChangePw
 
         private static ConcurrentDictionary<string, string> _captchaStore = new ConcurrentDictionary<string, string>();
 
-        [HttpGet("[action]")]
+        [HttpPost("[action]")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        [AllowAnonymous] // 允許匿名訪問，登入前需要使用
         public IActionResult GetCaptcha()
         {
             var code = GenerateCode(4); // 4位隨機碼
@@ -75,6 +77,7 @@ namespace FTT_VENDER_API.Controllers.ChangePw
 
         [HttpPost("[action]")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        [AllowAnonymous] // 允許匿名訪問，登入前需要使用
         public IActionResult VerifyCaptcha(CaptchaVerifyRequest request)
         {
             if (_captchaStore.TryGetValue(request.CaptchaId, out var code))

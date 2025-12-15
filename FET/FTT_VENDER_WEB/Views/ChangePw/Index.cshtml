@@ -212,7 +212,7 @@
         async function changeCaptcha(img) {
             let $errorMsg = $('#errorMsg');
             $.ajax({
-                url: '@(config.GetBackendUrl() + Url.Action("GetCaptcha", "Login"))',
+                url: '@(config.GetBackendUrl() + Url.Action("GetCaptcha", "ChangePw"))',
                 type: 'post',
                 xhrFields: {
                     withCredentials: true // ← 這個讓瀏覽器攜帶 Cookie
