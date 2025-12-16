@@ -12,6 +12,7 @@ using Microsoft.Reporting.NETCore;
 using Newtonsoft.Json;
 using System.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FTT_API.Controllers.OnsitePrint
 {
@@ -43,6 +44,7 @@ namespace FTT_API.Controllers.OnsitePrint
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult GetPageListPrwp(DataSourceRequest request)
         {
@@ -94,6 +96,7 @@ namespace FTT_API.Controllers.OnsitePrint
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult GetPageListConfirm(DataSourceRequest request)
         {
@@ -145,6 +148,7 @@ namespace FTT_API.Controllers.OnsitePrint
         /// [/pool/printwp.aspx]PrintWP_Click()<para/>
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult PrintWP(string jsonData)
         {
@@ -182,6 +186,7 @@ namespace FTT_API.Controllers.OnsitePrint
         /// 廠商已到場-Y
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult UpdateStatusToTicket(OnsitePrintUpdateStatusReqVO req)
         {
@@ -241,6 +246,7 @@ namespace FTT_API.Controllers.OnsitePrint
         /// 廠商未到場-N
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult UpdateStatusToPrwp(OnsitePrintUpdateStatusReqVO req)
         {
@@ -300,6 +306,7 @@ namespace FTT_API.Controllers.OnsitePrint
         /// 廠商未到場-N
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult UpdateStatusToConfirm(OnsitePrintUpdateStatusReqVO req)
         {

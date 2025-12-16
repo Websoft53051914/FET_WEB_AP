@@ -22,6 +22,7 @@ namespace FTT_API.Controllers.AntiforgeryController
         /// <summary>
         /// 獲取 Anti-Forgery Token。這個方法會設置必要的 Anti-Forgery Cookie，並返回 Request Token。
         /// </summary>
+        
         [HttpGet("token")]
         [IgnoreAntiforgeryToken] // 這個接口本身不需要驗證 (因為它是用來獲取 Token 的)
         public IActionResult GetAntiforgeryToken()

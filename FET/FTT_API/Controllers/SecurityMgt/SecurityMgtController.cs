@@ -10,6 +10,7 @@ using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using System.Data;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FTT_API.Controllers.SecurityMgt
 {
@@ -27,6 +28,7 @@ namespace FTT_API.Controllers.SecurityMgt
             _hostingEnvironment = hostingEnvironment;
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, store_sec_vendor_listDTO vm)
         {
@@ -63,6 +65,7 @@ namespace FTT_API.Controllers.SecurityMgt
         }
 
 
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult Import(IFormFile file)
         {
@@ -119,6 +122,7 @@ namespace FTT_API.Controllers.SecurityMgt
             }
         }
 
+        [Authorize]
         [HttpGet("[action]")]
         public IActionResult Export()
         {

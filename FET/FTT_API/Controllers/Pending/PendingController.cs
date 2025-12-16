@@ -13,6 +13,7 @@ using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
 using System.Runtime.Intrinsics.X86;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FTT_API.Controllers.Pending
 {
@@ -30,6 +31,7 @@ namespace FTT_API.Controllers.Pending
             _hostingEnvironment = hostingEnvironment;
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -66,6 +68,7 @@ namespace FTT_API.Controllers.Pending
         }
 
 
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult FileUpload(IFormFile file, string formNo)
         {
@@ -143,6 +146,7 @@ namespace FTT_API.Controllers.Pending
         }
 
 
+        [Authorize]
         [HttpGet("[action]")]
         public IActionResult DownloadFile(string id)
         {

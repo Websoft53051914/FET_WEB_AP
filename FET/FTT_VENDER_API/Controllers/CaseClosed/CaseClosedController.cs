@@ -5,6 +5,7 @@ using FTT_VENDER_API.Common.ConfigurationHelper;
 using FTT_VENDER_API.Common.OriginClass.EntiityClass;
 using FTT_VENDER_API.Models.Handler;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FTT_VENDER_API.Controllers.CaseClosed
@@ -31,6 +32,7 @@ namespace FTT_VENDER_API.Controllers.CaseClosed
         /// 
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, v_ftt_form2DTO vm)
         {

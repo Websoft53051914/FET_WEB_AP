@@ -1,11 +1,13 @@
 ﻿using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models.Handler;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FTT_API.Controllers.SecurityMgt
 {
     public partial class SecurityMgtController : BaseProjectController
     {
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult Create(Store_profileDTO vm)
         {

@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using NPOI.SS.UserModel;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FTT_API.Controllers.Query
 {
@@ -39,6 +40,7 @@ namespace FTT_API.Controllers.Query
         /// <summary>
         /// 取得頁面資料
         /// </summary>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult GetInitData()
         {
@@ -90,6 +92,7 @@ namespace FTT_API.Controllers.Query
         /// 取得分頁資料<para/>
         /// [/pool/query.aspx]SearchCode_Click
         /// </summary>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult GetPageList(DataSourceRequest request, QueryIndexVO vm)
         {
@@ -180,6 +183,7 @@ namespace FTT_API.Controllers.Query
         /// 列印維修單
         /// </summary>
         /// <returns></returns>
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult ExportExcel(string jsonData)
         {

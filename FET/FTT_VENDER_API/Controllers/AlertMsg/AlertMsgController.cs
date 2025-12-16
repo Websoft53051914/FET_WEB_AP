@@ -1,6 +1,7 @@
 ﻿using Core.Utility.Web.Base;
 using Microsoft.AspNetCore.Mvc;
 using FTT_VENDER_API.Models;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FTT_VENDER_API.Controllers.AlertMsg
 {
@@ -12,6 +13,7 @@ namespace FTT_VENDER_API.Controllers.AlertMsg
 
         }
 
+        [Authorize]
         [HttpGet("[action]")]
         public IActionResult Redirection(AlertMsgRedirection vm)
         {

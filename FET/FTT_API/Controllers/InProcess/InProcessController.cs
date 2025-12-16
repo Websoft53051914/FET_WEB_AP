@@ -8,6 +8,7 @@ using FTT_API.Models.Handler;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authorization;
 
 namespace FTT_API.Controllers.InProcess
 {
@@ -25,6 +26,7 @@ namespace FTT_API.Controllers.InProcess
             _hostingEnvironment = hostingEnvironment;
         }
 
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult GetPageList(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -62,6 +64,7 @@ namespace FTT_API.Controllers.InProcess
         }
 
 
+        [Authorize]
         [HttpPost("[action]")]
         public IActionResult InsterTrackingForm(v_ftt_form2DTO vm)
         {

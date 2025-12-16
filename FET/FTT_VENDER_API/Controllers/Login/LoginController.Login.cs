@@ -42,6 +42,7 @@ namespace FTT_VENDER_API.Controllers.Login
         /// <param name="vm"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
+        
         [HttpPost("[action]")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Login(LoginVM vm)
