@@ -97,7 +97,7 @@ namespace FTT_API.Models.Handler
                             { "@Status", StatusEnum.Cancel.ToInt() },
                             { "@SendStatus", (int)MailSendStatusEnum.Error },
                             { "@RealSendTime", DateTime.Now },
-                            { "@ErrorMsg", iex },
+                            { "@ErrorMsg", iex.Message },
                             { "@Id", UnSentMails[i].Id },
                             { "@UpdateTime", DateTime.Now },
                             { "@updater", 0}
