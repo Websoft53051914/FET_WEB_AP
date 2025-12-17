@@ -1,23 +1,27 @@
-﻿using Core.Utility.Extensions;
+﻿using Const.VO;
+using FTT_VENDER_API.Common;
 using FTT_VENDER_API.Common.ConfigurationHelper;
 using FTT_VENDER_API.Models.Handler;
-using FTT_VENDER_API.Models.ViewModel.ChangePw;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
+using FTT_VENDER_API.Models.ViewModel.Login;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Caching.Memory;
 using System.Collections.Concurrent;
-using System.Drawing;
-using System.Drawing.Imaging;
-using static Const.Enums;
+using SixLabors.ImageSharp.Formats.Png;
+using SixLabors.ImageSharp.PixelFormats;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp.Drawing.Processing;
+using SixLabors.Fonts;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.Extensions.Caching.Memory;
+using FTT_VENDER_API.Models.ViewModel.ChangePw;
+using Core.Utility.Extensions;
 using static FTT_VENDER_API.Controllers.Login.LoginController;
-using static FTT_VENDER_API.Models.AlertMsgRedirection;
 
 
 namespace FTT_VENDER_API.Controllers.ChangePw
 {
     [Route("[controller]")]
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public class ChangePwController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;
@@ -184,15 +188,63 @@ namespace FTT_VENDER_API.Controllers.ChangePw
 
         private byte[] GenerateCaptchaImage(string code)
         {
-            int width = 100, height = 40;
-            using var bmp = new Bitmap(width, height);
-            using var g = Graphics.FromImage(bmp);
-            g.Clear(Color.White);
-            var font = new Font("Arial", 20, FontStyle.Bold);
-            var brush = new SolidBrush(Color.Black);
-            g.DrawString(code, font, brush, 10, 5);
+            int width = 100;
+            int height = 40;
+
+            using var image = new Image<Rgba32>(width, height);
+            image.Mutate(ctx =>
+            {
+                ctx.Fill(Color.White);
+
+                // 嘗試使用多種字型作為備選方案
+                SixLabors.Fonts.Font font;
+                var fontNames = new[] { "Arial", "Liberation Sans", "DejaVu Sans", "sans-serif" };
+
+                font = null;
+                foreach (var fontName in fontNames)
+                {
+                    try
+                    {
+                        font = SystemFonts.CreateFont(fontName, 30, FontStyle.Bold);
+                        break;
+                    }
+                    catch (FontFamilyNotFoundException)
+                    {
+                        if (fontName == fontNames.Last())
+                        {
+                            // 如果都找不到，使用系統預設字型
+                            var families = SystemFonts.Families;
+                            if (!families.Any())
+                                throw new InvalidOperationException("系統無可用字型");
+
+                            var defaultFamily = families.First();
+                            font = SystemFonts.CreateFont(defaultFamily.Name, 30, FontStyle.Bold);
+                        }
+                        else
+                        {
+                            continue;
+                        }
+                    }
+                }
+
+                // 在圖片上畫文字
+                ctx.DrawText(code, font, Color.Black, new PointF(10, 5));
+
+                // 加入簡單干擾線
+                var random = new Random();
+                for (int i = 0; i < 3; i++)
+                {
+                    ctx.DrawLine(Color.Gray, 1,
+                        new PointF[]
+                        {
+                    new PointF(random.Next(width), random.Next(height)),
+                    new PointF(random.Next(width), random.Next(height))
+                        });
+                }
+            });
+
             using var ms = new MemoryStream();
-            bmp.Save(ms, ImageFormat.Png);
+            image.Save(ms, new PngEncoder());
             return ms.ToArray();
         }
     }
