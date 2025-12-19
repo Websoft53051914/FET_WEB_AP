@@ -6,7 +6,7 @@ namespace FTT_API.Controllers.StoreMgt
 {
     public partial class StoreMgtController : BaseProjectController
     {
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult Delete(string ivr_code)
         {

@@ -20,8 +20,10 @@ namespace FTT_API.Controllers.Query
     /// 門市報修管理-查詢
     /// </summary>
     [Route("[controller]")]
-    [Common.Attribute.CustomAuthorization]
+
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+
     public partial class QueryController : BaseProjectController
     {
         /// <summary>
@@ -40,7 +42,7 @@ namespace FTT_API.Controllers.Query
         /// <summary>
         /// 取得頁面資料
         /// </summary>
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult GetInitData()
         {
@@ -92,7 +94,7 @@ namespace FTT_API.Controllers.Query
         /// 取得分頁資料<para/>
         /// [/pool/query.aspx]SearchCode_Click
         /// </summary>
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult GetPageList(DataSourceRequest request, QueryIndexVO vm)
         {
@@ -183,7 +185,7 @@ namespace FTT_API.Controllers.Query
         /// 列印維修單
         /// </summary>
         /// <returns></returns>
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult ExportExcel(string jsonData)
         {

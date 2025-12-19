@@ -8,7 +8,7 @@ namespace FTT_API.Controllers.SupplierMgt
 {
     public partial class SupplierMgtController : BaseProjectController
     {
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult Create(store_vender_profileDTO vm)
         {

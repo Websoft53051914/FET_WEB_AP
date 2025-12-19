@@ -16,7 +16,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// <param name="request"></param>
         /// <param name="vm"></param>
         /// <returns></returns>
-        [Authorize]
+        
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_Log(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -58,7 +58,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// <param name="request"></param>
         /// <param name="vm"></param>
         /// <returns></returns>
-        [Authorize]
+        
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_Desc(DataSourceRequest request, v_ftt_form2DTO vm)
         {

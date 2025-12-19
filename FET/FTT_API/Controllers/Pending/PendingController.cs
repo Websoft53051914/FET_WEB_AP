@@ -18,9 +18,11 @@ using Microsoft.AspNetCore.Authorization;
 namespace FTT_API.Controllers.Pending
 {
     [Route("[controller]")]
-    [Common.Attribute.CustomAuthorization]
-    [EnableCors("AllowLocalhost7234")]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+
+
+
     public partial class PendingController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;
@@ -31,7 +33,7 @@ namespace FTT_API.Controllers.Pending
             _hostingEnvironment = hostingEnvironment;
         }
 
-        [Authorize]
+        
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -68,7 +70,7 @@ namespace FTT_API.Controllers.Pending
         }
 
 
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult FileUpload(IFormFile file, string formNo)
         {
@@ -146,7 +148,7 @@ namespace FTT_API.Controllers.Pending
         }
 
 
-        [Authorize]
+        
         [HttpGet("[action]")]
         public IActionResult DownloadFile(string id)
         {

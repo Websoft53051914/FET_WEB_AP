@@ -15,9 +15,10 @@ using Microsoft.AspNetCore.Authorization;
 namespace FTT_API.Controllers.SecurityMgt
 {
     [Route("[controller]")]
-    [Common.Attribute.CustomAuthorization]
-    [EnableCors("AllowLocalhost7234")]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+
+
     public partial class SecurityMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;
@@ -28,7 +29,7 @@ namespace FTT_API.Controllers.SecurityMgt
             _hostingEnvironment = hostingEnvironment;
         }
 
-        [Authorize]
+        
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, store_sec_vendor_listDTO vm)
         {
@@ -65,7 +66,7 @@ namespace FTT_API.Controllers.SecurityMgt
         }
 
 
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult Import(IFormFile file)
         {
@@ -122,7 +123,7 @@ namespace FTT_API.Controllers.SecurityMgt
             }
         }
 
-        [Authorize]
+        
         [HttpGet("[action]")]
         public IActionResult Export()
         {

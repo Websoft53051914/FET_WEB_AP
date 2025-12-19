@@ -51,7 +51,6 @@
                     filter.vm.form_no = '@form_no';
 
                     $.ajax({
-                        // xhrFields: { withCredentials: true },
                         type: "POST",
                         url: "@(config.GetBackendUrl() + Url.Action("GetPageList_Desc", "Pending"))",
                         data: filter,
@@ -121,7 +120,6 @@
                         filter.vm.form_no = '@form_no';
 
                         $.ajax({
-                            // xhrFields: { withCredentials: true },
                             type: "POST",
                             url: "@(config.GetBackendUrl() + Url.Action("GetPageList_Log", "Pending"))",
                             data: filter,

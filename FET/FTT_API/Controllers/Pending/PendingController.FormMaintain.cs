@@ -8,6 +8,7 @@ using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models;
 using FTT_API.Models.Handler;
 using FTT_API.Models.Partial;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -16,9 +17,10 @@ using System.Linq;
 
 namespace FTT_API.Controllers.Pending
 {
+    
     public partial class PendingController : BaseProjectController
     {
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult UpdateEmpnoDeptCode(FormMaintainVM vm)
         {
@@ -57,7 +59,7 @@ namespace FTT_API.Controllers.Pending
             }
         }
 
-        [Authorize]
+        
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_V_ACCESS_ROLE(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -92,7 +94,7 @@ namespace FTT_API.Controllers.Pending
                 return JsonValidFail("系統錯誤");
             }
         }
-        [Authorize]
+        
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_Access(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -127,7 +129,7 @@ namespace FTT_API.Controllers.Pending
                 return JsonValidFail("系統錯誤");
             }
         }
-        [Authorize]
+        
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_Vender(DataSourceRequest request, v_ftt_form2DTO vm)
         {

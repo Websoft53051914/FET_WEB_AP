@@ -19,8 +19,10 @@ namespace FTT_API.Controllers.CIConfig
     /// 例外派工維護 API
     /// </summary>
     [Route("[controller]")]
-    [Common.Attribute.CustomAuthorization]
+
+
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
     public partial class CIConfigController : BaseProjectController
     {
         /// <summary>
@@ -41,7 +43,7 @@ namespace FTT_API.Controllers.CIConfig
         /// [/Storemgt/CIConfig.aspx.cs]gridView_DataBind()
         /// </summary>
         [HttpPost("[action]")]
-        [Authorize]
+        
         public IActionResult GetPageList(DataSourceRequest request, CIConfigIndexVO vm)
         {
             try
@@ -94,7 +96,7 @@ namespace FTT_API.Controllers.CIConfig
         /// </summary>
         /// <returns></returns>
         [HttpPost("[action]")]
-        [Authorize]
+        
         public IActionResult ExportExcel(string jsonData)
         {
             try
@@ -335,7 +337,7 @@ namespace FTT_API.Controllers.CIConfig
         /// </summary>
         /// <returns></returns>
         [HttpPost("[action]")]
-        [Authorize]
+        
         public IActionResult ImportExcel(IFormFile? file)
         {
             try

@@ -6,7 +6,7 @@ using static Const.Enums;
 
 namespace FTT_API.Controllers
 {
-    [Common.Attribute.CustomAuthorization]
+    
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

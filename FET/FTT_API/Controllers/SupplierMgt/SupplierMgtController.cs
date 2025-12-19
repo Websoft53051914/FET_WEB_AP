@@ -11,8 +11,9 @@ using Microsoft.AspNetCore.Mvc;
 namespace FTT_API.Controllers.SupplierMgt
 {
     [Route("[controller]")]
-    [Common.Attribute.CustomAuthorization]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+
     public partial class SupplierMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;
@@ -23,7 +24,7 @@ namespace FTT_API.Controllers.SupplierMgt
             _hostingEnvironment = hostingEnvironment;
         }
 
-        [Authorize]
+        
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, store_vender_profileDTO vm)
         {
@@ -59,7 +60,7 @@ namespace FTT_API.Controllers.SupplierMgt
             }
         }
 
-        [Authorize]
+        
         [HttpGet("[action]")]
         public async Task<IActionResult> GetDetail(string order_id)
         {
@@ -77,7 +78,7 @@ namespace FTT_API.Controllers.SupplierMgt
             }
         }
 
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult SendPWD(string order_id)
         {

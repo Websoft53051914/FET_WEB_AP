@@ -19,7 +19,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// </summary>
         /// <param name="form_no"></param>
         /// <returns></returns>
-        [Authorize]
+        
         [HttpGet("[action]")]
         public IActionResult GetDetail(string form_no)
         {
@@ -525,7 +525,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// </summary>
         /// <param name="vm"></param>
         /// <returns></returns>
-        [Authorize]
+        
         [HttpPost("[action]")]
         public ActionResult Add_Ftt_form_amount(Add_Ftt_form_amount_VM vm)
         {
@@ -572,7 +572,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// 表單送出
         /// </summary>
         /// <returns></returns>
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult Detail(Ftt_formDTO vm)
         {
@@ -792,7 +792,7 @@ form_no=@form_no
             public string ExpenseType { get; set; }
         }
 
-        [Authorize]
+        
         [HttpPost("[action]")]
         public ActionResult SelectDesc(SelectDescVM vm)
         {
@@ -813,7 +813,7 @@ form_no=@form_no
             }
         }
 
-        [Authorize]
+        
         [HttpPost("[action]")]
         public ActionResult ShowDesc(TemplateConfigVM vm)
         {
@@ -840,7 +840,7 @@ form_no=@form_no
             }
         }
 
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult FileUpload(IFormFile file, string formNo)
         {
@@ -917,7 +917,7 @@ form_no=@form_no
         }
 
 
-        [Authorize]
+        
         [HttpGet("[action]")]
         public IActionResult DownloadFile(string id)
         {

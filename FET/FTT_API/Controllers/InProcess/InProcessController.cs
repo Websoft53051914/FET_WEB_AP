@@ -13,9 +13,10 @@ using Microsoft.AspNetCore.Authorization;
 namespace FTT_API.Controllers.InProcess
 {
     [Route("[controller]")]
-    [Common.Attribute.CustomAuthorization]
-    [EnableCors("AllowLocalhost7234")]
+
+
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
     public class InProcessController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;
@@ -26,7 +27,7 @@ namespace FTT_API.Controllers.InProcess
             _hostingEnvironment = hostingEnvironment;
         }
 
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult GetPageList(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -64,7 +65,7 @@ namespace FTT_API.Controllers.InProcess
         }
 
 
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult InsterTrackingForm(v_ftt_form2DTO vm)
         {

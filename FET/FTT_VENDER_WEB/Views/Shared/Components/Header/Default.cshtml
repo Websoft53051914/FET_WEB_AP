@@ -83,7 +83,7 @@
 <script src="~/lib/jsCookie/js.cookie.min.js"></script>
 <script>
     $(document).ready(function () {
-        $('#userloginname').text(decodeURIComponent(Cookies.get('userLoginName')))
+        $('#userloginname').text(decodeURIComponent(localStorage.userLoginName))
         $('#btn-logout').on('click', function () {
             showLoader();
             // var data = { formNo: formNo };

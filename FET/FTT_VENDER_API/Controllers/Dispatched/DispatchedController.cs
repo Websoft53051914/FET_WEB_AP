@@ -15,6 +15,7 @@ namespace FTT_VENDER_API.Controllers.Dispatched
     /// </summary>
     [Route("[controller]")]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
     public partial class DispatchedController : BaseProjectController
     {
         /// <summary>
@@ -35,7 +36,7 @@ namespace FTT_VENDER_API.Controllers.Dispatched
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult GetPageList(DataSourceRequest request)
         {

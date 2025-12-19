@@ -42,7 +42,7 @@ namespace FTT_VENDER_API.Controllers.Login
         /// <param name="vm"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        
+
         [HttpPost("[action]")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Login(LoginVM vm)
@@ -57,18 +57,18 @@ namespace FTT_VENDER_API.Controllers.Login
                     this.LogSuccess();
                     return JsonValidFail(resultVO.ErrorMsg);
                 }
-
+                string safeToken = "";
                 if (!string.IsNullOrEmpty(resultVO.Token.TokenId))
                 {
                     resultVO.Token.TokenId = InputSanitizer.SanitizeForCookie(resultVO.Token.TokenId);
                     // 安全編碼 Token
-                    string safeToken = string.IsNullOrEmpty(resultVO?.Token?.TokenId) ? string.Empty : Uri.EscapeDataString(resultVO.Token.TokenId);
-                    Response.Cookies.Append("Token", safeToken, new CookieOptions
-                    {
-                        HttpOnly = false,
-                        Secure = false, // HTTP測試用false https用true
-                        SameSite = SameSiteMode.Lax, // http測試用Lax https用none
-                    });
+                    safeToken = string.IsNullOrEmpty(resultVO?.Token?.TokenId) ? string.Empty : Uri.EscapeDataString(resultVO.Token.TokenId);
+                    //Response.Cookies.Append("Token", safeToken, new CookieOptions
+                    //{
+                    //    HttpOnly = true,   // 防止 JS 讀取
+                    //    Secure = true,     // 只允許 HTTPS
+                    //    SameSite = SameSiteMode.None, // 防止 CSRF
+                    //});
                 }
                 string userLoginName = string.Empty;
                 if (sessionVO != null)
@@ -81,25 +81,25 @@ namespace FTT_VENDER_API.Controllers.Login
                 userLoginName = SanitizeCookieValue(userLoginName);
                 var userrole = SanitizeCookieValue(sessionVO?.userrole);
 
-                Response.Cookies.Append("userLoginName", userLoginName ?? string.Empty, new CookieOptions
-                {
-                    HttpOnly = false,
-                    Secure = false, // HTTP測試用false https用true
-                    SameSite = SameSiteMode.Lax, // http測試用Lax https用none
-                });
+                //Response.Cookies.Append("userLoginName", userLoginName ?? string.Empty, new CookieOptions
+                //{
+                //    HttpOnly = true,   // 防止 JS 讀取
+                //    Secure = true,     // 只允許 HTTPS
+                //    SameSite = SameSiteMode.None, // 防止 CSRF
+                //});
                 // 對 userrole 進行編碼，防止特殊字元造成問題
                 string safeUserRole = string.IsNullOrEmpty(userrole) ? string.Empty : Uri.EscapeDataString(userrole);
 
-                Response.Cookies.Append("userrole", safeUserRole ?? string.Empty, new CookieOptions
-                {
-                    HttpOnly = false,
-                    Secure = false, // HTTP測試用false https用true
-                    SameSite = SameSiteMode.Lax, // http測試用Lax https用none
-                });
+                //Response.Cookies.Append("userrole", safeUserRole ?? string.Empty, new CookieOptions
+                //{
+                //    HttpOnly = true,   // 防止 JS 讀取
+                //    Secure = true,     // 只允許 HTTPS
+                //    SameSite = SameSiteMode.None, // 防止 CSRF
+                //});
                 _sessionVO = sessionVO ?? new();
 
                 this.LogSuccess("登入成功");
-                return JsonOK();
+                return JsonSuccess(new { Token = safeToken, userLoginName = userLoginName });
             }
             catch (Exception ex)
             {

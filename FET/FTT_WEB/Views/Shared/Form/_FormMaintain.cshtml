@@ -75,7 +75,6 @@
                     filter.vm.form_no = '@form_no';
 
                     $.ajax({
-                        // xhrFields: { withCredentials: true },
                         type: "POST",
                         url: "@(config.GetBackendUrl() + Url.Action("GetPageList_V_ACCESS_ROLE", "Pending"))",
                         data: filter,
@@ -202,7 +201,6 @@
                     filter.vm.form_no = '@form_no';
 
                     $.ajax({
-                        // xhrFields: { withCredentials: true },
                         type: "POST",
                         url: "@(config.GetBackendUrl() + Url.Action("GetPageList_Vender", "Pending"))",
                         data: filter,
@@ -267,7 +265,6 @@
                     filter.vm.form_no = '@form_no';
 
                     $.ajax({
-                        // xhrFields: { withCredentials: true },
                         type: "POST",
                         url: "@(config.GetBackendUrl() + Url.Action("GetPageList_Access", "Pending"))",
                         data: filter,

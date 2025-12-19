@@ -7,7 +7,7 @@ namespace FTT_API.Controllers.SecurityMgt
 {
     public partial class SecurityMgtController : BaseProjectController
     {
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult Create(Store_profileDTO vm)
         {
