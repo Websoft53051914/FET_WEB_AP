@@ -96,7 +96,6 @@
                     loadData: function (filter) {
                         var d = $.Deferred();
                         $.ajax({
-                            // xhrFields: { withCredentials: true },
                             type: "POST",
                             url: "@(config.GetBackendUrl() + Url.Action("GetPageList"))",
                             data: filter,

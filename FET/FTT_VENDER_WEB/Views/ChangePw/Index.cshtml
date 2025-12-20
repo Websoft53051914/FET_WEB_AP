@@ -243,20 +243,19 @@
         /**
          * 步驟 1: 獲取 Anti-Forgery Token
          * 這個請求會促使後端設置必要的 CSRF-COOKIE 到瀏覽器中。
-         */
+         */  
         async function fetchCsrfToken() {
             try {
-                const API_BASE_URL = '@FTT_VENDER_WEB.Common.Method.GetAppSettingsDataByName("BackendURL")'; // 替換為您的 API 網域
+                const API_BASE_URL = '@FTT_VENDER_WEB.Common.Method.GetAppSettingsDataByName("BackendURL")';
                 const response = await fetch(`${API_BASE_URL}/antiforgery/token`, {
                     method: 'GET',
-                    // 🌟 關鍵：必須包含這個屬性！
                     credentials: 'include'
                 });
                 if (!response.ok) {
                     throw new Error('Failed to fetch CSRF token');
                 }
-                const data = await response.json();
-                return data.token; // 返回 Request Token 值
+                const token = response.headers.get('X-CSRF-TOKEN');
+                return token;
             } catch (error) {
                 console.error("Error getting CSRF token:", error);
                 return null;

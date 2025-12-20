@@ -47,13 +47,13 @@ namespace FTT_API.Controllers
                     if (resultVO.IsExpired && tokenInfoEntity != null && tokenInfoEntity.Status != StatusEnum.Cancel.ToInt())
                     {
                         RefreshToken(resultVO.TokenInfoVO, token);
-                        if (IsSafeToken(resultVO.TokenInfoVO.TokenId))
-                            Response.Cookies.Append(FTT_API.Common.Const.TOKEN_NAME, resultVO.TokenInfoVO.TokenId, new CookieOptions
-                            {
-                                HttpOnly = false,
-                                Secure = false, // HTTP測試用false https用true
-                                SameSite = SameSiteMode.Lax, // http測試用Lax https用none
-                            });
+                        //if (IsSafeToken(resultVO.TokenInfoVO.TokenId))
+                        //    Response.Cookies.Append(FTT_API.Common.Const.TOKEN_NAME, resultVO.TokenInfoVO.TokenId, new CookieOptions
+                        //    {
+                        //        HttpOnly = true,   // 防止 JS 讀取
+                        //        Secure = true,     // 只允許 HTTPS
+                        //        SameSite = SameSiteMode.None, // 防止 CSRF
+                        //    });
                     }
                     session = sessionRes;
                 }

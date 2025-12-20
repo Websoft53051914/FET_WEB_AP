@@ -1,14 +1,13 @@
 ﻿using Core.Utility.Web.Base;
 using FTT_VENDER_API.Models;
 using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 
 namespace FTT_VENDER_API.Controllers.AntiforgeryController
 {
     [Route("[controller]")]
-    [Common.Attribute.CustomAuthorization]
-    [EnableCors("AllowLocalhost7234")]
     public partial class AntiforgeryController : BaseController
     {
         private readonly IAntiforgery _antiforgery;

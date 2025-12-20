@@ -91,7 +91,7 @@
             color: #027dca; /* 文字顏色 */
             text-decoration: none; /* 移除底線 */
             font-weight: bold; /* 粗體字 */
-            font-size:smaller;
+            font-size: smaller;
         }
 
             .forgot-link:hover {
@@ -129,14 +129,14 @@
                                     <i class="fa fa-eye" id="PdEye"></i>
                                 </div>
                             </div>
-                            <a href='@Url.Action("Index","ChangePw")' target="_blank" class="forgot-link">變更密碼</a>
+                            <a href='@Url.Action("Index", "ChangePw")' target="_blank" class="forgot-link">變更密碼</a>
 
                         </div>
 
                         <div class="mt-2">
                             <label for="Pd" class="form-label">驗證碼</label>
                             <div class="input-group">
-                                <input class="form-control" type="text" name="captcha" id="captcha" required style="width:80px;" maxlength="4"/>
+                                <input class="form-control" type="text" name="captcha" id="captcha" required style="width:80px;" maxlength="4" />
                                 <img id="imgCaptcha" src="" style="cursor:pointer;" title="點擊重新產生" />
                             </div>
                         </div>
@@ -325,9 +325,9 @@
                                     AC: ac,
                                     PD: pd
                                 },
-                                success: function (data) {
-                                    if (data.Success) {
-
+                                success: function (data) {                                         
+                                    localStorage.setItem("Token", data.Data.Token);
+                                    localStorage.setItem("userLoginName", data.Data.userLoginName);
                                         if (data.Success) {
                                             const urlParams = new URLSearchParams(window.location.search);
                                             const originUrl = urlParams.get('originUrl');
@@ -340,9 +340,6 @@
                                         } else {
                                             $errorMsg.text(data.Message);
                                         }
-                                    } else {
-                                        $errorMsg.text(data.Message);
-                                    }
                                 },
                                 error: function (xhr, status, error) {
                                     $errorMsg.text("登入失敗，請稍後再試。");
@@ -372,14 +369,13 @@
                 const API_BASE_URL = '@FTT_VENDER_WEB.Common.Method.GetAppSettingsDataByName("BackendURL")'; // 替換為您的 API 網域
                 const response = await fetch(`${API_BASE_URL}/antiforgery/token`, {
                     method: 'GET',
-                    // 🌟 關鍵：必須包含這個屬性！
                     credentials: 'include'
                 });
                 if (!response.ok) {
                     throw new Error('Failed to fetch CSRF token');
                 }
-                const data = await response.json();
-                return data.token; // 返回 Request Token 值
+                const token = response.headers.get('X-CSRF-TOKEN');
+                return token;
             } catch (error) {
                 console.error("Error getting CSRF token:", error);
                 return null;

@@ -428,12 +428,11 @@
             return null;
         }
 
-        const token = getCookie('FTT_Token'); // 你的 JWT 存放位置
+        const token = localStorage.FTT_Token; // 你的 JWT 存放位置
 
         var hasout = false;
         $(document)
         $.ajaxSetup({
-
         headers: {
             "Authorization": `Bearer ${token}` // 放在 Header
         },

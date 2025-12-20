@@ -13,9 +13,11 @@ using Microsoft.AspNetCore.Authorization;
 namespace FTT_API.Controllers.MailServerSetting
 {
     [Route("[controller]")]
-    [Common.Attribute.CustomAuthorization]
-    [EnableCors("AllowLocalhost7234")]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+
+
+
     public class MailServerSettingController : BaseProjectController
     {
         private readonly IWebHostEnvironment _hostingEnvironment;
@@ -26,7 +28,7 @@ namespace FTT_API.Controllers.MailServerSetting
             _configHelper = configHelper;
         }
 
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult Update(MailServerSettingVM vm)
         {

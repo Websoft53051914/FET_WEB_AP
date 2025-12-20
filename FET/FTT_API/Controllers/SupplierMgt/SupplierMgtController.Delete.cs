@@ -7,7 +7,7 @@ namespace FTT_API.Controllers.SupplierMgt
 {
     public partial class SupplierMgtController : BaseProjectController
     {
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult Delete(string order_id)
         {

@@ -473,12 +473,19 @@
                 // 安全抓取 filename
                 let filename = "download";
                 const disposition = response.headers.get("Content-Disposition");
-                if (disposition) {
-                    const match = disposition.match(/filename\*?=(?:UTF-8'')?["']?([^;"']+)["']?/i);
-                    if (match && match[1]) {
-                        filename = decodeURIComponent(match[1].replace(/\+/g, ' '));
-                    }
-                }
+    if (disposition) {
+        // 先嘗試抓 filename* (UTF-8)
+        let match = disposition.match(/filename\*=[^']*'[^']*'(.+)/i);
+        if (match && match[1]) {
+            filename = decodeURIComponent(match[1]);
+        } else {
+            // fallback 抓 filename
+            match = disposition.match(/filename=["']?([^;"']+)["']?/i);
+            if (match && match[1]) {
+                filename = match[1];
+            }
+        }
+    }
 
                 const temp = document.createElement("a");
                 temp.style.display = "none";
@@ -581,7 +588,9 @@
                         if (data.Success) {
                             alert('新增檔案完成');
 
-                            $('#fildTD').append(GetFileElement(data.Data.Text, data.Data.Value));
+                            // $('#fildTD').append(GetFileElement(data.Data.Text, data.Data.Value));
+                            const el = GetFileElement(data.Data.Text, data.Data.Value);
+                            document.getElementById("fildTD").appendChild(el);
 
                             $('#File').val('');
                         } else {
@@ -904,7 +913,9 @@
 
                             // 處理資料庫的金額彙整欄資料
                             for (var i = 0; i < data.FileItems.length; i++) {
-                                $('#fildTD').append(GetFileElement(data.FileItems[i].Text, data.FileItems[i].Value));
+                                const el = GetFileElement(data.FileItems[i].Text, data.FileItems[i].Value,i);
+                                document.getElementById("fildTD").appendChild(el);
+                                // $('#fildTD').append(GetFileElement(data.FileItems[i].Text, data.FileItems[i].Value));
                             }
                         }
 

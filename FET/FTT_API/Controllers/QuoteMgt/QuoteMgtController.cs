@@ -14,9 +14,10 @@ using Microsoft.AspNetCore.Authorization;
 namespace FTT_API.Controllers.QuoteMgt
 {
     [Route("[controller]")]
-    [Common.Attribute.CustomAuthorization]
-    [EnableCors("AllowLocalhost7234")]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+
+
     public class QuoteMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;
@@ -27,7 +28,7 @@ namespace FTT_API.Controllers.QuoteMgt
             _hostingEnvironment = hostingEnvironment;
         }
 
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult Import(IFormFile file)
         {
@@ -84,7 +85,7 @@ namespace FTT_API.Controllers.QuoteMgt
             }
         }
 
-        [Authorize]
+        
         [HttpGet("[action]")]
         public IActionResult Export()
         {
@@ -192,7 +193,7 @@ namespace FTT_API.Controllers.QuoteMgt
             return dtTable;
         }
 
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult ImportStore(IFormFile file)
         {
@@ -249,7 +250,7 @@ namespace FTT_API.Controllers.QuoteMgt
             }
         }
 
-        [Authorize]
+        
         [HttpGet("[action]")]
         public IActionResult ExportStore()
         {
@@ -310,7 +311,7 @@ namespace FTT_API.Controllers.QuoteMgt
             return dtTable;
         }
 
-        [Authorize]
+        
         [HttpPost("[action]")]
         public IActionResult SaveMarquee(string content)
         {
@@ -328,7 +329,7 @@ namespace FTT_API.Controllers.QuoteMgt
             }
         }
 
-        [Authorize]
+        
         [HttpGet("[action]")]
         public IActionResult GetMarquee()
         {

@@ -11,23 +11,24 @@ using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Common.OriginClass.ModelClass;
 using FTT_API.Models.Handler;
 using FTT_API.Models.ViewModel.Login;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Options;
 using NPOI.SS.Formula.Functions;
+using SixLabors.Fonts;
+using SixLabors.ImageSharp;
+using SixLabors.ImageSharp.Drawing.Processing;
 using SixLabors.ImageSharp.Formats.Png;
 using SixLabors.ImageSharp.PixelFormats;
-using SixLabors.ImageSharp;
-using System.Linq;
+using SixLabors.ImageSharp.Processing;
 using System.Collections.Concurrent;
 using System.Data;
-using static Const.Enums;
-using SixLabors.ImageSharp.Processing;
-using Microsoft.Extensions.Caching.Memory;
-using SixLabors.ImageSharp.Drawing.Processing;
-using SixLabors.Fonts;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Web;
+using static Const.Enums;
 
 namespace FTT_API.Controllers.Login
 {
@@ -38,7 +39,7 @@ namespace FTT_API.Controllers.Login
         private readonly ConfigurationHelper _configHelper;
         // 使用 IMemoryCache 替代 static ConcurrentDictionary，避免重啟後資料遺失
         private readonly IMemoryCache _memoryCache;
-        
+
         public LoginController(IWebHostEnvironment hostingEnvironment, ConfigurationHelper configHelper, IMemoryCache memoryCache)
         {
             _hostingEnvironment = hostingEnvironment;
@@ -71,16 +72,16 @@ namespace FTT_API.Controllers.Login
                     this.LogSuccess();
                     return JsonValidFail(resultVO.ErrorMsg);
                 }
-
+                var safeToken = "";
                 if (!string.IsNullOrEmpty(resultVO.Token.TokenId))
                 {
-                    var safeToken = CookieSafeEncode(resultVO.Token.TokenId);
-                    Response.Cookies.Append(FTT_API.Common.Const.TOKEN_NAME, safeToken, new CookieOptions
-                    {
-                        HttpOnly = false,
-                        Secure = false, // HTTP測試用false https用true
-                        SameSite = SameSiteMode.Lax, // http測試用Lax https用none
-                    });
+                    safeToken = CookieSafeEncode(resultVO.Token.TokenId);
+                    //Response.Cookies.Append(FTT_API.Common.Const.TOKEN_NAME, safeToken, new CookieOptions
+                    //{
+                    //    HttpOnly = true,   // 防止 JS 讀取
+                    //    Secure = true,     // 只允許 HTTPS
+                    //    SameSite = SameSiteMode.None, // 防止 CSRF
+                    //});
                 }
 
                 string userLoginName = string.Empty;
@@ -115,23 +116,23 @@ namespace FTT_API.Controllers.Login
                 // 假設 userLoginName 是從 vm 取得的使用者輸入
                 string safeUserLoginName = string.IsNullOrEmpty(userLoginName) ? string.Empty : Uri.EscapeDataString(userLoginName); // 將特殊字符編碼
 
-                Response.Cookies.Append(FTT_API.Common.Const.USER_LOGIN_NAME, safeUserLoginName ?? string.Empty, new CookieOptions
-                {
-                    HttpOnly = false,
-                    Secure = false, // HTTP測試用false https用true
-                    SameSite = SameSiteMode.Lax, // http測試用Lax https用none
-                });
+                //Response.Cookies.Append(FTT_API.Common.Const.USER_LOGIN_NAME, safeUserLoginName ?? string.Empty, new CookieOptions
+                //{
+                //    HttpOnly = true,   // 防止 JS 讀取
+                //    Secure = true,     // 只允許 HTTPS
+                //    SameSite = SameSiteMode.None, // 防止 CSRF
+                //});
                 Response.Cookies.Append(FTT_API.Common.Const.USER_ROLE, userrole ?? string.Empty, new CookieOptions
                 {
-                    HttpOnly = false,
-                    Secure = false, // HTTP測試用false https用true
-                    SameSite = SameSiteMode.Lax, // http測試用Lax https用none
+                    HttpOnly = true,   // 防止 JS 讀取
+                    Secure = true,     // 只允許 HTTPS
+                    SameSite = SameSiteMode.None, // 防止 CSRF
                 });
                 _sessionVO = sessionVO ?? new();
 
                 this.LogSuccess("login/login---結束");
                 this.LogSuccess("登入成功");
-                return JsonOK();
+                return JsonSuccess(new { FTT_Token = safeToken, FTT_userLoginName = userLoginName });
             }
             catch (Exception ex)
             {
@@ -140,11 +141,11 @@ namespace FTT_API.Controllers.Login
 
                 //20251208 Add begin
                 // 為了快速除錯，臨時將例外訊息回傳給前端 (注意安全性，除錯完畢後移除)
-                #if DEBUG // 假設您在 Production 環境沒有使用 DEBUG
-                    return JsonValidFail(ex.Message + " | Trace: " + ex.StackTrace);
-                #else
+#if DEBUG // 假設您在 Production 環境沒有使用 DEBUG
+                return JsonValidFail(ex.Message + " | Trace: " + ex.StackTrace);
+#else
                     return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg")); // 恢復為通用錯誤
-                #endif
+#endif
                 //20251208 Add end
 
             }
@@ -156,7 +157,7 @@ namespace FTT_API.Controllers.Login
         /// 畫出 圖形驗證碼
         /// </summary>
         /// <returns></returns>
-        [Authorize]
+
         [HttpGet("[action]")]
         public ActionResult CaptchaCode()
         {
@@ -174,8 +175,8 @@ namespace FTT_API.Controllers.Login
         }
 
         //[CustomAuthorization(FuncID.Home_View)]
-        [Common.Attribute.CustomAuthorization]
-        [Authorize]
+        
+
         [HttpGet("[action]")]
         public ActionResult CheckLogin()
         {
@@ -195,7 +196,7 @@ namespace FTT_API.Controllers.Login
             public string RETAILID { get; set; }
         }
 
-        [Common.Attribute.CustomAuthorization]
+        
         [HttpPost("[action]")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
         public ActionResult CheckSSO(SSOVM vm)
@@ -381,13 +382,13 @@ namespace FTT_API.Controllers.Login
             if (!string.IsNullOrEmpty(token.TokenId))
             {
                 // 1. 完整安全化：消毒 + URL 編碼（Checkmarx 可辨識）
-                var safeToken = CookieSafeEncode(token.TokenId);
-                Response.Cookies.Append(FTT_API.Common.Const.TOKEN_NAME, safeToken, new CookieOptions
-                {
-                    HttpOnly = false,
-                    Secure = false, // HTTP測試用false https用true
-                    SameSite = SameSiteMode.Lax, // http測試用Lax https用none
-                });
+                //var safeToken = CookieSafeEncode(token.TokenId);
+                //Response.Cookies.Append(FTT_API.Common.Const.TOKEN_NAME, safeToken, new CookieOptions
+                //{
+                //    HttpOnly = true,   // 防止 JS 讀取
+                //    Secure = true,     // 只允許 HTTPS
+                //    SameSite = SameSiteMode.None, // 防止 CSRF
+                //});
             }
 
             // --- User Name Cookie ---
@@ -396,17 +397,17 @@ namespace FTT_API.Controllers.Login
             // --- User Role Cookie ---
             var userRoleSafe = CookieSafeEncode(sessionVO?.userrole);
 
-            Response.Cookies.Append(FTT_API.Common.Const.USER_LOGIN_NAME, userLoginName ?? string.Empty, new CookieOptions
-            {
-                HttpOnly = false,
-                Secure = false, // HTTP測試用false https用true
-                SameSite = SameSiteMode.Lax, // http測試用Lax https用none
-            });
+            //Response.Cookies.Append(FTT_API.Common.Const.USER_LOGIN_NAME, userLoginName ?? string.Empty, new CookieOptions
+            //{
+            //    HttpOnly = true,   // 防止 JS 讀取
+            //    Secure = true,     // 只允許 HTTPS
+            //    SameSite = SameSiteMode.None, // 防止 CSRF
+            //});
             Response.Cookies.Append(FTT_API.Common.Const.USER_ROLE, userRoleSafe ?? string.Empty, new CookieOptions
             {
-                HttpOnly = false,
-                Secure = false, // HTTP測試用false https用true
-                SameSite = SameSiteMode.Lax, // http測試用Lax https用none
+                HttpOnly = true,   // 防止 JS 讀取
+                Secure = true,     // 只允許 HTTPS
+                SameSite = SameSiteMode.None, // 防止 CSRF
             });
 
         }
@@ -482,7 +483,7 @@ namespace FTT_API.Controllers.Login
         }
 
         // 測試用 API - 檢查快取狀態
-        [Authorize]
+
         [HttpGet("[action]")]
         [AllowAnonymous] // 允許匿名訪問，用於除錯
         public IActionResult TestCache()
@@ -491,18 +492,18 @@ namespace FTT_API.Controllers.Login
             {
                 var testKey = "test_key";
                 var testValue = "test_value_" + DateTime.Now.ToString("HHmmss");
-                
+
                 // 測試寫入
                 _memoryCache.Set(testKey, testValue, TimeSpan.FromMinutes(1));
                 Console.WriteLine($"[TestCache] Set: {testKey} = {testValue}");
-                
+
                 // 測試讀取
                 var retrieved = _memoryCache.TryGetValue(testKey, out var value);
                 Console.WriteLine($"[TestCache] Get: Found={retrieved}, Value={value}");
-                
+
                 // 清理
                 _memoryCache.Remove(testKey);
-                
+
                 return JsonSuccess(new
                 {
                     platform = Environment.OSVersion.Platform.ToString(),
@@ -526,14 +527,14 @@ namespace FTT_API.Controllers.Login
         {
             var code = GenerateCode(4); // 4位隨機碼
             var id = Guid.NewGuid().ToString();
-            
+
             // 使用 MemoryCache 存儲驗證碼，設定 5 分鐘過期時間
             var cacheOptions = new MemoryCacheEntryOptions
             {
                 AbsoluteExpirationRelativeToNow = TimeSpan.FromMinutes(5),
                 Priority = CacheItemPriority.Normal
             };
-            
+
             var cacheKey = $"captcha_{id}";
             _memoryCache.Set(cacheKey, code, cacheOptions);
 
@@ -541,7 +542,7 @@ namespace FTT_API.Controllers.Login
             Console.WriteLine($"[GetCaptcha] Generated: ID={id}, Code={code}, Key={cacheKey}");
             Console.WriteLine($"[GetCaptcha] Platform: {Environment.OSVersion.Platform}");
             Console.WriteLine($"[GetCaptcha] Machine: {Environment.MachineName}");
-            
+
             // 立即驗證快取是否存在
             var testResult = _memoryCache.TryGetValue(cacheKey, out var testCode);
             Console.WriteLine($"[GetCaptcha] Cache test: Found={testResult}, Value={testCode}");
@@ -578,18 +579,18 @@ namespace FTT_API.Controllers.Login
             if (_memoryCache.TryGetValue(cacheKey, out var code))
             {
                 Console.WriteLine($"[VerifyCaptcha] Found in cache: '{code}'");
-                
+
                 var expectedCode = code.ToString();
                 var inputCode = request.CaptchaCode;
-                
+
                 Console.WriteLine($"[VerifyCaptcha] Comparing (case-insensitive):");
                 Console.WriteLine($"  Expected: '{expectedCode}' (length={expectedCode.Length})");
                 Console.WriteLine($"  Input:    '{inputCode}' (length={inputCode.Length})");
-                
+
                 // 移除已使用的驗證碼
                 _memoryCache.Remove(cacheKey);
                 Console.WriteLine($"[VerifyCaptcha] Removed cache key: {cacheKey}");
-                
+
                 if (string.Equals(expectedCode, inputCode, StringComparison.OrdinalIgnoreCase))
                 {
                     Console.WriteLine("[VerifyCaptcha] SUCCESS: Captcha verified!");
@@ -610,7 +611,7 @@ namespace FTT_API.Controllers.Login
             else
             {
                 Console.WriteLine($"[VerifyCaptcha] NOT FOUND in cache for key: {cacheKey}");
-                
+
                 // 嘗試列出所有快取項目
                 Console.WriteLine("[VerifyCaptcha] Attempting to list cache contents...");
                 try
@@ -650,11 +651,11 @@ namespace FTT_API.Controllers.Login
             image.Mutate(ctx =>
             {
                 ctx.Fill(Color.White);
-                
+
                 // 嘗試使用多種字型作為備選方案
                 SixLabors.Fonts.Font font;
                 var fontNames = new[] { "Arial", "Liberation Sans", "DejaVu Sans", "sans-serif" };
-                
+
                 font = null;
                 foreach (var fontName in fontNames)
                 {
@@ -671,7 +672,7 @@ namespace FTT_API.Controllers.Login
                             var families = SystemFonts.Families;
                             if (!families.Any())
                                 throw new InvalidOperationException("系統無可用字型");
-                            
+
                             var defaultFamily = families.First();
                             font = SystemFonts.CreateFont(defaultFamily.Name, 30, FontStyle.Bold);
                         }

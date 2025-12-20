@@ -364,6 +364,8 @@
                                 success: function (data) {
 
                                     if (data.Success) {
+                                    localStorage.setItem("FTT_Token", data.Data.FTT_Token);
+                                    localStorage.setItem("FTT_userLoginName", data.Data.FTT_userLoginName);
                                         const urlParams = new URLSearchParams(window.location.search);
                                         const originUrl = urlParams.get('originUrl');
                                         if (originUrl && originUrl.startsWith('/')) {
@@ -403,16 +405,15 @@
         async function fetchCsrfToken() {
             try {
                 const API_BASE_URL = '@FTT_WEB.Common.Method.GetAppSettingsDataByName("BackendURL")'; // 替換為您的 API 網域
-                    const response = await fetch(`${API_BASE_URL}/antiforgery/token`, {
-            method: 'GET',
-            // 🌟 關鍵：必須包含這個屬性！
-            credentials: 'include'
-        });
+                const response = await fetch(`${API_BASE_URL}/antiforgery/token`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
                 if (!response.ok) {
                     throw new Error('Failed to fetch CSRF token');
                 }
-                const data = await response.json();
-                return data.token; // 返回 Request Token 值
+                const token = response.headers.get('X-CSRF-TOKEN');
+                return token;
             } catch (error) {
                 console.error("Error getting CSRF token:", error);
                 return null;

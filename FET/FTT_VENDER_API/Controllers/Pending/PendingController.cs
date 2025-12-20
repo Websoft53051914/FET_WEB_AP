@@ -13,6 +13,7 @@ namespace FTT_VENDER_API.Controllers.Pending
     /// </summary>
     [Route("[controller]")]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
     public partial class PendingController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;
@@ -32,7 +33,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// <param name="request"></param>
         /// <param name="vm"></param>
         /// <returns></returns>
-        [Authorize]
+        
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, v_ftt_form2DTO vm)
         {

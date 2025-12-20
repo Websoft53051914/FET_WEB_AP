@@ -1,11 +1,13 @@
 ﻿using Core.Utility.Web.Base;
-using Microsoft.AspNetCore.Mvc;
 using FTT_VENDER_API.Models;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FTT_VENDER_API.Controllers.AlertMsg
 {
     [Route("[controller]")]
+    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public partial class AlertMsgController : BaseController
     {
         public AlertMsgController()
@@ -13,7 +15,7 @@ namespace FTT_VENDER_API.Controllers.AlertMsg
 
         }
 
-        [Authorize]
+        
         [HttpGet("[action]")]
         public IActionResult Redirection(AlertMsgRedirection vm)
         {

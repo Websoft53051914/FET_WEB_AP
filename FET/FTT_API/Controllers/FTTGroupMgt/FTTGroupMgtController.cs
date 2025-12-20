@@ -10,12 +10,14 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 namespace FTT_API.Controllers.FTTGroupMgt
 {
     [Route("[controller]")]
-    //[Common.Attribute.CustomAuthorization]
-    [EnableCors("AllowLocalhost7234")]
+    //
+
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+
     public partial class FTTGroupMgtController : BaseProjectController
     {
-        [Authorize]
+        
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, ftt_groupDTO vm)
        {

@@ -15,6 +15,7 @@ namespace FTT_VENDER_API.Controllers.CaseClosed
     /// </summary>
     [Route("[controller]")]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
     public class CaseClosedController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;
@@ -32,7 +33,7 @@ namespace FTT_VENDER_API.Controllers.CaseClosed
         /// 
         /// </summary>
         /// <returns></returns>
-        [Authorize]
+        
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, v_ftt_form2DTO vm)
         {

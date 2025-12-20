@@ -11,9 +11,11 @@ using Microsoft.AspNetCore.Mvc;
 namespace FTT_API.Controllers.CaseClosed
 {
     [Route("[controller]")]
-    [Common.Attribute.CustomAuthorization]
-    [EnableCors("AllowLocalhost7234")]
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]    
+
+    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+
+
     public class CaseClosedController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;
@@ -24,7 +26,7 @@ namespace FTT_API.Controllers.CaseClosed
             _hostingEnvironment = hostingEnvironment;
         }
 
-        [Authorize]
+        
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, v_ftt_form2DTO vm)
         {
