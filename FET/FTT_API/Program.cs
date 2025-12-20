@@ -159,12 +159,16 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowLocalhost7234",
         policy =>
-        {
+        {      
                 policy.WithOrigins(
-                      "https://localhost:50102",           // Windows 開發環境
-                      "https://10.68.16.109:50102",       // Ubuntu HTTPS
+                      //FTT_API這個專案會同時部署到門市(Intranet)與FRANCHISE(DMZ)，因為共用專案，所以以下IP與PORT需要列出來。
+                      "https://localhost:50102",          // Windows 開發環境
+                      "https://10.68.16.109:50102",       // 測試區https Ubuntu HTTPS for 門市
                       "http://10.68.16.109:50102",        // Ubuntu HTTP (備用)
-                      "http://192.168.1.107:50102"        // 原有設定
+                      "http://192.168.1.107:50102",       // 原有設定
+
+                      "https://10.68.58.133:50102",       // 正式區 Ubuntu HTTPS for 門市
+                      "https://61.20.223.2:50702"         // 正式區 Ubuntu HTTPS for Franchise
                   )
                   .AllowAnyHeader()
                   .AllowAnyMethod()

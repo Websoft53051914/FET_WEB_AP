@@ -161,11 +161,15 @@ builder.Services.AddCors(options =>
         policy =>
         {
             policy.WithOrigins(
+                 
                   "https://localhost:50402",
-                  "https://localhost:50902",           // Windows 開發環境
-                  "https://10.68.16.109:50902",       // Ubuntu HTTPS
+                  "https://localhost:50902",          // Windows 開發環境
+                  "https://10.68.16.109:50902",       // 測試區 Ubuntu HTTPS for 廠商;若50402被用掉，就用這一組
+                  "https://10.68.16.109:50402",       // 測試區 Ubuntu HTTPS for 廠商                  
                   "http://10.68.16.109:50902",        // Ubuntu HTTP (備用)
-                  "http://192.168.1.107:50902"        // 原有設定
+                  "http://192.168.1.107:50902",       // 原有設定
+                 
+                  "https://61.20.223.1:50402"         // 正式區 Ubuntu HTTPS for franchise
               )
               .AllowAnyHeader()
               .AllowAnyMethod()

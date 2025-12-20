@@ -456,15 +456,38 @@ namespace FTT_VENDER_WEB.Common
 
             return isPrivateServer;
         }
-     
+
+        //20251218為了解決部署在linux後，一段時間會出現異常訊息，系統就掛掉
+            //IOException: The configured user limit (512) on the number of inotify instances has been reached,
+            //or the per-process limit on the number of open file descriptors has been reached.
+        
+        //20251218 1.在 Method 類別中新增一個私有的靜態變數
+        private static IConfiguration _cachedConfig;
 
         public static string GetAppSettingsDataByName(string columnName)
         {
-            IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json", true, true).Build();
-            if (config[columnName] != null)
+            //20251218  2. 檢查是否已經 Build 過，如果沒有才 Build
+            if (_cachedConfig == null)
             {
-                return config[columnName];
+                _cachedConfig = new ConfigurationBuilder()
+                    .SetBasePath(Directory.GetCurrentDirectory())
+                    // 將 reloadOnChange 設為 false (最安全) 
+                    // 或者保留 true，但因為只執行一次，所以只會佔用 1 個 inotify
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .Build();
             }
+
+            //20251218 3. 永遠從快取中讀取資料
+            if (_cachedConfig[columnName] != null)
+            {
+                return _cachedConfig[columnName];
+            }
+            //20251218
+            //IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json", true, true).Build();
+            //if (config[columnName] != null)
+            //{
+            //    return config[columnName];
+            //}
 
             return string.Empty;
         }
