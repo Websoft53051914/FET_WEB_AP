@@ -13,11 +13,8 @@ using Microsoft.AspNetCore.Authorization;
 namespace FTT_API.Controllers.MailServerSetting
 {
     [Route("[controller]")]
+    [IgnoreAntiforgeryToken]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
-
-
-
     public class MailServerSettingController : BaseProjectController
     {
         private readonly IWebHostEnvironment _hostingEnvironment;

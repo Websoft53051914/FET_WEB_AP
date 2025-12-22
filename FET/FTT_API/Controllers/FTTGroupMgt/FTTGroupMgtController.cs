@@ -10,11 +10,8 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 namespace FTT_API.Controllers.FTTGroupMgt
 {
     [Route("[controller]")]
-    //
-
+    [IgnoreAntiforgeryToken]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
-
     public partial class FTTGroupMgtController : BaseProjectController
     {
         

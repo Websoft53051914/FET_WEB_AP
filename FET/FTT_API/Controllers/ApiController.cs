@@ -20,9 +20,8 @@ namespace FTT_API.Controllers
     /// API
     /// </summary>
     [Route("[controller]")]
-
+    [IgnoreAntiforgeryToken]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
     public class ApiController : BaseProjectController
     {
         private readonly ConfigurationHelper _configHelper;

@@ -22,10 +22,8 @@ namespace FTT_API.Controllers.NewOrder
     /// 新開單 API
     /// </summary>
     [Route("[controller]")]
+    [IgnoreAntiforgeryToken]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
-
-
     public partial class NewOrderController : BaseProjectController
     {
         /// <summary>

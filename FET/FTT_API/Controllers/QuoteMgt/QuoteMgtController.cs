@@ -14,10 +14,8 @@ using Microsoft.AspNetCore.Authorization;
 namespace FTT_API.Controllers.QuoteMgt
 {
     [Route("[controller]")]
+    [IgnoreAntiforgeryToken]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
-
-
     public class QuoteMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

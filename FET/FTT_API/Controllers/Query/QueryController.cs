@@ -21,9 +21,8 @@ namespace FTT_API.Controllers.Query
     /// </summary>
     [Route("[controller]")]
 
+    [IgnoreAntiforgeryToken]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
-
     public partial class QueryController : BaseProjectController
     {
         /// <summary>
