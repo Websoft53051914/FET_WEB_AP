@@ -433,9 +433,18 @@
         var hasout = false;
         $(document)
         $.ajaxSetup({
+            xhrFields: { withCredentials: true },
         headers: {
-            "Authorization": `Bearer ${token}` // 放在 Header
+            "Authorization": `Bearer ${token}`, // 放在 Header
         },
+            beforeSend:function(xhr){
+                // 重新讀取最新的 XSRF-TOKEN Cookie
+                const xsrfToken = getCookie("X-CSRF-TOKEN")
+
+                if (xsrfToken) {
+                    xhr.setRequestHeader("X-CSRF-TOKEN", decodeURIComponent(xsrfToken));
+                }
+            },
             complete: function (x, e) {
                 if (x.status === 440 || x.status == 401) {
                     if (hasout == false) {
@@ -485,8 +494,8 @@
     <script src="~/js/site.js?20250122"></script>
     <script src="~/js/handlebars.min-v4.7.7.js"></script>
     <script src="~/js/common.js?20250218"></script>
-    @*     <script src="~/lib/draw/draw.js?20250122"></script> *@
     <script src="~/lib/purify/purify.min.js"></script>
+    @*     <script src="~/lib/draw/draw.js?20250122"></script> *@
     <partial name="_Loader">
         <partial name="_ValidationScriptsPartial">
             <partial name="_MyApp" />

@@ -3,6 +3,7 @@ using Core.Utility.Extensions;
 using Core.Utility.Helper.Message;
 using Core.Utility.Web.Base;
 using FTT_API.Common;
+using FTT_API.Common.Attribute;
 using FTT_API.Common.OriginClass;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models;
@@ -16,6 +17,7 @@ using static Const.Enums;
 
 namespace FTT_API.Controllers
 {
+    [AntiforgeryTokenCookieAttribute]
     public class BaseProjectController : BaseController
     {
         private readonly object _lock = new object();

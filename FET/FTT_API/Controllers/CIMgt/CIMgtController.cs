@@ -8,8 +8,11 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 namespace FTT_API.Controllers.CIMgt
 {
     [Route("[controller]")]
-    [IgnoreAntiforgeryToken]
+
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+
+
     public partial class  CIMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

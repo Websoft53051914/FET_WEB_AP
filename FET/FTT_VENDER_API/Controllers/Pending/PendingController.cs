@@ -12,8 +12,8 @@ namespace FTT_VENDER_API.Controllers.Pending
     /// 
     /// </summary>
     [Route("[controller]")]
-    [IgnoreAntiforgeryToken]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
     public partial class PendingController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

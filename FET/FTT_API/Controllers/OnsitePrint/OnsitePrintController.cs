@@ -20,8 +20,10 @@ namespace FTT_API.Controllers.OnsitePrint
     /// 列印到場單 API
     /// </summary>
     [Route("[controller]")]
-    [IgnoreAntiforgeryToken]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+
+
     public partial class OnsitePrintController : BaseProjectController
     {
         /// <summary>

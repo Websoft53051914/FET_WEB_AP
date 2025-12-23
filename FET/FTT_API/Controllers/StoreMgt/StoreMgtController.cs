@@ -17,8 +17,10 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 namespace FTT_API.Controllers.StoreMgt
 {
     [Route("[controller]")]
-    [IgnoreAntiforgeryToken]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+
+
     public partial class StoreMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

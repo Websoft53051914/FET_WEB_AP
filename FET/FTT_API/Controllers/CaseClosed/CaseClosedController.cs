@@ -11,8 +11,10 @@ using Microsoft.AspNetCore.Mvc;
 namespace FTT_API.Controllers.CaseClosed
 {
     [Route("[controller]")]
-    [IgnoreAntiforgeryToken]
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+
+
+
     public class CaseClosedController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;
@@ -25,6 +27,9 @@ namespace FTT_API.Controllers.CaseClosed
 
         
         [HttpPost("[action]")]
+        [Authorize]
+        [ValidateAntiForgeryToken]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, v_ftt_form2DTO vm)
         {
             try

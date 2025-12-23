@@ -20,8 +20,7 @@ namespace FTT_API.Controllers
     /// API
     /// </summary>
     [Route("[controller]")]
-    [IgnoreAntiforgeryToken]
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
     public class ApiController : BaseProjectController
     {
         private readonly ConfigurationHelper _configHelper;
@@ -116,8 +115,8 @@ namespace FTT_API.Controllers
         /// 取得維修品項指定 parentId 下的子項目資料
         /// </summary>
         /// <returns></returns>
-
         [HttpPost("[action]")]
+        [Authorize]
         public IActionResult GetListTreeChildrenCi(int? parentId, string reqSrc = "ALL", string acType = "")
         {
             try
@@ -180,6 +179,7 @@ namespace FTT_API.Controllers
         /// <returns></returns>
 
         [HttpPost("[action]")]
+        [ValidateAntiForgeryToken]
         public IActionResult GetListTreeItemCi(List<int> idList, string reqSrc = "ALL", string acType = "")
         {
             try
@@ -254,6 +254,7 @@ namespace FTT_API.Controllers
         /// </summary>
 
         [HttpPost("[action]")]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public IActionResult GetPageListStore(DataSourceRequest request, DialogIvrCodeGridVO vm)
         {
             try
@@ -314,6 +315,8 @@ namespace FTT_API.Controllers
         /// <returns></returns>
 
         [HttpPost("[action]")]
+        [Authorize]
+        [ValidateAntiForgeryToken]
         public IActionResult GetPageListVender(DataSourceRequest request, DialogVenderGridVO vm)
         {
             try
@@ -364,6 +367,8 @@ namespace FTT_API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost("[action]")]
+        [Authorize]
+        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         public IActionResult GetMenuDataCount([FromBody] List<int> funcIdList)
         {
             try

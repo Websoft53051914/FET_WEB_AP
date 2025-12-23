@@ -927,7 +927,6 @@
                                 const createDOMPurify = require("dompurify");
                                 const DOMPurifyInstance = createDOMPurify(window);
                                 el.innerHTML = DOMPurifyInstance.sanitize(el.innerHTML);
-
                                 document.getElementById("fildTD").appendChild(el);
                                 // $('#fildTD').append(GetFileElement(data.FileItems[i].Text, data.FileItems[i].Value));
                             }

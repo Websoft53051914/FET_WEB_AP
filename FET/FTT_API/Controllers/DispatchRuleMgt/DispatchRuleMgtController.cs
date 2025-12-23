@@ -20,7 +20,10 @@ namespace FTT_API.Controllers.DispatchRuleMgt
     /// 派工規則維護
     /// </summary>
     [Route("[controller]")]
+
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+
     public partial class DispatchRuleMgtController : BaseProjectController
     {
         /// <summary>

@@ -23,8 +23,8 @@ namespace FTT_VENDER_API.Controllers.Query
     /// 門市報修管理-查詢
     /// </summary>
     [Route("[controller]")]
-    [IgnoreAntiforgeryToken]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
     public partial class QueryController : BaseProjectController
     {
         /// <summary>

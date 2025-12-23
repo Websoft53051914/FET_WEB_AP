@@ -15,8 +15,10 @@ using Microsoft.AspNetCore.Authorization;
 namespace FTT_API.Controllers.SecurityMgt
 {
     [Route("[controller]")]
-    [IgnoreAntiforgeryToken]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+
+
+
     public partial class SecurityMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;
