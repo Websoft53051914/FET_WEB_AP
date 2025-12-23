@@ -18,11 +18,8 @@ using Microsoft.AspNetCore.Authorization;
 namespace FTT_API.Controllers.Pending
 {
     [Route("[controller]")]
+    [IgnoreAntiforgeryToken]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
-
-
-
     public partial class PendingController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

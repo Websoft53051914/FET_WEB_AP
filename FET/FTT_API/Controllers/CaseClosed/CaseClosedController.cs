@@ -11,11 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace FTT_API.Controllers.CaseClosed
 {
     [Route("[controller]")]
-
+    [IgnoreAntiforgeryToken]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
-
-
     public class CaseClosedController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

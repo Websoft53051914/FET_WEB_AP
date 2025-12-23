@@ -11,9 +11,8 @@ using Microsoft.AspNetCore.Mvc;
 namespace FTT_API.Controllers.SupplierMgt
 {
     [Route("[controller]")]
+    [IgnoreAntiforgeryToken]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
-
     public partial class SupplierMgtController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;

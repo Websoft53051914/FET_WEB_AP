@@ -146,7 +146,8 @@
                             return $("<div>操作<div>").attr({ class: 'd-flex' });
                         },
                         itemTemplate: (value, item) => {
-                                    const safeId = item['@(nameof(DispatchRuleMgtGridVO.Id))'] ?? "";
+
+        const safeId = item['@(nameof(DispatchRuleMgtGridVO.Id))'] ?? "";
 
         // 安全編碼 URL
         const safeEditUrl = '@(mapData.UrlEdit?.ToHtmlString())'.replace('tempId', encodeURIComponent(safeId));
@@ -161,29 +162,38 @@
         btnDelete.className = 'jsgrid-button jsgrid-delete-button d-inline-block';
         btnDelete.type = "button";
 
-                btnDelete.addEventListener("click", async () => {
-            const callDelete = async () => {
-                try {
-                    const response = await fetch('@(mapData.UrlDelete?.ToHtmlString())', {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ id: safeId })
-                    });
+        btnDelete.addEventListener("click", async () => {
+        const callDelete = async () => {
+            try {
+                                        var data = {
+                                            id: safeId
+                                        };
 
-                    const result = await response.json();
-                    const safeMsg = result.Message ?? "";
-
-                    if (result.Success) {
-                        await MyApp.Alert.success('刪除資料成功');
-                        ctxGrid.reload();
-                    } else {
-                        await MyApp.Alert.error(safeMsg);
-                        ctxGrid.reload();
+                const result = await $.ajax({
+                    url: '@(mapData.UrlDelete?.ToHtmlString())',
+                    type: "POST",
+                    dataType: "json",           // 由 jQuery 自動 parse
+                    data:  data,
+                    xhrFields: {
+                        withCredentials: true  // 若有 Cookie / Session
                     }
-                } catch (err) {
-                    console.error(err);
+                });
+
+                const safeMsg = result?.Message ?? "";
+
+                if (result?.Success === true) {
+                    await MyApp.Alert.success('刪除資料成功');
+                } else {
+                    await MyApp.Alert.error(safeMsg);
                 }
-            };
+
+                ctxGrid.reload();
+
+            } catch (err) {
+                console.error(err);
+                await MyApp.Alert.error("刪除失敗，請稍後再試");
+            }
+        };
 
             const safeConfirmMsg = '@(config.GetMessage("BeforeDeleteMsg").ToHtmlString())' ?? "";
             const result = await MyApp.Alert.confirm(safeConfirmMsg);

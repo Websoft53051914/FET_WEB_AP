@@ -13,10 +13,8 @@ using Microsoft.AspNetCore.Authorization;
 namespace FTT_API.Controllers.InProcess
 {
     [Route("[controller]")]
-
-
+    [IgnoreAntiforgeryToken]
     [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
     public class InProcessController : BaseProjectController
     {
         private readonly ConfigurationHelper _config;
