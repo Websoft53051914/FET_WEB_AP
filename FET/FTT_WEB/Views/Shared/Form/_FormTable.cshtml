@@ -527,6 +527,11 @@
             $("#rmBtn_SelectItems").text(data.selectedItemText);
         });
 
+        function require(val) {
+            if (val === "dompurify") return window.DOMPurify;
+            else return {};
+        }
+
         $(function () {
             $("#FileUpload").on("click", function () {
                 var file = $("#File")[0].files[0];
@@ -554,6 +559,9 @@
 
                             // $('#fildTD').append(GetFileElement(data.Data.Text, data.Data.Value));
                             const el = GetFileElement(data.Data.Text, data.Data.Value);
+                            const createDOMPurify = require("dompurify");
+                            const DOMPurifyInstance = createDOMPurify(window);
+                            el.innerHTML = DOMPurifyInstance.sanitize(el.innerHTML);
                             document.getElementById("fildTD").appendChild(el);
 
                             $('#File').val('');
@@ -845,6 +853,10 @@
                             // 處理資料庫的金額彙整欄資料
                             for (var i = 0; i < data.FileItems.length; i++) {
                                 const el = GetFileElement(data.FileItems[i].Text, data.FileItems[i].Value,i);
+
+                                const createDOMPurify = require("dompurify");
+                                const DOMPurifyInstance = createDOMPurify(window);
+                                el.innerHTML = DOMPurifyInstance.sanitize(el.innerHTML);
                                 document.getElementById("fildTD").appendChild(el);
                                 // $('#fildTD').append(GetFileElement(data.FileItems[i].Text, data.FileItems[i].Value,i));
                             }
@@ -1279,7 +1291,7 @@
         function form_access_control(formobj, allowed_field) {
             allowed_field = convertToFormField(allowed_field);
             var ignoreFieldList = ['EXPENSE_TYPE', 'EXPENSE_DESC_SEL', 'FAULT_REASON', 'REPAIR_ACTION', 'QTY', 'UNIT', 'PRICE'];
-            var vobj = eval(formobj);
+            var vobj = formobj;
 
             if (vobj != null) {
                 for (var i = 0; i < vobj.length; i++) {
