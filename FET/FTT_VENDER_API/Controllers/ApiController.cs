@@ -18,7 +18,6 @@ namespace FTT_VENDER_API.Controllers
     /// API
     /// </summary>
     [Route("[controller]")]
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
     public class ApiController : BaseProjectController
     {
@@ -41,6 +40,7 @@ namespace FTT_VENDER_API.Controllers
         /// </summary>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetListTreeChildrenCi(int? parentId, string reqSrc = "ALL", string acType = "")
         {
@@ -103,6 +103,7 @@ namespace FTT_VENDER_API.Controllers
         /// </summary>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetListTreeItemCi(List<int> idList, string reqSrc = "ALL", string acType = "")
         {
@@ -165,6 +166,7 @@ namespace FTT_VENDER_API.Controllers
         /// 取得門市分頁資料
         /// </summary>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetPageListStore(DataSourceRequest request, DialogIvrCodeGridVO vm)
         {
@@ -224,6 +226,7 @@ namespace FTT_VENDER_API.Controllers
         /// </summary>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetMenuDataCount([FromBody] List<int> funcIdList)
         {
@@ -289,6 +292,16 @@ namespace FTT_VENDER_API.Controllers
                 LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
+        }
+
+        /// <summary>
+        /// 取得選單待處理筆數資料
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("[action]")]
+        public IActionResult UrlGetTemp()
+        {
+            return JsonSuccess("");
         }
     }
 }

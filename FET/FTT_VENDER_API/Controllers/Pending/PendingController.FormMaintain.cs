@@ -17,6 +17,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// <param name="vm"></param>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult UpdateEmpnoDeptCode(FormMaintainVM vm)
         {
@@ -62,6 +63,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// <param name="vm"></param>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_V_ACCESS_ROLE(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -104,6 +106,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// <param name="vm"></param>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_Access(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -146,6 +149,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// <param name="vm"></param>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_Vender(DataSourceRequest request, v_ftt_form2DTO vm)
         {

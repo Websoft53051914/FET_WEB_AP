@@ -417,14 +417,23 @@
             return null;
         }
 
-        const token = localStorage.Token; // 你的 JWT 存放位置
+        const token = getCookie('Token'); // 你的 JWT 存放位置
 
         var hasout = false;
         $(document)
         $.ajaxSetup({
+            xhrFields: { withCredentials: true },
         headers: {
             "Authorization": `Bearer ${token}` // 放在 Header
         },
+            beforeSend:function(xhr){
+                // 重新讀取最新的 XSRF-TOKEN Cookie
+                const xsrfToken = getCookie("X-CSRF-TOKEN")
+
+                if (xsrfToken) {
+                    xhr.setRequestHeader("X-CSRF-TOKEN", decodeURIComponent(xsrfToken));
+                }
+            },
             complete: function (x, e) {
                 if (x.status === 440 || x.status == 401) {
                     if (hasout == false) {

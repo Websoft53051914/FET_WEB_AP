@@ -325,9 +325,7 @@
                                     AC: ac,
                                     PD: pd
                                 },
-                                success: function (data) {                                         
-                                    localStorage.setItem("Token", data.Data.Token);
-                                    localStorage.setItem("userLoginName", data.Data.userLoginName);
+                                success: function (data) {
                                         if (data.Success) {
                                             const urlParams = new URLSearchParams(window.location.search);
                                             const originUrl = urlParams.get('originUrl');

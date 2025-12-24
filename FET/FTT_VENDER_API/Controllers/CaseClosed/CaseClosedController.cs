@@ -14,7 +14,6 @@ namespace FTT_VENDER_API.Controllers.CaseClosed
     /// 已結案 API
     /// </summary>
     [Route("[controller]")]
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
     public class CaseClosedController : BaseProjectController
     {
@@ -34,6 +33,7 @@ namespace FTT_VENDER_API.Controllers.CaseClosed
         /// </summary>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, v_ftt_form2DTO vm)
         {

@@ -17,6 +17,7 @@ namespace FTT_VENDER_API.Controllers
             _configHelper = configHelper;
         }
         [HttpPost("[action]")]
+        [ValidateAntiForgeryToken]
         public IActionResult Logout()
         {
             try

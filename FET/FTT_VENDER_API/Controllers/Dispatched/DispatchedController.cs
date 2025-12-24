@@ -14,7 +14,6 @@ namespace FTT_VENDER_API.Controllers.Dispatched
     /// 已派工 API
     /// </summary>
     [Route("[controller]")]
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
     public partial class DispatchedController : BaseProjectController
     {
@@ -37,6 +36,7 @@ namespace FTT_VENDER_API.Controllers.Dispatched
         /// <param name="request"></param>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetPageList(DataSourceRequest request)
         {

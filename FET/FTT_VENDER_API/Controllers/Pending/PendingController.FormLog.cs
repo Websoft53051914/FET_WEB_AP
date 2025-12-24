@@ -17,6 +17,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// <param name="vm"></param>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_Log(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -59,6 +60,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// <param name="vm"></param>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_Desc(DataSourceRequest request, v_ftt_form2DTO vm)
         {

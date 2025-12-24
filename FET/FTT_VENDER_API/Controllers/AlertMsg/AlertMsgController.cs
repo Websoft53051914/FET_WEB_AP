@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Mvc;
 namespace FTT_VENDER_API.Controllers.AlertMsg
 {
     [Route("[controller]")]
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     public partial class AlertMsgController : BaseController
     {
         public AlertMsgController()

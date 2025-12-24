@@ -14,7 +14,6 @@ namespace FTT_VENDER_API.Controllers.InProcess
     /// 處理中 API
     /// </summary>
     [Route("[controller]")]
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
     public class InProcessController : BaseProjectController
     {
@@ -36,6 +35,7 @@ namespace FTT_VENDER_API.Controllers.InProcess
         /// <param name="vm"></param>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetPageList(DataSourceRequest request, v_ftt_form2DTO vm)
         {

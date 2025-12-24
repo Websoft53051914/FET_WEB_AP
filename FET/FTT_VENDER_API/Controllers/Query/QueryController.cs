@@ -23,7 +23,6 @@ namespace FTT_VENDER_API.Controllers.Query
     /// 門市報修管理-查詢
     /// </summary>
     [Route("[controller]")]
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
     public partial class QueryController : BaseProjectController
     {
@@ -46,6 +45,7 @@ namespace FTT_VENDER_API.Controllers.Query
         /// 取得頁面資料
         /// </summary>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetInitData()
         {
@@ -74,6 +74,7 @@ namespace FTT_VENDER_API.Controllers.Query
         /// [/pool/query.aspx]SearchCode_Click
         /// </summary>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetPageList(DataSourceRequest request, QueryIndexVO vm)
         {
@@ -151,6 +152,7 @@ namespace FTT_VENDER_API.Controllers.Query
         /// </summary>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult ExportExcel(string jsonData)
         {
@@ -328,6 +330,7 @@ namespace FTT_VENDER_API.Controllers.Query
         /// </summary>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult PrintWP(string jsonData)
         {
