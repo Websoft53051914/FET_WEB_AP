@@ -28,8 +28,8 @@ namespace FTT_API.Controllers
 
             // 1. 嚴格過濾非法字元與 CRLF，防止注入
             // 僅允許 JWT 常用的 Base64Url 字元
-            if (!string.IsNullOrEmpty(token)&&!Regex.IsMatch(token, @"^[A-Za-z0-9\-_\.]+$"))
-                    token = "";
+            if (!string.IsNullOrEmpty(token) && !Regex.IsMatch(token, @"^[A-Za-z0-9\-_\.]+$"))
+                token = "";
 
             context.HttpContext.Request.Headers.TryGetValue("Content-From", out var from);
 

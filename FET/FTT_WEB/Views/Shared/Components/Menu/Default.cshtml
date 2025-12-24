@@ -5,7 +5,9 @@
     var account = ViewData["account"];
     var mapData = new
     {
-        UrlGetMenuDataCount = $"{config.GetBackendUrl()}/Api/GetMenuDataCount"
+        UrlGetMenuDataCount = $"{config.GetBackendUrl()}/Api/GetMenuDataCount",
+        UrlGetTemp = $"{config.GetBackendUrl()}/Api/UrlGetTemp"
+
     };
 
 }
@@ -118,6 +120,13 @@
 </header>
 <script>
     $(function () {
+
+        $.ajax({
+            url: '@(mapData.UrlGetTemp?.ToHtmlString())',
+            type: 'GET',
+        })
+            .done((response) => {
+
         let funcIdList = $.map($('.txt-cnt'), function (value, index) {
             return $(value).data('funcId');
         });
@@ -150,5 +159,10 @@
             .fail((err) => {
                 console.log(err);
             });
+            })
+            .fail((err) => {
+                console.log(err);
+            });
+
     });
 </script>

@@ -437,5 +437,16 @@ namespace FTT_API.Controllers
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
+
+
+        /// <summary>
+        /// 取得選單待處理筆數資料
+        /// </summary>
+        /// <returns></returns>
+        [HttpGet("[action]")]
+        public IActionResult UrlGetTemp()
+        {
+            return JsonSuccess("");
+        }
     }
 }
