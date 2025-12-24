@@ -12,6 +12,7 @@ namespace FTT_API.Controllers.Pending
     public partial class PendingController : BaseProjectController
     {
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_Log(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -48,6 +49,7 @@ namespace FTT_API.Controllers.Pending
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_Desc(DataSourceRequest request, v_ftt_form2DTO vm)
         {

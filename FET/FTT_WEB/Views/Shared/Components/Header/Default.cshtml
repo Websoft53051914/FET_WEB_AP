@@ -80,7 +80,7 @@
 <script src="~/lib/jsCookie/js.cookie.min.js"></script>
 <script>
     $(document).ready(function () {
-        $('#userloginname').text(decodeURIComponent(localStorage.FTT_userLoginName))
+        $('#userloginname').text(decodeURIComponent(Cookies.get('FTT_userLoginName')))
         $('#btn-logout').on('click',function(){
             showLoader();
             // var data = { formNo: formNo };

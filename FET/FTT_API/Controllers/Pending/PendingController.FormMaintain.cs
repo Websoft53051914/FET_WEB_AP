@@ -21,6 +21,7 @@ namespace FTT_API.Controllers.Pending
     public partial class PendingController : BaseProjectController
     {
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult UpdateEmpnoDeptCode(FormMaintainVM vm)
         {
@@ -60,6 +61,7 @@ namespace FTT_API.Controllers.Pending
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_V_ACCESS_ROLE(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -95,6 +97,7 @@ namespace FTT_API.Controllers.Pending
             }
         }
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_Access(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -130,6 +133,7 @@ namespace FTT_API.Controllers.Pending
             }
         }
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList_Vender(DataSourceRequest request, v_ftt_form2DTO vm)
         {

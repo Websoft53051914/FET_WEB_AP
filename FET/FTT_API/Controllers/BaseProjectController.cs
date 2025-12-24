@@ -25,20 +25,18 @@ namespace FTT_API.Controllers
         {
             var headers = context.HttpContext.Request.Headers;
             context.HttpContext.Request.Cookies.TryGetValue(FTT_API.Common.Const.TOKEN_NAME, out string? token);
-            var az = context.HttpContext.Request.Headers[Method.GetAppSettingsDataByName("AZ")].ToString();
-            if (!string.IsNullOrEmpty(az) && az.StartsWith("Bearer "))
-            {
-                var rawToken = az.Substring("Bearer ".Length).Trim();
 
-                // 僅允許 A-Z,a-z,0-9,-,_  (JWT Base64Url 格式)
-                if (Regex.IsMatch(rawToken, @"^[A-Za-z0-9\-_\.]+$"))
-                {
-                    token = rawToken;
-                }
-            }
+            // 1. 嚴格過濾非法字元與 CRLF，防止注入
+            // 僅允許 JWT 常用的 Base64Url 字元
+            if (!string.IsNullOrEmpty(token)&&!Regex.IsMatch(token, @"^[A-Za-z0-9\-_\.]+$"))
+                    token = "";
 
             context.HttpContext.Request.Headers.TryGetValue("Content-From", out var from);
-            if (!string.IsNullOrEmpty(token) && from != "Logout")
+
+            // 預防 Header 注入：過濾從 Header 拿到的 'from' 變數
+            string safeFrom = from.ToString().Replace("\r", "").Replace("\n", "");
+
+            if (!string.IsNullOrEmpty(token) && safeFrom != "Logout")
             {
                 SessionVO? session = null;
                 lock (_lock)
@@ -46,20 +44,28 @@ namespace FTT_API.Controllers
                     var tokenInfoEntity = GetTokenInfo(token);
                     JwtConfigVO jwtConfig = new JwtConfigVO();
                     var (resultVO, sessionRes) = Method.VerifyAndGenerateJwtToken(token, jwtConfig);
-                    if (resultVO.IsExpired && tokenInfoEntity != null && tokenInfoEntity.Status != StatusEnum.Cancel.ToInt())
+                    if (resultVO.IsExpired && tokenInfoEntity != null && tokenInfoEntity.Status != (int)StatusEnum.Cancel)
                     {
                         RefreshToken(resultVO.TokenInfoVO, token);
-                        //if (IsSafeToken(resultVO.TokenInfoVO.TokenId))
-                        //    Response.Cookies.Append(FTT_API.Common.Const.TOKEN_NAME, resultVO.TokenInfoVO.TokenId, new CookieOptions
-                        //    {
-                        //        HttpOnly = true,   // 防止 JS 讀取
-                        //        Secure = true,     // 只允許 HTTPS
-                        //        SameSite = SameSiteMode.None, // 防止 CSRF
-                        //    });
+
+                        // 2. 在寫入 Cookie 前，對 TokenId 再次進行消毒 (Sanitize)
+                        string safeTokenId = resultVO.TokenInfoVO.TokenId.Replace("\r", "").Replace("\n", "");
+
+                        // 確保 TokenId 符合預期格式才寫入
+                        if (!string.IsNullOrEmpty(safeTokenId) && Regex.IsMatch(safeTokenId, @"^[A-Za-z0-9\-_\.]+$"))
+                        {
+                            Response.Cookies.Append(FTT_API.Common.Const.TOKEN_NAME, safeTokenId, new CookieOptions
+                            {
+                                HttpOnly = false,
+                                Secure = true,     // 只允許 HTTPS
+                                SameSite = SameSiteMode.None,
+                                Path = "/"         // 建議明確設定 Path
+                            });
+                        }
                     }
+
                     session = sessionRes;
                 }
-
 
                 var logAccount = "";
                 string acc = session.username.ToString();

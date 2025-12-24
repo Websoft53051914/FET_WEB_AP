@@ -19,10 +19,6 @@ namespace FTT_API.Controllers.CIConfig
     /// 例外派工維護 API
     /// </summary>
     [Route("[controller]")]
-
-
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
-
     public partial class CIConfigController : BaseProjectController
     {
         /// <summary>
@@ -42,6 +38,7 @@ namespace FTT_API.Controllers.CIConfig
         /// 取得分頁資料<para/>
         /// [/Storemgt/CIConfig.aspx.cs]gridView_DataBind()
         /// </summary>
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         
         public IActionResult GetPageList(DataSourceRequest request, CIConfigIndexVO vm)
@@ -95,6 +92,7 @@ namespace FTT_API.Controllers.CIConfig
         /// [/Storemgt/CIConfig.aspx.cs]btnExport_Click()<para/>
         /// </summary>
         /// <returns></returns>
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         
         public IActionResult ExportExcel(string jsonData)
@@ -336,6 +334,7 @@ namespace FTT_API.Controllers.CIConfig
         /// [/Storemgt/CIConfig.aspx.cs]btnImport_Click()<para/>
         /// </summary>
         /// <returns></returns>
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         
         public IActionResult ImportExcel(IFormFile? file)

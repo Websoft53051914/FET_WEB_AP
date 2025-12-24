@@ -22,7 +22,6 @@ namespace FTT_API.Controllers
         }
         
         [HttpPost("[action]")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
         [ValidateAntiForgeryToken]
         public IActionResult Logout()
         {

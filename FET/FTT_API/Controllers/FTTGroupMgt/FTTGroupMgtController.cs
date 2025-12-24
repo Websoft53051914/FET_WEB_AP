@@ -12,12 +12,12 @@ namespace FTT_API.Controllers.FTTGroupMgt
     [Route("[controller]")]
     //
 
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
 
     public partial class FTTGroupMgtController : BaseProjectController
     {
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, ftt_groupDTO vm)
        {

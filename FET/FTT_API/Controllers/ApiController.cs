@@ -43,6 +43,7 @@ namespace FTT_API.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
 
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetCiDataSelfVendorPageList(DataSourceRequest request)
         {
@@ -115,8 +116,9 @@ namespace FTT_API.Controllers
         /// 取得維修品項指定 parentId 下的子項目資料
         /// </summary>
         /// <returns></returns>
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
-        [Authorize]
+
         public IActionResult GetListTreeChildrenCi(int? parentId, string reqSrc = "ALL", string acType = "")
         {
             try
@@ -178,8 +180,9 @@ namespace FTT_API.Controllers
         /// </summary>
         /// <returns></returns>
 
-        [HttpPost("[action]")]
         [ValidateAntiForgeryToken]
+        [HttpPost("[action]")]
+
         public IActionResult GetListTreeItemCi(List<int> idList, string reqSrc = "ALL", string acType = "")
         {
             try
@@ -253,8 +256,9 @@ namespace FTT_API.Controllers
         /// 取得門市分頁資料
         /// </summary>
 
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        
         public IActionResult GetPageListStore(DataSourceRequest request, DialogIvrCodeGridVO vm)
         {
             try
@@ -314,9 +318,9 @@ namespace FTT_API.Controllers
         /// <param name="request"></param>
         /// <returns></returns>
 
-        [HttpPost("[action]")]
-        [Authorize]
         [ValidateAntiForgeryToken]
+        [HttpPost("[action]")]
+        
         public IActionResult GetPageListVender(DataSourceRequest request, DialogVenderGridVO vm)
         {
             try
@@ -367,8 +371,7 @@ namespace FTT_API.Controllers
         /// </summary>
         /// <returns></returns>
         [HttpPost("[action]")]
-        [Authorize]
-        [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+        [ValidateAntiForgeryToken]
         public IActionResult GetMenuDataCount([FromBody] List<int> funcIdList)
         {
             try

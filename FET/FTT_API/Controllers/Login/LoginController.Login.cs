@@ -52,20 +52,21 @@ namespace FTT_API.Controllers.Login
         /// </summary>
         /// <param name="vm"></param>
         /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>        
+        /// <exception cref="ArgumentNullException"></exception>      
         [HttpPost("[action]")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        [AllowAnonymous] // 允許匿名訪問，登入前需要使用
         public IActionResult Login(LoginVM vm)
         {
             try
             {
-                this.LogSuccess("login/login---開始");
+                //this.LogSuccess("login/login---開始");
 
                 var loginHanlder = new LoginHandler(_configHelper, HttpContext);
 
-                this.LogSuccess("login/login---開始登入驗證");
+                //this.LogSuccess("login/login---開始登入驗證");
                 (LoginResultVO resultVO, SessionVO? sessionVO) = loginHanlder.Login(vm);
-                this.LogSuccess("login/login---結束登入驗證");
+                //this.LogSuccess("login/login---結束登入驗證");
 
                 if (!string.IsNullOrEmpty(resultVO.ErrorMsg))
                 {
@@ -76,12 +77,12 @@ namespace FTT_API.Controllers.Login
                 if (!string.IsNullOrEmpty(resultVO.Token.TokenId))
                 {
                     safeToken = CookieSafeEncode(resultVO.Token.TokenId);
-                    //Response.Cookies.Append(FTT_API.Common.Const.TOKEN_NAME, safeToken, new CookieOptions
-                    //{
-                    //    HttpOnly = true,   // 防止 JS 讀取
-                    //    Secure = true,     // 只允許 HTTPS
-                    //    SameSite = SameSiteMode.None, // 防止 CSRF
-                    //});
+                    Response.Cookies.Append(FTT_API.Common.Const.TOKEN_NAME, safeToken, new CookieOptions
+                    {
+                        HttpOnly = false,   // 防止 JS 讀取
+                        Secure = true,     // 只允許 HTTPS
+                        SameSite = SameSiteMode.None, // 防止 CSRF
+                    });
                 }
 
                 string userLoginName = string.Empty;
@@ -116,23 +117,23 @@ namespace FTT_API.Controllers.Login
                 // 假設 userLoginName 是從 vm 取得的使用者輸入
                 string safeUserLoginName = string.IsNullOrEmpty(userLoginName) ? string.Empty : Uri.EscapeDataString(userLoginName); // 將特殊字符編碼
 
-                //Response.Cookies.Append(FTT_API.Common.Const.USER_LOGIN_NAME, safeUserLoginName ?? string.Empty, new CookieOptions
-                //{
-                //    HttpOnly = true,   // 防止 JS 讀取
-                //    Secure = true,     // 只允許 HTTPS
-                //    SameSite = SameSiteMode.None, // 防止 CSRF
-                //});
+                Response.Cookies.Append(FTT_API.Common.Const.USER_LOGIN_NAME, safeUserLoginName ?? string.Empty, new CookieOptions
+                {
+                    HttpOnly = false,   // 防止 JS 讀取
+                    Secure = true,     // 只允許 HTTPS
+                    SameSite = SameSiteMode.None, // 防止 CSRF
+                });
                 Response.Cookies.Append(FTT_API.Common.Const.USER_ROLE, userrole ?? string.Empty, new CookieOptions
                 {
-                    HttpOnly = true,   // 防止 JS 讀取
+                    HttpOnly = false,   // 防止 JS 讀取
                     Secure = true,     // 只允許 HTTPS
                     SameSite = SameSiteMode.None, // 防止 CSRF
                 });
                 _sessionVO = sessionVO ?? new();
 
-                this.LogSuccess("login/login---結束");
+                //this.LogSuccess("login/login---結束");
                 this.LogSuccess("登入成功");
-                return JsonSuccess(new { FTT_Token = safeToken, FTT_userLoginName = userLoginName });
+                return JsonOK();
             }
             catch (Exception ex)
             {
@@ -151,33 +152,9 @@ namespace FTT_API.Controllers.Login
             }
         }
 
-
-
-        /// <summary>
-        /// 畫出 圖形驗證碼
-        /// </summary>
-        /// <returns></returns>
-
-        [HttpGet("[action]")]
-        public ActionResult CaptchaCode()
-        {
-            //自製的土炮驗證碼
-            CaptchaCodeHelper_ImageSharp captchaCode = new()
-            {
-                Width = 100
-            };
-
-            CaptchaResult result = captchaCode.Result();
-            TempData[CaptchaCodeHelper_ImageSharp.CAPTCHA_CODE] = result.ResultCode;
-
-            this.LogSuccess();
-            return File(result.CaptchaImage, "image/jpeg");
-        }
-
-        //[CustomAuthorization(FuncID.Home_View)]
-        
-
-        [HttpGet("[action]")]
+        [HttpPost("[action]")]
+        [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        [AllowAnonymous] // 允許匿名訪問，登入前需要使用
         public ActionResult CheckLogin()
         {
             if (LoginSession.Current.empno != null)
@@ -196,9 +173,10 @@ namespace FTT_API.Controllers.Login
             public string RETAILID { get; set; }
         }
 
-        
+
         [HttpPost("[action]")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        [AllowAnonymous] // 允許匿名訪問，登入前需要使用
         public ActionResult CheckSSO(SSOVM vm)
         {
             try
@@ -381,14 +359,14 @@ namespace FTT_API.Controllers.Login
 
             if (!string.IsNullOrEmpty(token.TokenId))
             {
-                // 1. 完整安全化：消毒 + URL 編碼（Checkmarx 可辨識）
-                //var safeToken = CookieSafeEncode(token.TokenId);
-                //Response.Cookies.Append(FTT_API.Common.Const.TOKEN_NAME, safeToken, new CookieOptions
-                //{
-                //    HttpOnly = true,   // 防止 JS 讀取
-                //    Secure = true,     // 只允許 HTTPS
-                //    SameSite = SameSiteMode.None, // 防止 CSRF
-                //});
+                //1. 完整安全化：消毒 + URL 編碼（Checkmarx 可辨識）
+                var safeToken = CookieSafeEncode(token.TokenId);
+                Response.Cookies.Append(FTT_API.Common.Const.TOKEN_NAME, safeToken, new CookieOptions
+                {
+                    HttpOnly = false,   // 防止 JS 讀取
+                    Secure = true,     // 只允許 HTTPS
+                    SameSite = SameSiteMode.None, // 防止 CSRF
+                });
             }
 
             // --- User Name Cookie ---
@@ -397,15 +375,15 @@ namespace FTT_API.Controllers.Login
             // --- User Role Cookie ---
             var userRoleSafe = CookieSafeEncode(sessionVO?.userrole);
 
-            //Response.Cookies.Append(FTT_API.Common.Const.USER_LOGIN_NAME, userLoginName ?? string.Empty, new CookieOptions
-            //{
-            //    HttpOnly = true,   // 防止 JS 讀取
-            //    Secure = true,     // 只允許 HTTPS
-            //    SameSite = SameSiteMode.None, // 防止 CSRF
-            //});
+            Response.Cookies.Append(FTT_API.Common.Const.USER_LOGIN_NAME, userLoginName ?? string.Empty, new CookieOptions
+            {
+                HttpOnly = false,   // 防止 JS 讀取
+                Secure = true,     // 只允許 HTTPS
+                SameSite = SameSiteMode.None, // 防止 CSRF
+            });
             Response.Cookies.Append(FTT_API.Common.Const.USER_ROLE, userRoleSafe ?? string.Empty, new CookieOptions
             {
-                HttpOnly = true,   // 防止 JS 讀取
+                HttpOnly = false,   // 防止 JS 讀取
                 Secure = true,     // 只允許 HTTPS
                 SameSite = SameSiteMode.None, // 防止 CSRF
             });

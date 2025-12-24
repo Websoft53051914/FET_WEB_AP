@@ -12,6 +12,7 @@ namespace FTT_API.Controllers.FTTGroupMgt
     {
          
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult Create(ftt_groupDTO vm)
         {

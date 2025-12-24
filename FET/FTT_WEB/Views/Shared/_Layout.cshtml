@@ -428,7 +428,7 @@
             return null;
         }
 
-        const token = localStorage.FTT_Token; // 你的 JWT 存放位置
+        const token = getCookie('FTT_Token'); // 你的 JWT 存放位置
 
         var hasout = false;
         $(document)

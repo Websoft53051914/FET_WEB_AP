@@ -21,7 +21,6 @@ namespace FTT_API.Controllers.DispatchRuleMgt
     /// </summary>
     [Route("[controller]")]
 
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
 
     public partial class DispatchRuleMgtController : BaseProjectController
@@ -44,6 +43,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
         /// [/Dispatch/Config_Dispatch.aspx]
         /// </summary>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetPageList(DataSourceRequest request)
         {
@@ -90,6 +90,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
         /// 取得頁面資料
         /// </summary>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetInitEditData(int? id)
         {
@@ -142,6 +143,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
         /// 取得頁面資料
         /// </summary>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetInitDataQuery()
         {
@@ -185,6 +187,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
         /// [/pool/queryDispatch.aspx]SearchCode_Click
         /// </summary>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetPageListQuery(DataSourceRequest request, DispatchRuleMgtQueryVO vm)
         {
@@ -248,6 +251,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
         /// </summary>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult ExportExcelQuery(string jsonData)
         {
@@ -358,6 +362,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
         /// </summary>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult Create(DispatchRuleMgtVO vm)
         {
@@ -386,6 +391,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
         /// </summary>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult Edit(DispatchRuleMgtVO vm)
         {
@@ -415,6 +421,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
         /// </summary>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult Delete(int? id)
         {

@@ -18,7 +18,6 @@ using Microsoft.AspNetCore.Authorization;
 namespace FTT_API.Controllers.Pending
 {
     [Route("[controller]")]
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
 
 
@@ -34,6 +33,7 @@ namespace FTT_API.Controllers.Pending
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -71,6 +71,7 @@ namespace FTT_API.Controllers.Pending
 
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult FileUpload(IFormFile file, string formNo)
         {
@@ -149,6 +150,7 @@ namespace FTT_API.Controllers.Pending
 
 
         
+        [ValidateAntiForgeryToken]
         [HttpGet("[action]")]
         public IActionResult DownloadFile(string id)
         {

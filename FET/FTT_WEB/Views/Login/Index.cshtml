@@ -364,8 +364,6 @@
                                 success: function (data) {
 
                                     if (data.Success) {
-                                    localStorage.setItem("FTT_Token", data.Data.FTT_Token);
-                                    localStorage.setItem("FTT_userLoginName", data.Data.FTT_userLoginName);
                                         const urlParams = new URLSearchParams(window.location.search);
                                         const originUrl = urlParams.get('originUrl');
                                         if (originUrl && originUrl.startsWith('/')) {

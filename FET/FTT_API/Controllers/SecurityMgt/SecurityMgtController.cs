@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Authorization;
 namespace FTT_API.Controllers.SecurityMgt
 {
     [Route("[controller]")]
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
 
 
@@ -30,6 +29,7 @@ namespace FTT_API.Controllers.SecurityMgt
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, store_sec_vendor_listDTO vm)
         {
@@ -67,6 +67,7 @@ namespace FTT_API.Controllers.SecurityMgt
 
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult Import(IFormFile file)
         {
@@ -124,6 +125,7 @@ namespace FTT_API.Controllers.SecurityMgt
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpGet("[action]")]
         public IActionResult Export()
         {

@@ -16,6 +16,7 @@ namespace FTT_API.Controllers.Pending
     public partial class PendingController : BaseProjectController
     {
         
+        [ValidateAntiForgeryToken]
         [HttpGet("[action]")]
         public IActionResult GetDetail(string form_no)
         {
@@ -498,6 +499,7 @@ namespace FTT_API.Controllers.Pending
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public ActionResult Add_Ftt_form_amount(Add_Ftt_form_amount_VM vm)
         {
@@ -554,6 +556,7 @@ namespace FTT_API.Controllers.Pending
         /// </summary>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult Detail(Ftt_formDTO vm)
         {
@@ -746,6 +749,7 @@ form_no=@form_no
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public ActionResult SelectDesc(SelectDescVM vm)
         {
@@ -767,6 +771,7 @@ form_no=@form_no
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public ActionResult ShowDesc(TemplateConfigVM vm)
         {

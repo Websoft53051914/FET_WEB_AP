@@ -13,7 +13,6 @@ using Microsoft.AspNetCore.Authorization;
 namespace FTT_API.Controllers.MailServerSetting
 {
     [Route("[controller]")]
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
 
 
@@ -29,6 +28,7 @@ namespace FTT_API.Controllers.MailServerSetting
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult Update(MailServerSettingVM vm)
         {

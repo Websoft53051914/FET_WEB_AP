@@ -11,6 +11,7 @@ namespace FTT_API.Controllers.FTTGroupMgt
     public partial class FTTGroupMgtController : BaseProjectController
     {
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult Delete(string empno)
         {

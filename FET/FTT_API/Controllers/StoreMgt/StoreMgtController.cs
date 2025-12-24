@@ -17,7 +17,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 namespace FTT_API.Controllers.StoreMgt
 {
     [Route("[controller]")]
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
 
 
@@ -32,6 +31,7 @@ namespace FTT_API.Controllers.StoreMgt
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, Store_profileDTO vm)
         {
@@ -68,6 +68,7 @@ namespace FTT_API.Controllers.StoreMgt
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpGet("[action]")]
         public async Task<IActionResult> GetSelectContent(Store_profileDTO vm)
         {
@@ -115,6 +116,7 @@ namespace FTT_API.Controllers.StoreMgt
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetEmpList(DataSourceRequest request, fet_user_profileDTO vm)
         {
@@ -150,6 +152,7 @@ namespace FTT_API.Controllers.StoreMgt
 
 
         
+        [ValidateAntiForgeryToken]
         [HttpGet("[action]")]
         public async Task<IActionResult> GetDetail(string ivrcode)
         {
@@ -168,6 +171,7 @@ namespace FTT_API.Controllers.StoreMgt
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult ImportRetail(IFormFile file)
         {
@@ -225,6 +229,7 @@ namespace FTT_API.Controllers.StoreMgt
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpGet("[action]")]
         public IActionResult ExportRetail()
         {
@@ -307,6 +312,7 @@ namespace FTT_API.Controllers.StoreMgt
 
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult ImportVass(IFormFile file)
         {
@@ -364,6 +370,7 @@ namespace FTT_API.Controllers.StoreMgt
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpGet("[action]")]
         public IActionResult ExportVass()
         {

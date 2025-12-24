@@ -21,12 +21,10 @@ namespace FTT_API.Controllers.Query
     /// </summary>
     [Route("[controller]")]
 
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
 
     public partial class QueryController : BaseProjectController
     {
-        /// <summary>
         /// Constructor
         /// </summary>
         public QueryController(ConfigurationHelper configHelper)
@@ -43,6 +41,7 @@ namespace FTT_API.Controllers.Query
         /// 取得頁面資料
         /// </summary>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetInitData()
         {
@@ -95,6 +94,7 @@ namespace FTT_API.Controllers.Query
         /// [/pool/query.aspx]SearchCode_Click
         /// </summary>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetPageList(DataSourceRequest request, QueryIndexVO vm)
         {
@@ -186,6 +186,7 @@ namespace FTT_API.Controllers.Query
         /// </summary>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult ExportExcel(string jsonData)
         {

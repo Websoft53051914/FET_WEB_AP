@@ -14,7 +14,6 @@ using Microsoft.AspNetCore.Authorization;
 namespace FTT_API.Controllers.QuoteMgt
 {
     [Route("[controller]")]
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
 
 
@@ -29,6 +28,7 @@ namespace FTT_API.Controllers.QuoteMgt
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult Import(IFormFile file)
         {
@@ -86,6 +86,7 @@ namespace FTT_API.Controllers.QuoteMgt
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpGet("[action]")]
         public IActionResult Export()
         {
@@ -194,6 +195,7 @@ namespace FTT_API.Controllers.QuoteMgt
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult ImportStore(IFormFile file)
         {
@@ -251,6 +253,7 @@ namespace FTT_API.Controllers.QuoteMgt
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpGet("[action]")]
         public IActionResult ExportStore()
         {
@@ -312,6 +315,7 @@ namespace FTT_API.Controllers.QuoteMgt
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult SaveMarquee(string content)
         {
@@ -330,6 +334,7 @@ namespace FTT_API.Controllers.QuoteMgt
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpGet("[action]")]
         public IActionResult GetMarquee()
         {

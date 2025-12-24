@@ -15,7 +15,6 @@ namespace FTT_API.Controllers.InProcess
     [Route("[controller]")]
 
 
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
     public class InProcessController : BaseProjectController
     {
@@ -28,6 +27,7 @@ namespace FTT_API.Controllers.InProcess
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetPageList(DataSourceRequest request, v_ftt_form2DTO vm)
         {
@@ -66,6 +66,7 @@ namespace FTT_API.Controllers.InProcess
 
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult InsterTrackingForm(v_ftt_form2DTO vm)
         {

@@ -18,6 +18,7 @@ namespace FTT_API.Controllers.CIMgt
             public List<SelectListItem> actypes { get; set; } = new List<SelectListItem>();
         }
         
+        [ValidateAntiForgeryToken]
         [HttpGet("[action]")]
         public async Task<IActionResult> GetDefault()
         {
@@ -38,6 +39,7 @@ namespace FTT_API.Controllers.CIMgt
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpGet("[action]")]
         public async Task<IActionResult> GetDetail(string cisid)
         {
@@ -56,6 +58,7 @@ namespace FTT_API.Controllers.CIMgt
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> CreateDetail(ci_relations_categoryDTO vm)
         {
@@ -74,6 +77,7 @@ namespace FTT_API.Controllers.CIMgt
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> EditDetail(ci_relations_categoryDTO vm)
         {
@@ -92,6 +96,7 @@ namespace FTT_API.Controllers.CIMgt
         }
 
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> DeleteDetail(int cisid)
         {

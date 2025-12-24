@@ -8,6 +8,7 @@ namespace FTT_API.Controllers.StoreMgt
     public partial class StoreMgtController : BaseProjectController
     {
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult Create(Store_profileDTO vm)
         {

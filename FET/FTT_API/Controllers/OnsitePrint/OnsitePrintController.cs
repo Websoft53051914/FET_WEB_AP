@@ -20,7 +20,6 @@ namespace FTT_API.Controllers.OnsitePrint
     /// 列印到場單 API
     /// </summary>
     [Route("[controller]")]
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
 
 
@@ -47,6 +46,7 @@ namespace FTT_API.Controllers.OnsitePrint
         /// <param name="request"></param>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetPageListPrwp(DataSourceRequest request)
         {
@@ -99,6 +99,7 @@ namespace FTT_API.Controllers.OnsitePrint
         /// <param name="request"></param>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetPageListConfirm(DataSourceRequest request)
         {
@@ -151,6 +152,7 @@ namespace FTT_API.Controllers.OnsitePrint
         /// </summary>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult PrintWP(string jsonData)
         {
@@ -189,6 +191,7 @@ namespace FTT_API.Controllers.OnsitePrint
         /// </summary>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult UpdateStatusToTicket(OnsitePrintUpdateStatusReqVO req)
         {
@@ -249,6 +252,7 @@ namespace FTT_API.Controllers.OnsitePrint
         /// </summary>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult UpdateStatusToPrwp(OnsitePrintUpdateStatusReqVO req)
         {
@@ -309,6 +313,7 @@ namespace FTT_API.Controllers.OnsitePrint
         /// </summary>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult UpdateStatusToConfirm(OnsitePrintUpdateStatusReqVO req)
         {

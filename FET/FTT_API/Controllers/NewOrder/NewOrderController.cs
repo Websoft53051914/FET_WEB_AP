@@ -22,7 +22,6 @@ namespace FTT_API.Controllers.NewOrder
     /// 新開單 API
     /// </summary>
     [Route("[controller]")]
-    [Microsoft.AspNetCore.Authorization.Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 
 
 
@@ -46,6 +45,7 @@ namespace FTT_API.Controllers.NewOrder
         /// 取得頁面資料
         /// </summary>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetInitData()
         {
@@ -134,6 +134,7 @@ namespace FTT_API.Controllers.NewOrder
         /// <param name="vm"></param>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult Create(NewOrderVM vm)
         {
@@ -219,6 +220,7 @@ namespace FTT_API.Controllers.NewOrder
         /// <param name="parentId"></param>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult RetrieveTTCount(int cisid, string ivrCode)
         {
@@ -242,6 +244,7 @@ namespace FTT_API.Controllers.NewOrder
         /// </summary>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetSelectListVender(int cisid, string ivrCode, string ifWarrant)
         {
@@ -302,6 +305,7 @@ namespace FTT_API.Controllers.NewOrder
         /// </summary>
         /// <returns></returns>
         
+        [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult CheckRepairReported(int categoryId)
         {
