@@ -475,7 +475,7 @@
                     if (data.Success == true) {
                         hideLoader();
                         var option;
-        const select = document.getElementById("company_leaves");
+        select = document.getElementById("company_leaves");
 
         for (let i = 0; i < data.Data.company_leaves.length; i++) {
             const item = data.Data.company_leaves[i];
@@ -491,7 +491,7 @@
             // 原生 DOM 插入
             select.add(option);
         }
-                const select = document.getElementById("store_type");
+                 select = document.getElementById("store_type");
 
         for (let i = 0; i < data.Data.store_types.length; i++) {
             const item = data.Data.store_types[i];
@@ -511,7 +511,7 @@
         // 原生觸發 change 事件
         select.dispatchEvent(new Event("change"));
 
-                const select = document.getElementById("channel");
+                select = document.getElementById("channel");
 
         for (let i = 0; i < data.Data.channels.length; i++) {
             const item = data.Data.channels[i];
@@ -527,7 +527,7 @@
             // 原生 DOM 插入
             select.add(option);
         }
-                const select = document.getElementById("area");
+                select = document.getElementById("area");
 
         for (let i = 0; i < data.Data.area.length; i++) {
             const item = data.Data.area[i];
@@ -544,7 +544,7 @@
             select.add(option);
         }
 
-                const select = document.getElementById("decoration_condition");
+                select = document.getElementById("decoration_condition");
 
         for (let i = 0; i < data.Data.decoration_conditions.length; i++) {
             const item = data.Data.decoration_conditions[i];
@@ -608,7 +608,7 @@
                         $('#channel').val(item.channel);
                         $('#channel').trigger("change");
 
-        const select = document.getElementById("area");
+        select = document.getElementById("area");
         const areaValue = item.area ?? "";
 
         // 安全檢查是否已存在 option
