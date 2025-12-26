@@ -299,49 +299,49 @@
                         <td colspan="5">
                             @*原使用 table 呈現但會跑版，改為表單顯示*@
                             <div id="NewData" class="row gy-2 row-cols-1 row-cols-md-2 row-cols-lg-3 mb-2">
-                            <div class="col">
-                            <label class="col-form-label websoft-form-label pt-2">費用種類</label>
-                            <select class="form-select initSelect2" id="EXPENSE_TYPE" name="EXPENSE_TYPE">
-                            <option></option>
-                            </select>
-                            </div>
-                            <div class="col">
-                            <label class="col-form-label websoft-form-label pt-2">維修細項</label>
-                            <input id="EXPENSE_DESC_TEXT" name="EXPENSE_DESC_TEXT" class="form-control input_class" />
-                            <select class="form-select initSelect2 select_class" id="EXPENSE_DESC_SEL" name="EXPENSE_DESC_SEL">
-                            </select>
-                            </div>
-                            <div class="col d-md-none d-lg-block"></div>
-                            <div class="col">
-                            <label class="col-form-label websoft-form-label pt-2">檢測故障原因</label>
-                            <input id="FAULT_REASON" class="form-control " />
-                            </div>
-                            <div class="col">
-                            <label class="col-form-label websoft-form-label pt-2">維修處理動作</label>
-                            <input id="REPAIR_ACTION" class="form-control " />
-                            </div>
-                            <div class="col">
-                            <label class="col-form-label websoft-form-label pt-2">備註</label>
-                            <label id="COMMENT" class="col-form-label websoft-form-label d-block"></label>
-                            </div>
-                            <div class="col">
-                            <label class="col-form-label websoft-form-label pt-2">數量</label>
-                            <input id="QTY" min="1" type="number" class="form-control " style="width: 80px" />
-                            <div class="invalid-feedback">請輸入數量</div>
-                            </div>
-                            <div class="col">
-                            <label class="col-form-label websoft-form-label pt-2">單位</label>
-                            <input id="UNIT" class="form-control " style="width: 80px" />
-                            </div>
-                            <div class="col">
-                            <label class="col-form-label websoft-form-label pt-2">單價</label>
-                            <input id="PRICE" min="1" type="number" class="form-control " style="width: 80px" />
-                            <div class="invalid-feedback">請輸入單價</div>
-                            </div>
+                                <div class="col">
+                                    <label class="col-form-label websoft-form-label pt-2">費用種類</label>
+                                    <select class="form-select initSelect2" id="EXPENSE_TYPE" name="EXPENSE_TYPE">
+                                        <option></option>
+                                    </select>
+                                </div>
+                                <div class="col">
+                                    <label class="col-form-label websoft-form-label pt-2">維修細項</label>
+                                    <input id="EXPENSE_DESC_TEXT" name="EXPENSE_DESC_TEXT" class="form-control input_class" />
+                                    <select class="form-select initSelect2 select_class" id="EXPENSE_DESC_SEL" name="EXPENSE_DESC_SEL">
+                                    </select>
+                                </div>
+                                <div class="col d-md-none d-lg-block"></div>
+                                <div class="col">
+                                    <label class="col-form-label websoft-form-label pt-2">檢測故障原因</label>
+                                    <input id="FAULT_REASON" class="form-control " />
+                                </div>
+                                <div class="col">
+                                    <label class="col-form-label websoft-form-label pt-2">維修處理動作</label>
+                                    <input id="REPAIR_ACTION" class="form-control " />
+                                </div>
+                                <div class="col">
+                                    <label class="col-form-label websoft-form-label pt-2">備註</label>
+                                    <label id="COMMENT" class="col-form-label websoft-form-label d-block"></label>
+                                </div>
+                                <div class="col">
+                                    <label class="col-form-label websoft-form-label pt-2">數量</label>
+                                    <input id="QTY" min="1" type="number" class="form-control " style="width: 80px" />
+                                    <div class="invalid-feedback">請輸入數量</div>
+                                </div>
+                                <div class="col">
+                                    <label class="col-form-label websoft-form-label pt-2">單位</label>
+                                    <input id="UNIT" class="form-control " style="width: 80px" />
+                                </div>
+                                <div class="col">
+                                    <label class="col-form-label websoft-form-label pt-2">單價</label>
+                                    <input id="PRICE" min="1" type="number" class="form-control " style="width: 80px" />
+                                    <div class="invalid-feedback">請輸入單價</div>
+                                </div>
                             </div>
                             <div class="d-flex gap-2 mb-2">
-                            @* <button type="button" id="InsertButton" onclick="addItemRow(null,false);" class="btn btn-primary" style="width: 115px;">新增一筆</button> *@
-                            <input id="AMOUNT_MAX_IDX" type="hidden" value="-1" />
+                                @* <button type="button" id="InsertButton" onclick="addItemRow(null,false);" class="btn btn-primary" style="width: 115px;">新增一筆</button> *@
+                                <input id="AMOUNT_MAX_IDX" type="hidden" value="-1" />
                             </div>
                             <table width="100%" id="AMOUNT_LIST" style="background-color:#DEDEDE;" border=1>
                                 <tr>
@@ -406,7 +406,27 @@
     <partial name="Form/_RMItemTree" view-data='new ViewDataDictionary(ViewData)' /> *@
 
 <script>
-        function GetFileElement(text, value, i) {
+    function encodeHTML(str) {
+        return String(str).replace(/[&<>"']/g, m => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[m]));
+    }
+
+    function GetFileElement(i, text, value) {
+        const a = document.createElement("a");
+        a.textContent = `【${text ?? ""}】`;    // 安全，自動 escape
+        a.setAttribute("val", value ?? "");
+        a.name = `TTItemList[1].FileIds[${i}]`;
+        a.target = "_blank";
+        a.style.margin = "5px";
+
+        a.href = '@(config.GetBackendUrl() + Url.Action("DownloadFile", "Pending"))'
+            + "?id=" + encodeURIComponent(value ?? "");
+
+        return a;
+    }
+
+    function GetFileElement2(i,text, value) {
         const a = document.createElement("a");
         a.textContent = `【${text ?? ""}】`;
         a.style.margin = "5px";
@@ -557,13 +577,9 @@
                         if (data.Success) {
                             alert('新增檔案完成');
 
-                            // $('#fildTD').append(GetFileElement(data.Data.Text, data.Data.Value));
-                            const el = GetFileElement(data.Data.Text, data.Data.Value);
+                            //Client DOM Stored XSS 2
 
-                            const createDOMPurify = require("dompurify");
-                            const DOMPurifyInstance = createDOMPurify(window);
-                            el.innerHTML = DOMPurifyInstance.sanitize(el.innerHTML);
-                            document.getElementById("fildTD").appendChild(el);
+                        $('#fildTD').append(GetFileElement($('#fildTD a').length, encodeHTML(data.Data.Text), encodeHTML(data.Data.Value))); // 1
 
                             $('#File').val('');
                         } else {
@@ -748,7 +764,7 @@
                             $('#form1').trigger('submit');
                         }
                         else {
-                            
+
                             MyApp.Alert.error(response['Message']);
                         }
                     })
@@ -851,14 +867,22 @@
 
                         if (data.FileItems != null && data.FileItems.length > 0) {
 
+                            //Client DOM Stored XSS 1
+
                             // 處理資料庫的金額彙整欄資料
                             for (var i = 0; i < data.FileItems.length; i++) {
-                                const el = GetFileElement(data.FileItems[i].Text, data.FileItems[i].Value,i);
+                                const el = GetFileElement2(i,encodeHTML(data.FileItems[i].Text), encodeHTML(data.FileItems[i].Value));
 
                                 const createDOMPurify = require("dompurify");
                                 const DOMPurifyInstance = createDOMPurify(window);
                                 el.innerHTML = DOMPurifyInstance.sanitize(el.innerHTML);
-                                document.getElementById("fildTD").appendChild(el);
+
+                                const container = document.getElementById("fildTD");
+
+                                // 'beforeend' 等同於 appendChild 的效果
+                                container.insertAdjacentElement('beforeend', el); // 2
+
+                                //document.getElementById("fildTD").appendChild(el);
                                 // $('#fildTD').append(GetFileElement(data.FileItems[i].Text, data.FileItems[i].Value,i));
                             }
                         }

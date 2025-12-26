@@ -718,154 +718,155 @@
         }
 
             let idx = context.TTItemList.count;// 容器
-    const container = document.getElementById('TTItemList');
+        const container = document.getElementById('TTItemList');
 
-    // 建立 tr
-    const tr = document.createElement('tr');
-    tr.className = `grid-item ${idx % 2 === 0 ? 'TrOddChild' : 'TrEvenChild'}`;
+        // 建立 tr
+        const tr = document.createElement('tr');
+        tr.className = `grid-item ${idx % 2 === 0 ? 'TrOddChild' : 'TrEvenChild'}`;
 
-    // td0: 刪除按鈕
-    const td0 = document.createElement('td');
-    const btnDelete = document.createElement('button');
-    btnDelete.type = 'button';
-    btnDelete.className = 'btn btn-link text-danger icofont icofont-trash fs-6 p-1';
+        // td0: 刪除按鈕
+        const td0 = document.createElement('td');
+        const btnDelete = document.createElement('button');
+        btnDelete.type = 'button';
+        btnDelete.className = 'btn btn-link text-danger icofont icofont-trash fs-6 p-1';
 
-    btnDelete.addEventListener('click', () => {
-        const callDelete = () => {
-            tr.remove();
+        btnDelete.addEventListener('click', () => {
+            const callDelete = () => {
+                tr.remove();
 
-            const trList = Array.from(container.children).filter(el => el.classList.contains('grid-item'));
-            context.TTItemList.count = trList.length;
+                const trList = Array.from(container.children).filter(el => el.classList.contains('grid-item'));
+                context.TTItemList.count = trList.length;
 
-            if (trList.length) {
-                trList.forEach((trEl, index) => {
-                    trEl.querySelectorAll('input, select, textarea').forEach(el => {
-                        const name = el.getAttribute('name');
-                        if (name) {
-                            el.setAttribute("name", name.replace(/\[\d+\]/, `[${index}]`));
-                        }
+                if (trList.length) {
+                    trList.forEach((trEl, index) => {
+                        trEl.querySelectorAll('input, select, textarea').forEach(el => {
+                            const name = el.getAttribute('name');
+                            if (name) {
+                                el.setAttribute("name", name.replace(/\[\d+\]/, `[${index}]`));
+                            }
+                        });
+                        trEl.classList.remove('TrOddChild', 'TrEvenChild');
+                        trEl.classList.add(index % 2 === 0 ? 'TrOddChild' : 'TrEvenChild');
                     });
-                    trEl.classList.remove('TrOddChild', 'TrEvenChild');
-                    trEl.classList.add(index % 2 === 0 ? 'TrOddChild' : 'TrEvenChild');
-                });
-            } else {
-                const noData = document.getElementById('noData');
-                if (noData) noData.classList.remove('d-none');
-            }
-        };
+                } else {
+                    const noData = document.getElementById('noData');
+                    if (noData) noData.classList.remove('d-none');
+                }
+            };
 
-        MyApp.Alert.confirm('@(config.GetMessage("BeforeDeleteMsg").ToHtmlString())')
-            .then(result => { if (result) callDelete(); });
-    });
+            MyApp.Alert.confirm('@(config.GetMessage("BeforeDeleteMsg").ToHtmlString())')
+                .then(result => { if (result) callDelete(); });
+        });
 
-    td0.appendChild(btnDelete);
-    tr.appendChild(td0);
+        td0.appendChild(btnDelete);
+        tr.appendChild(td0);
 
-    // td1: CATEGORY
-    const td1 = document.createElement('td');
-    const categoryId = document.createElement('input');
-    categoryId.type = 'hidden';
-    categoryId.name = `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.CATEGORY_ID))`;
-    categoryId.value = valCATEGORY_ID ?? '';
-    td1.appendChild(categoryId);
+        // td1: CATEGORY
+        const td1 = document.createElement('td');
+        const categoryId = document.createElement('input');
+        categoryId.type = 'hidden';
+        categoryId.name = `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.CATEGORY_ID))`;
+        categoryId.value = valCATEGORY_ID ?? '';
+        td1.appendChild(categoryId);
 
-    const categoryName = document.createElement('input');
-    categoryName.type = 'hidden';
-    categoryName.name = `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.CATEGORY_NAME))`;
-    categoryName.value = valCATEGORY_NAME ?? '';
-    td1.appendChild(categoryName);
+        const categoryName = document.createElement('input');
+        categoryName.type = 'hidden';
+        categoryName.name = `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.CATEGORY_NAME))`;
+        categoryName.value = valCATEGORY_NAME ?? '';
+        td1.appendChild(categoryName);
 
-    const categoryNameDisplay = document.createElement('span');
-    categoryNameDisplay.textContent = valCATEGORY_NAME ?? '';
-    td1.appendChild(categoryNameDisplay);
-    tr.appendChild(td1);
+        const categoryNameDisplay = document.createElement('span');
+        categoryNameDisplay.textContent = valCATEGORY_NAME ?? '';
+        td1.appendChild(categoryNameDisplay);
+        tr.appendChild(td1);
 
-    // td2: VENDER
-    const td2 = document.createElement('td');
-    const venderId = document.createElement('input');
-    venderId.type = 'hidden';
-    venderId.name = `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.VENDER_ID))`;
-    venderId.value = valVENDER_ID ?? '';
-    td2.appendChild(venderId);
+        // td2: VENDER
+        const td2 = document.createElement('td');
+        const venderId = document.createElement('input');
+        venderId.type = 'hidden';
+        venderId.name = `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.VENDER_ID))`;
+        venderId.value = valVENDER_ID ?? '';
+        td2.appendChild(venderId);
 
-    const venderNameDisplay = document.createElement('span');
-    venderNameDisplay.textContent = valVENDER_NAME ?? '';
-    td2.appendChild(venderNameDisplay);
-    tr.appendChild(td2);
+        const venderNameDisplay = document.createElement('span');
+        venderNameDisplay.textContent = valVENDER_NAME ?? '';
+        td2.appendChild(venderNameDisplay);
+        tr.appendChild(td2);
 
-    // td3: ItemNote & ItemDesc
-    const td3 = document.createElement('td');
+        // td3: ItemNote & ItemDesc
+        const td3 = document.createElement('td');
 
-    const itemNoteVal = document.createElement('input');
-    itemNoteVal.type = 'hidden';
-    itemNoteVal.className = 'form-control';
-    itemNoteVal.name = `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.ItemNoteVal))`;
-    itemNoteVal.value = valITEMNOTE.join(',') ?? '';
-    td3.appendChild(itemNoteVal);
+        const itemNoteVal = document.createElement('input');
+        itemNoteVal.type = 'hidden';
+        itemNoteVal.className = 'form-control';
+        itemNoteVal.name = `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.ItemNoteVal))`;
+        itemNoteVal.value = valITEMNOTE.join(',') ?? '';
+        td3.appendChild(itemNoteVal);
 
-    const itemNoteDisplay = document.createElement('span');
-    itemNoteDisplay.textContent = valITEMNOTE.join(',') ?? '';
-    td3.appendChild(itemNoteDisplay);
-    td3.appendChild(document.createElement('br'));
+        const itemNoteDisplay = document.createElement('span');
+        itemNoteDisplay.textContent = valITEMNOTE.join(',') ?? '';
+        td3.appendChild(itemNoteDisplay);
+        td3.appendChild(document.createElement('br'));
 
-    const itemDescVal = document.createElement('input');
-    itemDescVal.type = 'hidden';
-    itemDescVal.className = 'form-control';
-    itemDescVal.name = `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.ItemDescVal))`;
-    itemDescVal.value = valITEMDESC.join(',') ?? '';
-    td3.appendChild(itemDescVal);
+        const itemDescVal = document.createElement('input');
+        itemDescVal.type = 'hidden';
+        itemDescVal.className = 'form-control';
+        itemDescVal.name = `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.ItemDescVal))`;
+        itemDescVal.value = valITEMDESC.join(',') ?? '';
+        td3.appendChild(itemDescVal);
 
-    const itemDescDisplay = document.createElement('span');
-    itemDescDisplay.textContent = valITEMDESC.join(',') ?? '';
-    td3.appendChild(itemDescDisplay);
+        const itemDescDisplay = document.createElement('span');
+        itemDescDisplay.textContent = valITEMDESC.join(',') ?? '';
+        td3.appendChild(itemDescDisplay);
 
-    tr.appendChild(td3);
+        tr.appendChild(td3);
 
-    // td4: REMARK
-    const td4 = document.createElement('td');
+        // td4: REMARK
+        const td4 = document.createElement('td');
 
-    const remarkInput = document.createElement('input');
-    remarkInput.type = 'hidden';
-    remarkInput.className = 'form-control';
-    remarkInput.name = `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.REMARK))`;
-    remarkInput.value = valREMARK ?? '';
-    td4.appendChild(remarkInput);
+        const remarkInput = document.createElement('input');
+        remarkInput.type = 'hidden';
+        remarkInput.className = 'form-control';
+        remarkInput.name = `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.REMARK))`;
+        remarkInput.value = valREMARK ?? '';
+        td4.appendChild(remarkInput);
 
-    const remarkDisplay = document.createElement('span');
-    remarkDisplay.textContent = valREMARK ?? '';
-    td4.appendChild(remarkDisplay);
+        const remarkDisplay = document.createElement('span');
+        remarkDisplay.textContent = valREMARK ?? '';
+        td4.appendChild(remarkDisplay);
 
-    tr.appendChild(td4);
+        tr.appendChild(td4);
 
-    // td5: FileIds & a links
-    const td5 = document.createElement('td');
+        // td5: FileIds & a links
+        const td5 = document.createElement('td');
 
-    // hidden inputs for files
-    document.querySelectorAll('#fildTD a').forEach((aEl, i) => {
-        const fileInput = document.createElement('input');
-        fileInput.type = 'hidden';
-        fileInput.className = 'form-control';
-        fileInput.name = `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.FileIds))[${i}]`;
-        fileInput.value = aEl.getAttribute('val') ?? '';
-        td5.appendChild(fileInput);
-    });
+        // hidden inputs for files
+        document.querySelectorAll('#fildTD a').forEach((aEl, i) => {
+            const fileInput = document.createElement('input');
+            fileInput.type = 'hidden';
+            fileInput.className = 'form-control';
+            fileInput.name = `@(nameof(Model.TTItemList))[${idx}].@(nameof(NewOrderTTItemVO.FileIds))[${i}]`;
+            fileInput.value = aEl.getAttribute('val') ?? '';
+            td5.appendChild(fileInput);
+        });
 
-    // safe links
-    document.querySelectorAll('#fildTD a').forEach(aEl => {
-        const safeLink = document.createElement('a');
-        safeLink.href = aEl.getAttribute('href') ?? '#';
-        safeLink.textContent = aEl.textContent ?? '';
-        td5.appendChild(safeLink);
-    });
+        // safe links
+        document.querySelectorAll('#fildTD a').forEach(aEl => {
+            const safeLink = document.createElement('a');
+            safeLink.href = aEl.getAttribute('href') ?? '#';
+            safeLink.textContent = aEl.textContent ?? '';
+            td5.appendChild(safeLink);
+        });
 
-    tr.appendChild(td5);
+        tr.appendChild(td5);
 
-    // append tr to container
-    container.appendChild(tr);
-
+        // append tr to container
+        container.appendChild(tr);
 
         context.TTItemList.count = idx + 1;
         $('#noData').addClass('d-none');
+
+        $('#fildTD a').remove();
     });
 
     $('#@(Html.IdFor(m => m.TT_CATEGORY))').on('change.select2', function (e) {

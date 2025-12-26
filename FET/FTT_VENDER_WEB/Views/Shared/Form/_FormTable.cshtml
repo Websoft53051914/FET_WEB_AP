@@ -438,75 +438,29 @@
     <partial name="Form/_RMItemTree" view-data='new ViewDataDictionary(ViewData)' /> *@
 
 <script>
-
-    function GetFileElement(text, value, i) {
-        const a = document.createElement("a");
-        a.textContent = `【${text ?? ""}】`;
-        a.style.margin = "5px";
-        a.href = "javascript:void(0)";
-        a.dataset.fileId = value ?? "";
-
-        a.addEventListener("click", async function (e) {
-            e.preventDefault();
-            const fileId = this.dataset.fileId;
-
-            try {
-                const response = await fetch(
-                    '@(config.GetBackendUrl() + Url.Action("DownloadFile", "Pending"))' +
-                    "?id=" + encodeURIComponent(fileId),
-                    {
-                        method: "GET", credentials: "include",
-                        headers: {
-                            "Authorization": "Bearer " + token
-                        }
-                    }
-                );
-
-                if (!response.ok) {
-                    alert("下載失敗");
-                    return;
-                }
-
-                const blob = await response.blob();
-                const url = URL.createObjectURL(blob);
-
-                // 安全抓取 filename
-                let filename = "download";
-                const disposition = response.headers.get("Content-Disposition");
-    if (disposition) {
-        // 先嘗試抓 filename* (UTF-8)
-        let match = disposition.match(/filename\*=[^']*'[^']*'(.+)/i);
-        if (match && match[1]) {
-            filename = decodeURIComponent(match[1]);
-        } else {
-            // fallback 抓 filename
-            match = disposition.match(/filename=["']?([^;"']+)["']?/i);
-            if (match && match[1]) {
-                filename = match[1];
-            }
-        }
+    function encodeHTML(str) {
+        return String(str).replace(/[&<>"']/g, m => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+        }[m]));
     }
 
-                const temp = document.createElement("a");
-                temp.style.display = "none";
-                temp.href = url;
-                temp.download = filename;
-                document.body.appendChild(temp);
-                temp.click();
+    function GetFileElement(i, text, value) {
+        const a = document.createElement("a");
+        a.innerText = `【${text ?? ""}】`;
+        a.setAttribute("val", value ?? "");
+        a.name = `TTItemList[1].FileIds[${i}]`;
+        a.target = "_blank";
+        a.style.margin = "5px";
 
-                URL.revokeObjectURL(url);
-                temp.remove();
-
-            } catch (ex) {
-                console.error(ex);
-                alert("下載過程發生錯誤");
-            }
-        });
+        a.href = '@(config.GetBackendUrl() + Url.Action("DownloadFile", "Pending"))'
+            + "?id=" + encodeURIComponent(value ?? "");
 
         return a;
+
     }
 
-        if (!String.format) {
+
+    if (!String.format) {
             String.format = function (format, ...args) {
                 return format.replace(/{(\d+)}/g, function (match, number) {
                     return typeof args[number] != 'undefined'
@@ -569,7 +523,7 @@
         }
 
         $(function () {
-            $("#FileUpload").on("click", function () {
+            $(document).on("click", "#FileUpload", function () {
                 var file = $("#File")[0].files[0];
                 if (!file) {
                     alert("請選擇檔案");
@@ -593,13 +547,15 @@
                         if (data.Success) {
                             alert('新增檔案完成');
 
-                            // $('#fildTD').append(GetFileElement(data.Data.Text, data.Data.Value));
-                            const el = GetFileElement(data.Data.Text, data.Data.Value);
+                            const safeText = encodeHTML(data.Data.Text);
+                            const fileId = encodeHTML(data.Data.Value);
 
-                            const createDOMPurify = require("dompurify");
-                            const DOMPurifyInstance = createDOMPurify(window);
-                            el.innerHTML = DOMPurifyInstance.sanitize(el.innerHTML);
-                            document.getElementById("fildTD").appendChild(el);
+                            const htmlString = `<a href='@(config.GetBackendUrl() + Url.Action("DownloadFile", "Pending"))?id=${encodeURIComponent(fileId ?? "")}'
+                                                class="file-link"
+                                                data-file-id="${fileId}"
+                                                style="margin:5px; cursor:pointer;">【${safeText}】</a>`;
+
+                            document.getElementById("fildTD").innerHTML += DOMPurify.sanitize(htmlString); // 3
 
                             $('#File').val('');
                         } else {
@@ -922,12 +878,16 @@
 
                             // 處理資料庫的金額彙整欄資料
                             for (var i = 0; i < data.FileItems.length; i++) {
-                                const el = GetFileElement(data.FileItems[i].Text, data.FileItems[i].Value,i);
+
+                            const safeText = encodeHTML(data.FileItems[i].Text);
+                            const safeValue = encodeHTML(data.FileItems[i].Value);
+
+                            const el = GetFileElement(i,safeText,safeValue);
 
                                 const createDOMPurify = require("dompurify");
                                 const DOMPurifyInstance = createDOMPurify(window);
                                 el.innerHTML = DOMPurifyInstance.sanitize(el.innerHTML);
-                                document.getElementById("fildTD").appendChild(el);
+                                document.getElementById("fildTD").appendChild(el); //4
                                 // $('#fildTD').append(GetFileElement(data.FileItems[i].Text, data.FileItems[i].Value));
                             }
                         }
