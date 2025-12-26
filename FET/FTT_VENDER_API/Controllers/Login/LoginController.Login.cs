@@ -45,6 +45,7 @@ namespace FTT_VENDER_API.Controllers.Login
 
         [HttpPost("[action]")]
         [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        [AllowAnonymous] // 允許匿名訪問，登入前需要使用
         public IActionResult Login(LoginVM vm)
         {
             try
@@ -99,7 +100,7 @@ namespace FTT_VENDER_API.Controllers.Login
                 _sessionVO = sessionVO ?? new();
 
                 this.LogSuccess("登入成功");
-                return JsonSuccess(new { Token = safeToken, userLoginName = userLoginName });
+                return JsonOK();
             }
             catch (Exception ex)
             {
