@@ -444,21 +444,72 @@
         }[m]));
     }
 
-    function GetFileElement(i, text, value) {
+    function GetFileElement2(i,text, value) {
         const a = document.createElement("a");
-        a.innerText = `【${text ?? ""}】`;
-        a.setAttribute("val", value ?? "");
-        a.name = `TTItemList[1].FileIds[${i}]`;
-        a.target = "_blank";
+        a.textContent = `【${text ?? ""}】`;
         a.style.margin = "5px";
+        a.href = "javascript:void(0)";
+        a.dataset.fileId = value ?? "";
 
-        a.href = '@(config.GetBackendUrl() + Url.Action("DownloadFile", "Pending"))'
-            + "?id=" + encodeURIComponent(value ?? "");
+        a.addEventListener("click", async function (e) {
+            e.preventDefault();
+            const fileId = this.dataset.fileId;
 
-        return a;
+            try {
+                const xsrfToken = getCookie("X-CSRF-TOKEN");
+                const response = await fetch(
+                    '@(config.GetBackendUrl() + Url.Action("DownloadFile", "Pending"))' +
+                    "?id=" + encodeURIComponent(fileId),
+                    { method: "GET", credentials: "include" ,
+                                            headers: {
+                            "Authorization": "Bearer " + token,
+                            "X-CSRF-TOKEN": decodeURIComponent(xsrfToken)
+                        }}
+                );
 
+                if (!response.ok) {
+                    MyApp.Alert.error("下載失敗");
+                    return;
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
+                // 安全抓取 filename
+                let filename = "download";
+                const disposition = response.headers.get("Content-Disposition");
+    if (disposition) {
+        // 先嘗試抓 filename* (UTF-8)
+        let match = disposition.match(/filename\*=[^']*'[^']*'(.+)/i);
+        if (match && match[1]) {
+            filename = decodeURIComponent(match[1]);
+        } else {
+            // fallback 抓 filename
+            match = disposition.match(/filename=["']?([^;"']+)["']?/i);
+            if (match && match[1]) {
+                filename = match[1];
+            }
+        }
     }
 
+                const temp = document.createElement("a");
+                temp.style.display = "none";
+                temp.href = url;
+                temp.download = filename;
+                document.body.appendChild(temp);
+                temp.click();
+
+                URL.revokeObjectURL(url);
+                temp.remove();
+
+            } catch (ex) {
+                console.error(ex);
+                MyApp.Alert.error("下載過程發生錯誤");
+            }
+        });
+
+        return a;
+    }
 
     if (!String.format) {
             String.format = function (format, ...args) {
@@ -474,7 +525,7 @@
         var context = context || {};
         context.KpiDays = 0;
 
-        var iFrameIsSubmit = false;
+        var iFrameIsSubmit = true;
         //initModel.Type : 1.新開單  , 2.自行尋商
         function initFormTable(initModel) {
             if (initModel.Type === 1) {
@@ -526,7 +577,7 @@
             $(document).on("click", "#FileUpload", function () {
                 var file = $("#File")[0].files[0];
                 if (!file) {
-                    alert("請選擇檔案");
+                    MyApp.Alert.warning("請選擇檔案");
                     return;
                 }
 
@@ -545,21 +596,13 @@
                     success: function (data) {
                         hideLoader();
                         if (data.Success) {
-                            alert('新增檔案完成');
+                            MyApp.Alert.success('新增檔案完成');
 
-                            const safeText = encodeHTML(data.Data.Text);
-                            const fileId = encodeHTML(data.Data.Value);
-
-                            const htmlString = `<a href='@(config.GetBackendUrl() + Url.Action("DownloadFile", "Pending"))?id=${encodeURIComponent(fileId ?? "")}'
-                                                class="file-link"
-                                                data-file-id="${fileId}"
-                                                style="margin:5px; cursor:pointer;">【${safeText}】</a>`;
-
-                            document.getElementById("fildTD").innerHTML += DOMPurify.sanitize(htmlString); // 3
+                            $('#fildTD').append(GetFileElement2($('#fildTD a').length, encodeHTML(data.Data.Text), encodeHTML(data.Data.Value))); // 1
 
                             $('#File').val('');
                         } else {
-                            alert(data.Message);
+                            MyApp.Alert.error(data.Message);
                             $('#File').val('');
                         }
                     }
@@ -780,7 +823,10 @@
                 e.preventDefault();
                 showLoader();
 
-                if ($(this).is(':invalid')) {
+                if ($(this).is(':invalid')||$("#SELECTSTATUS").val()=='') {
+
+                    $("#SELECTSTATUS").attr('required', 'required');
+                    MyApp.Alert.warning('請輸入表單狀態');
                     hideLoader();
                 }
                 else {
@@ -876,19 +922,18 @@
 
                         if (data.FileItems != null && data.FileItems.length > 0) {
 
-                            // 處理資料庫的金額彙整欄資料
                             for (var i = 0; i < data.FileItems.length; i++) {
-
-                            const safeText = encodeHTML(data.FileItems[i].Text);
-                            const safeValue = encodeHTML(data.FileItems[i].Value);
-
-                            const el = GetFileElement(i,safeText,safeValue);
+                                const el = GetFileElement2(i,encodeHTML(data.FileItems[i].Text), encodeHTML(data.FileItems[i].Value));
 
                                 const createDOMPurify = require("dompurify");
                                 const DOMPurifyInstance = createDOMPurify(window);
                                 el.innerHTML = DOMPurifyInstance.sanitize(el.innerHTML);
-                                document.getElementById("fildTD").appendChild(el); //4
-                                // $('#fildTD').append(GetFileElement(data.FileItems[i].Text, data.FileItems[i].Value));
+
+                                const container = document.getElementById("fildTD");
+
+                                // 'beforeend' 等同於 appendChild 的效果
+                                container.insertAdjacentElement('beforeend', el); // 2
+
                             }
                         }
 

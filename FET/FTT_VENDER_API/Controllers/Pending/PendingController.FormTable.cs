@@ -924,6 +924,7 @@ form_no=@form_no
 
 
         
+        [ValidateAntiForgeryToken]
         [HttpGet("[action]")]
         public IActionResult DownloadFile(string id)
         {

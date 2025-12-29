@@ -336,13 +336,13 @@
                 data: { vm: vm },
                 success: function (data) {
                     if (data.Success == true) {
-                        alert(data.Data);
+                        MyApp.Alert.success(data.Data);
                     } else {
-                        alert(data.Data);
+                        MyApp.Alert.error(data.Data);
                     }
                 },
                 error: function (msg) {
-                    alert("新增異常！");
+                    MyApp.Alert.error("新增異常！");
                 }
             });
         })

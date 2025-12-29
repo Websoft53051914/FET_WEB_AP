@@ -150,6 +150,7 @@ namespace FTT_API.Controllers.Pending
 
 
         
+        [ValidateAntiForgeryToken]
         [HttpGet("[action]")]
         public IActionResult DownloadFile(string id)
         {

@@ -438,12 +438,12 @@
                 if (x.status === 440 || x.status == 401) {
                     if (hasout == false) {
                         hasout = true;
-                        alert('已登出，請重新登入');
+                        MyApp.Alert.warning('已登出，請重新登入');
                         var oldURL = encodeURIComponent(window.location.href);
                         window.location.href = '@Url.Action("Index", "Login")?originUrl=' + oldURL;
                     }
                 } else if (x.status === 403) {
-                    alert("無權限執行此動作");
+                    MyApp.Alert.error("無權限執行此動作");
                 }
             }
         });

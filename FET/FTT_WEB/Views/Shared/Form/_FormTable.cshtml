@@ -411,21 +411,7 @@
             '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
         }[m]));
     }
-
-    function GetFileElement(i, text, value) {
-        const a = document.createElement("a");
-        a.textContent = `【${text ?? ""}】`;    // 安全，自動 escape
-        a.setAttribute("val", value ?? "");
-        a.name = `TTItemList[1].FileIds[${i}]`;
-        a.target = "_blank";
-        a.style.margin = "5px";
-
-        a.href = '@(config.GetBackendUrl() + Url.Action("DownloadFile", "Pending"))'
-            + "?id=" + encodeURIComponent(value ?? "");
-
-        return a;
-    }
-
+     
     function GetFileElement2(i,text, value) {
         const a = document.createElement("a");
         a.textContent = `【${text ?? ""}】`;
@@ -438,12 +424,14 @@
             const fileId = this.dataset.fileId;
 
             try {
+                const xsrfToken = getCookie("X-CSRF-TOKEN");
                 const response = await fetch(
                     '@(config.GetBackendUrl() + Url.Action("DownloadFile", "Pending"))' +
                     "?id=" + encodeURIComponent(fileId),
                     { method: "GET", credentials: "include" ,
                                             headers: {
-                            "Authorization": "Bearer " + token
+                            "Authorization": "Bearer " + token,
+                            "X-CSRF-TOKEN": decodeURIComponent(xsrfToken)
                         }}
                 );
 
@@ -579,7 +567,7 @@
 
                             //Client DOM Stored XSS 2
 
-                        $('#fildTD').append(GetFileElement($('#fildTD a').length, encodeHTML(data.Data.Text), encodeHTML(data.Data.Value))); // 1
+                        $('#fildTD').append(GetFileElement2($('#fildTD a').length, encodeHTML(data.Data.Text), encodeHTML(data.Data.Value))); // 1
 
                             $('#File').val('');
                         } else {
@@ -869,7 +857,7 @@
 
                             //Client DOM Stored XSS 1
 
-                            // 處理資料庫的金額彙整欄資料
+                            // 
                             for (var i = 0; i < data.FileItems.length; i++) {
                                 const el = GetFileElement2(i,encodeHTML(data.FileItems[i].Text), encodeHTML(data.FileItems[i].Value));
 
@@ -882,8 +870,6 @@
                                 // 'beforeend' 等同於 appendChild 的效果
                                 container.insertAdjacentElement('beforeend', el); // 2
 
-                                //document.getElementById("fildTD").appendChild(el);
-                                // $('#fildTD').append(GetFileElement(data.FileItems[i].Text, data.FileItems[i].Value,i));
                             }
                         }
 
