@@ -7,6 +7,6 @@
         public string cp_tel { get; set; } = string.Empty;
 
         public string NewPD { get; set; } = string.Empty;
-        
+        public string tempGuid { get; set; } = string.Empty;
     }
 }

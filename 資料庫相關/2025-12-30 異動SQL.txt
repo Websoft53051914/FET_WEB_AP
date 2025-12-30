@@ -1,0 +1,32 @@
+
+CREATE SEQUENCE tb_vender_password_history_id_seq;
+CREATE TABLE IF NOT EXISTS tb_vender_password_history
+(
+    id numeric(10,0) NOT NULL DEFAULT nextval('tb_vender_password_history_id_seq'),
+    account character varying(20) COLLATE pg_catalog."default",
+    pw character varying(150) COLLATE pg_catalog."default",
+    createtime timestamp without time zone,
+    locked_reason smallint
+);
+ 
+COMMENT ON COLUMN tb_vender_password_history.createtime     IS '廠商密碼變更時間';
+COMMENT ON COLUMN tb_vender_password_history.account     IS '廠商帳號';
+COMMENT ON COLUMN tb_vender_password_history.pw     IS '廠商密碼';
+COMMENT ON COLUMN tb_vender_password_history.locked_reason     IS '廠商鎖定原因';
+
+ALTER TABLE store_vender_profile ADD COLUMN unlocked_time timestamp without time zone;
+ALTER TABLE store_vender_profile ADD COLUMN locked_time timestamp without time zone;
+ALTER TABLE store_vender_profile ALTER COLUMN merchant_password TYPE character varying(150);
+
+COMMENT ON COLUMN store_vender_profile.unlocked_time     IS '解鎖時間';
+COMMENT ON COLUMN store_vender_profile.locked_time     IS '鎖定時間';
+
+ALTER TABLE store_vender_profile ADD COLUMN LastUrlTime timestamp without time zone;
+COMMENT ON COLUMN store_vender_profile.LastUrlTime IS '最後取得URL時間';
+
+
+ALTER TABLE store_vender_profile ADD COLUMN LastUrlKey character varying(36);
+COMMENT ON COLUMN store_vender_profile.LastUrlKey IS '最後URL驗證碼';
+
+
+ALTER TABLE user_login_log ALTER COLUMN password TYPE character varying(150);

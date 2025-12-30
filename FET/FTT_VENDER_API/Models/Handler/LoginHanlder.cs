@@ -34,6 +34,8 @@ namespace FTT_VENDER_API.Models.Handler
         /// <returns>錯誤訊息</returns>
         public (LoginResultVO, SessionVO?) Login(LoginVM vm)
         {
+            var tempCommon = new Common.PasswordService();
+
             bool logLoginStatus = false;
             bool boolIsAuthenticated = false;
             string logAccount = vm.AC;
@@ -67,41 +69,110 @@ namespace FTT_VENDER_API.Models.Handler
                         {
                             isLocked = false;
                         }
+                        else if (Locked == null)
+                        {
+                            errorMsg = "帳號或密碼輸入錯誤，請重新輸入！";
+                            return (new LoginResultVO()
+                            {
+                                ErrorMsg = errorMsg,
+                                Token = token
+                            }, sessionVO);
+                        }
+
+                        StoreVenderProfileVM storeVenderProfileVM = GetStoreVenderProfileNoPWD(vm.AC);
 
                         if (isLocked == false)
                         {
-                            StoreVenderProfileVM storeVenderProfileVM = GetStoreVenderProfile(vm.AC, vm.PD);
+                            //檢查帳號
                             if (storeVenderProfileVM != null)
                             {
-                                boolIsAuthenticated = true;
-                                logLoginStatus = true;
-                                base.dbHelper.Execute("UPDATE STORE_VENDER_PROFILE SET LOGIN_COUNT=1 WHERE MERCHANT_LOGIN = @MERCHANT_LOGIN", paras);
-                                base.dbHelper.Commit();
-
-                                sessionVO = new SessionVO
+                                //檢查密碼
+                                if (tempCommon.VerifyPassword(storeVenderProfileVM.MERCHANT_PASSWORD, vm.PD))
                                 {
-                                    empno = vm.AC,
-                                    empname = storeVenderProfileVM.merchant_name,
-                                    engname = storeVenderProfileVM.merchant_name,
-                                    ext = storeVenderProfileVM.cp_tel,
-                                    username = storeVenderProfileVM.merchant_login,
-                                    deptcode = storeVenderProfileVM.merchant_name,
-                                    usertype = vm.Role,
-                                    ivrcode = storeVenderProfileVM.order_id?.ToString(),
-                                };
-                                sessionVO.userrole = SystemModelClass.GetUserRole(sessionVO.empno, sessionVO);
-                                token = Method.GenerateJwtToken(sessionVO, jwtConfigVO);
+                                    boolIsAuthenticated = true;
+                                    logLoginStatus = true;
+                                    base.dbHelper.Execute("UPDATE STORE_VENDER_PROFILE SET LOGIN_COUNT=0 WHERE MERCHANT_LOGIN = @MERCHANT_LOGIN", paras);
+                                    base.dbHelper.Commit();
+
+                                    sessionVO = new SessionVO
+                                    {
+                                        empno = vm.AC,
+                                        empname = storeVenderProfileVM.merchant_name,
+                                        engname = storeVenderProfileVM.merchant_name,
+                                        ext = storeVenderProfileVM.cp_tel,
+                                        username = storeVenderProfileVM.merchant_login,
+                                        deptcode = storeVenderProfileVM.merchant_name,
+                                        usertype = vm.Role,
+                                        ivrcode = storeVenderProfileVM.order_id?.ToString(),
+                                    };
+                                    sessionVO.userrole = SystemModelClass.GetUserRole(sessionVO.empno, sessionVO);
+                                    token = Method.GenerateJwtToken(sessionVO, jwtConfigVO);
+                                }
+                                else
+                                {
+                                    var tempDtNow = DateTime.Now;
+                                    if (storeVenderProfileVM.login_count >= 3 && storeVenderProfileVM.locked_time.AddMinutes(15) >= tempDtNow)
+                                    {
+                                        errorMsg = "您的FTT帳號已被鎖定，15分鐘後可以請再嘗試，或直接進行密碼變更。";
+                                    }
+                                    else
+                                    {
+                                        errorMsg = "您的FTT帳號已被鎖定，15分鐘後可以請再嘗試，或直接進行密碼變更。";
+
+                                        if (storeVenderProfileVM.login_count == 2)
+                                        {
+                                            base.dbHelper.Execute("UPDATE STORE_VENDER_PROFILE SET LOGIN_COUNT=LOGIN_COUNT+1 WHERE MERCHANT_LOGIN = @MERCHANT_LOGIN", paras);
+
+                                            paras.Add("locked_time", tempDtNow);
+                                            base.dbHelper.Execute(@"
+UPDATE STORE_VENDER_PROFILE 
+SET LOGIN_COUNT=LOGIN_COUNT+1 
+,locked ='Y'
+,locked_reason=5
+,locked_time=@locked_time
+WHERE MERCHANT_LOGIN = @MERCHANT_LOGIN", paras);
+
+                                            Dictionary<string, object> paras2 = new Dictionary<string, object>()
+                                            {
+                                                { "account",vm.AC},
+                                                { "pw",tempCommon.HashPassword(vm.PD)},
+                                                { "createtime",tempDtNow},
+                                                { "locked_reason",5},
+                                            };
+                                            base.dbHelper.Execute(@"
+INSERT INTO tb_vender_password_history(
+	account, pw, createtime, locked_reason)
+	VALUES
+(@account, @pw, @createtime, @locked_reason);
+
+", paras2);
+                                            base.dbHelper.Commit();
+                                        }
+                                        else
+                                        {
+                                            errorMsg = "帳號或密碼輸入錯誤，請重新輸入！";
+                                            base.dbHelper.Execute("UPDATE STORE_VENDER_PROFILE SET LOGIN_COUNT=LOGIN_COUNT+1 WHERE MERCHANT_LOGIN = @MERCHANT_LOGIN", paras);
+                                            base.dbHelper.Commit();
+                                        }
+                                    }
+                                }
                             }
                             else
                             {
                                 errorMsg = "帳號或密碼輸入錯誤，請重新輸入！";
-                                base.dbHelper.Execute("UPDATE STORE_VENDER_PROFILE SET LOGIN_COUNT=LOGIN_COUNT+1 WHERE MERCHANT_LOGIN = @MERCHANT_LOGIN", paras);
-                                base.dbHelper.Commit();
                             }
                         }
                         else
                         {
-                            errorMsg = "該帳號因密碼輸入錯誤次數太多已遭鎖定，請通知相關單位處理！";
+                            var over90DaysNoLogin = IsOver90DaysNoLogin(vm.AC);
+                            if (storeVenderProfileVM != null && (storeVenderProfileVM.pw_chgtime < DateTime.Now.AddDays(-90) || over90DaysNoLogin == true))
+                            {
+                                errorMsg = "您的FTT帳號已被鎖定，請直接進行密碼變更。";
+                            }
+                            else
+                            {
+                                errorMsg = "您的FTT帳號已被鎖定，15分鐘後可以請再嘗試，或直接進行密碼變更。";
+                            }
                         }
                     }
                     catch (Exception ex)
@@ -126,7 +197,7 @@ namespace FTT_VENDER_API.Models.Handler
 
                         boolIsAuthenticated = true;
                         logLoginStatus = true;
-                        base.dbHelper.Execute("UPDATE STORE_VENDER_PROFILE SET LOGIN_COUNT=1 WHERE MERCHANT_LOGIN = @MERCHANT_LOGIN", paras);
+                        base.dbHelper.Execute("UPDATE STORE_VENDER_PROFILE SET LOGIN_COUNT=0 WHERE MERCHANT_LOGIN = @MERCHANT_LOGIN", paras);
                         base.dbHelper.Commit();
 
                         sessionVO = new SessionVO
@@ -182,7 +253,7 @@ namespace FTT_VENDER_API.Models.Handler
                             { "FROMIPADDRESS", logFromIP },
                             { "USERTYPE", logUserType },
                             { "ACCOUNT", logAccount.Replace("'", "''") },
-                            { "PASSWORD", vm.PD.Replace("'", "''") },
+                            { "PASSWORD",tempCommon.HashPassword( vm.PD.Replace("'", "''"))},
                             { "LOGINSTATUS", logLoginStatus.ToString() }
                         };
                 }
@@ -216,6 +287,28 @@ namespace FTT_VENDER_API.Models.Handler
                 ErrorMsg = errorMsg,
                 Token = token
             }, sessionVO);
+        }
+
+        private bool IsOver90DaysNoLogin(string ac)
+        {
+            string sql = @"
+SELECT *
+	FROM public.user_login_log 
+	where loginstatus in ('True','TRUE')
+	and account=@AC
+	and createtime>=@dtNow
+	order by createtime desc limit 1
+";
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "dtNow", DateTime.Now.AddDays(-90)},
+                { "AC", ac },
+            };
+            StoreVenderProfileVM? result = base.dbHelper.Find<StoreVenderProfileVM>(sql, parameters);
+            if (result == null)
+                return true;
+
+            return false;
         }
 
         private StoreVenderProfileVM GetStoreVenderProfileNoPWD(string AC)

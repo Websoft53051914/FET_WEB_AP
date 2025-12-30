@@ -42,6 +42,8 @@ namespace FTT_API.Common.OriginClass.EntiityClass
         public string USERROLE { get; set; }
         public string EMPNO { get; set; }
         public string IVRCODE { get; set; }
+        public string lock_reson_str { get; set; }
+        
     }
 
 

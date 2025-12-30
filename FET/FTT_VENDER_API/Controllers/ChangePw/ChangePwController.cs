@@ -17,6 +17,7 @@ using Microsoft.Extensions.Caching.Memory;
 using FTT_VENDER_API.Models.ViewModel.ChangePw;
 using Core.Utility.Extensions;
 using static FTT_VENDER_API.Controllers.Login.LoginController;
+using FTT_VENDER_API.Common.OriginClass.EntiityClass;
 
 
 namespace FTT_VENDER_API.Controllers.ChangePw
@@ -59,7 +60,7 @@ namespace FTT_VENDER_API.Controllers.ChangePw
                 this.LogError(ex.ToString());
                 return JsonValidFail(_config.GetMessage("SystemErrorMsg"));
             }
-           
+
         }
 
         private static ConcurrentDictionary<string, string> _captchaStore = new ConcurrentDictionary<string, string>();
@@ -246,6 +247,49 @@ namespace FTT_VENDER_API.Controllers.ChangePw
             using var ms = new MemoryStream();
             image.Save(ms, new PngEncoder());
             return ms.ToArray();
+        }
+
+        [HttpPost("[action]")]
+        [ResponseCache(Location = ResponseCacheLocation.None, NoStore = true)]
+        [AllowAnonymous] // 允許匿名訪問，登入前需要使用
+        public IActionResult SendMail(ChangePwVM vm)
+        {
+            try
+            {
+                CheckVenderPWLoginTimeHandler _CheckVenderPWLoginTimeHandler = new CheckVenderPWLoginTimeHandler(_config);
+
+                string msg = "";
+                ChangePwHandler _ChangePwHandler = new ChangePwHandler(_config, HttpContext);
+                var dto = _ChangePwHandler.GetStoreVenderProfileNoPWD(vm.AC);
+
+                if (dto != null)
+                {
+                    DateTime dtTime = DateTime.Now;
+                    var newKey = Guid.NewGuid();
+                    _CheckVenderPWLoginTimeHandler.UpdateLastUrlInfo(dto.merchant_login, dtTime, newKey);
+                    _CheckVenderPWLoginTimeHandler.SendReminderMail(dto.email, dto.merchant_name, newKey.ToString());
+                    _CheckVenderPWLoginTimeHandler.GetDBHelper().Commit();
+                }
+                else
+                {
+                    msg = "查無eMail：" + vm.AC;
+                }
+
+                if (string.IsNullOrEmpty(msg))
+                {
+                    this.LogSuccess("變更密碼通知信函已寄出完成");
+                    return JsonSuccess("變更密碼通知信函已寄出完成");
+                }
+                else
+                {
+                    this.LogSuccess(msg);
+                    return JsonValidFail(msg);
+                }
+            }
+            catch (Exception ex)
+            {
+                return JsonValidFail("系統異常");
+            }
         }
     }
 }

@@ -155,41 +155,18 @@ where order_id=@order_id
 
         internal string SendPWD(string order_id)
         {
+            CheckVenderPWLoginTimeHandler _CheckVenderPWLoginTimeHandler = new CheckVenderPWLoginTimeHandler(_configHelper);
+
             string msg = "";
-            string eMail = GetFieldData("EMAIL", "STORE_VENDER_PROFILE", new Dictionary<string, object>() { { "order_id", order_id } });
+            var dto = GetDetail(order_id);
 
-            if (eMail != "")
+            if (dto != null)
             {
-                SecureString sec = getPwdSecurity(GetFieldData("MERCHANT_PASSWORD", "STORE_VENDER_PROFILE", new Dictionary<string, object>() { { "order_id", order_id } }));
-
-                Dictionary<string, object> paras = new Dictionary<string, object>();
-                paras.Add("order_id", int.Parse(order_id));
-                paras.Add("eMail", eMail);
-                paras.Add("sec", sec.ToString());
-
-                string sql = @"
-INSERT INTO notify_profile
-            (recordid,
-             notifytype,
-             deptcode,
-             subject,
-             alerttype,
-             description,
-             status,
-             nexttime,
-             opid)
-VALUES      (@order_id,
-             'SENDPWD',
-             @eMail,
-             '您的密碼',
-             '2',
-             '請使用密碼[@sec]登入FTT系統！',
-             'P',
-             To_char(sysdate, 'yyyy/mm/dd hh24:mi:ss'),
-             'system') 
-";
-                dbHelper.Execute(sql, paras);
-                dbHelper.Commit();
+                DateTime dtTime = DateTime.Now;
+                var newKey = Guid.NewGuid();
+                _CheckVenderPWLoginTimeHandler.UpdateLastUrlInfo(dto.merchant_login, dtTime, newKey);
+                _CheckVenderPWLoginTimeHandler.SendReminderMail(dto.email, dto.merchant_name, newKey.ToString());
+                _CheckVenderPWLoginTimeHandler.GetDBHelper().Commit();
             }
             else
             {

@@ -23,7 +23,7 @@ namespace FTT_API.Controllers.SupplierMgt
             _hostingEnvironment = hostingEnvironment;
         }
 
-        
+
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, store_vender_profileDTO vm)
@@ -44,9 +44,32 @@ namespace FTT_API.Controllers.SupplierMgt
                 {
                     var item = list.Results[i];
                     item.No = (request.pageIndex - 1) * request.pageSize + i + 1;
+
+                    if (item.locked == "Y")
+                        switch (item.locked_reason)
+                        {
+
+                            //1: 密碼90天未更換(locked: Y)
+                            //2: 90天未登入(locked: Y)
+                            //3: 15分鐘排程解鎖(locked: N)
+                            //4: 廠商更換密碼((locked: N)
+                            //5: 密碼輸入錯誤鎖定(locked: Y)
+                            case 1:
+                                item.lock_reson_str = "密碼90天未更換"; break;
+                            case 2:
+                                item.lock_reson_str = "90天未登入"; break;
+                            case 3:
+                                item.lock_reson_str = "15分鐘排程解鎖"; break;
+                            case 4:
+                                item.lock_reson_str = "廠商更換密碼"; break;
+                            case 5:
+                                item.lock_reson_str = "密碼輸入錯誤鎖定"; break;
+                            default:
+                                break;
+                        }
                 }
 
-                    this.LogSuccess();
+                this.LogSuccess();
                 return Json(new DataSourceResult
                 {
                     Data = list.Results,
@@ -60,7 +83,7 @@ namespace FTT_API.Controllers.SupplierMgt
             }
         }
 
-        
+
         [ValidateAntiForgeryToken]
         [HttpGet("[action]")]
         public async Task<IActionResult> GetDetail(string order_id)
@@ -69,7 +92,7 @@ namespace FTT_API.Controllers.SupplierMgt
             {
                 var _SupplierMgtHandler = new SupplierMgtHandler(_config, HttpContext);
                 var result = _SupplierMgtHandler.GetDetail(order_id);
-                    this.LogSuccess();
+                this.LogSuccess();
                 return JsonSuccess(result);
             }
             catch (Exception ex)
@@ -79,7 +102,7 @@ namespace FTT_API.Controllers.SupplierMgt
             }
         }
 
-        
+
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult SendPWD(string order_id)
@@ -91,8 +114,8 @@ namespace FTT_API.Controllers.SupplierMgt
 
                 if (string.IsNullOrEmpty(msg))
                 {
-                    this.LogSuccess("密碼通知信函已寄出完成");
-                    return JsonSuccess("密碼通知信函已寄出完成");
+                    this.LogSuccess("變更密碼通知信函已寄出完成");
+                    return JsonSuccess("變更密碼通知信函已寄出完成");
                 }
                 else
                 {

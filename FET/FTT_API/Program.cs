@@ -128,6 +128,9 @@ builder.Services.AddAuthentication(options =>
 builder.Services.AddSingleton<FETTaskService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<FETTaskService>());
 
+builder.Services.AddSingleton<FETUnlockService>();
+builder.Services.AddHostedService(provider => provider.GetRequiredService<FETUnlockService>());
+
 // 加入 Data Protection 設定 - 跨平台相容
 var dataProtectionKeysPath = Environment.OSVersion.Platform == PlatformID.Win32NT
     ? Path.Combine(Directory.GetCurrentDirectory(), "DataProtectionKeys")
@@ -243,7 +246,6 @@ app.MapControllerRoute(
 //var container = new Unity.UnityContainer();
 //Business.BusinessFactory.Register(container);
 FTT_API.Common.HttpContext.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());
-
 RecurringJob.AddOrUpdate<SendMailHandler>(
     nameof(SendMailHandler.Send),
     (job) => job.Send(),

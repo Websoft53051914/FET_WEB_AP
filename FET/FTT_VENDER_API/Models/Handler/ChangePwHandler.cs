@@ -1,7 +1,9 @@
-﻿using FTT_VENDER_API.Common.ConfigurationHelper;
+﻿using DocumentFormat.OpenXml.Vml.Spreadsheet;
+using FTT_VENDER_API.Common.ConfigurationHelper;
 using FTT_VENDER_API.Common.OriginClass.EntiityClass;
 using FTT_VENDER_API.Models.ViewModel.ChangePw;
 using FTT_VENDER_API.Models.ViewModel.StoreVenderProfile;
+using Microsoft.AspNetCore.SignalR;
 using System.Transactions;
 using static Const.Enums;
 
@@ -19,41 +21,53 @@ namespace FTT_VENDER_API.Models.Handler
 
         public void UpdatePw(ChangePwVM vm)
         {
+            var dtTime = DateTime.Now;
+            var iv = Common.Method.GetAppSettingsDataByName("iv");
+            var ke = Common.Method.GetAppSettingsDataByName("ke");
 
-            string InsertVenderPwHistorySQL = "";
-            Dictionary<string, object> ParasForInsertVenderPwHistory = new();
-            InsertVenderPwHistorySQL = @$"INSERT INTO tb_vender_pw_history (account,pw) VALUES
-                         (@account,@pw) ";
-            ParasForInsertVenderPwHistory = new Dictionary<string, object>
+            var newPw = new Common.PasswordService().HashPassword(vm.NewPD);
+
+            Dictionary<string, object> paras_Insert = new Dictionary<string, object>()
+            {
+                { "newPw",newPw},
+                { "account",vm.AC},
+                { "createtime",dtTime},
+                { "locked_reason",4},
+            };
+
+            GetDBHelper().Execute(@"
+            INSERT INTO tb_vender_password_history(
+	            account, pw, createtime, locked_reason)
+	            VALUES
+            (@account, @newPw, @createtime, @locked_reason);
+
+            ", paras_Insert);
+
+            string update_SQL = "";
+            Dictionary<string, object> paras_Update = new();
+            update_SQL = @$"UPDATE store_vender_profile SET 
+                merchant_password = @pw, 
+                locked = @Locked, 
+                locked_reason = @LockedReason, 
+                is_pwchange_remind = NULL, 
+                pw_chgtime = @Now ,
+                lasturltime=null, 
+                lasturlkey=null,
+locked_time=null,
+geturltime=null
+                WHERE merchant_login = @AC;";
+
+            paras_Update = new Dictionary<string, object>
                         {
-                            { "account", vm.AC },
-                            { "pw", vm.NewPD },
-                        };
-
-            GetDBHelper().Execute(InsertVenderPwHistorySQL, ParasForInsertVenderPwHistory);
-
-            string UpdateStoreVenderProfileSQL = "";
-            Dictionary<string, object> ParasForUpdateStoreVenderProfile = new();
-            UpdateStoreVenderProfileSQL = @$"UPDATE store_vender_profile SET 
-merchant_password = @pw, 
-locked = @Locked, 
-locked_reason = @LockedReason, 
-is_pwchange_remind = NULL, 
-pw_chgtime = @Now 
-WHERE merchant_login = @AC;";
-
-            ParasForUpdateStoreVenderProfile = new Dictionary<string, object>
-                        {
-                            { "pw", vm.NewPD },
+                            { "pw", newPw },
                             { "Locked", "N" },
                             { "LockedReason", (int)LockReasonEnum.ChangePwByVender },
-                            { "Now", DateTime.Now },
+                            { "Now", dtTime},
                             { "AC",vm.AC }
                         };
 
-            GetDBHelper().Execute(UpdateStoreVenderProfileSQL, ParasForUpdateStoreVenderProfile);
-            GetDBHelper().Commit();            
-
+            GetDBHelper().Execute(update_SQL, paras_Update);
+            GetDBHelper().Commit();
         }
         public string CheckVenderInfoCorrect(ChangePwVM vm)
         {
@@ -61,32 +75,55 @@ WHERE merchant_login = @AC;";
             LoginHanlder LoginHanlder = new LoginHanlder(_configHelper, _httpContext);
             StoreVenderProfileVM StoreVenderProfileVM = new();
 
-            StoreVenderProfileVM = GetStoreVenderProfileNoPWD(vm.AC);
+            StoreVenderProfileVM = GetStoreVenderProfileByLastUrlKey(vm.tempGuid);
             if (StoreVenderProfileVM == null)
             {
-                ErrorMsg = "帳號不正確請確認";
+                ErrorMsg = "連結此已失效，請重新進行變更密碼";
                 return ErrorMsg;
             }
 
-            StoreVenderProfileVM = GetStoreVenderProfileWithACAndcp_tel(vm.AC, vm.cp_tel);
-            if (StoreVenderProfileVM == null)
+            var validityperiod = 2;
+            var _LastURLValidityperiod = Common.Method.GetAppSettingsDataByName("LastURLValidityperiod");
+            if (int.TryParse(_LastURLValidityperiod, out validityperiod) == false)
             {
-                ErrorMsg = "聯絡電話不正確請確認";
+                validityperiod = 2;
+            }
+            if (StoreVenderProfileVM.LastUrlKey != vm.tempGuid || StoreVenderProfileVM.LastUrlTime.AddDays(validityperiod) <= DateTime.Now)
+            {
+                ErrorMsg = "連結此已失效，請重新進行變更密碼";
                 return ErrorMsg;
             }
 
-            List<vender_pw_historyDTO> VenderPwHistoryDTOs = GetTheNewestVenderPwHistory(vm.AC);
-            if (VenderPwHistoryDTOs.Any(x => x.pw == vm.NewPD))
+            List<vender_pw_historyDTO> VenderPwHistoryDTOs = GetTheNewestVenderPwHistory(StoreVenderProfileVM.merchant_login);
+
+            var iv = Common.Method.GetAppSettingsDataByName("iv");
+            var ke = Common.Method.GetAppSettingsDataByName("ke");
+            var tempCommon = new Common.PasswordService();
+            var newPw = tempCommon.HashPassword(vm.NewPD);
+
+            if (VenderPwHistoryDTOs.Any(x => tempCommon.VerifyPassword(x.pw, vm.NewPD)))
             {
                 ErrorMsg = "密碼與前3次相同，請重新建立";
                 return ErrorMsg;
             }
+
+            vm.AC = StoreVenderProfileVM.merchant_login;
+
             return ErrorMsg;
         }
 
+        private StoreVenderProfileVM GetStoreVenderProfileByLastUrlKey(string lastUrlKey)
+        {
+            string sql = @"SELECT * FROM STORE_VENDER_PROFILE WHERE LastUrlKey= @LastUrlKey ";
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "LastUrlKey", lastUrlKey },
+            };
+            StoreVenderProfileVM? result = base.dbHelper.Find<StoreVenderProfileVM>(sql, parameters);
+            return result;
+        }
 
-
-        private StoreVenderProfileVM GetStoreVenderProfileNoPWD(string AC)
+        public StoreVenderProfileVM GetStoreVenderProfileNoPWD(string AC)
         {
             string sql = @"SELECT * FROM STORE_VENDER_PROFILE WHERE MERCHANT_LOGIN= @AC ";
             Dictionary<string, object> parameters = new Dictionary<string, object>
@@ -111,11 +148,11 @@ WHERE merchant_login = @AC;";
 
         private List<vender_pw_historyDTO> GetTheNewestVenderPwHistory(string AC)
         {
-            string sql = @"SELECT * FROM tb_vender_pw_history WHERE account = @AC ORDER BY createtime DESC LIMIT 3";
+            string sql = @"SELECT * FROM tb_vender_password_history WHERE account = @AC and locked_reason=0 ORDER BY createtime DESC LIMIT 3";
             Dictionary<string, object> parameters = new Dictionary<string, object>
             {
                 { "AC", AC },
-               
+
             };
             List<vender_pw_historyDTO> VenderPwHistoryDTOs = new List<vender_pw_historyDTO>();
             VenderPwHistoryDTOs = base.dbHelper.FindList<vender_pw_historyDTO>(sql, parameters);

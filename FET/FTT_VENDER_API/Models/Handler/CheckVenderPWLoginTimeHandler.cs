@@ -2,9 +2,11 @@
 using Core.Utility.Helper.Mail;
 using DocumentFormat.OpenXml.Office2013.Excel;
 using DocumentFormat.OpenXml.Wordprocessing;
-using FTT_API.Common;
-using FTT_API.Common.ConfigurationHelper;
-using FTT_API.Common.OriginClass.EntiityClass;
+using FTT_VENDER_API.Common;
+using FTT_VENDER_API.Common.ConfigurationHelper;
+using FTT_VENDER_API.Common.OriginClass.EntiityClass;
+using FTT_VENDER_API.Common.OriginClass.EntiityClass;
+using FTT_VENDER_API.Models.Handler;
 using Microsoft.AspNetCore.Mvc;
 using System.Data;
 using System.Text.Json;
@@ -12,7 +14,7 @@ using System.Transactions;
 using static Const.Enums;
 
 
-namespace FTT_API.Models.Handler
+namespace FTT_VENDER_API.Models.Handler
 {
     public partial class CheckVenderPWLoginTimeHandler : BaseDBHandler
     {
@@ -84,7 +86,8 @@ namespace FTT_API.Models.Handler
         {
 
             string queryForPWChangeRemind = $@"Select * from store_vender_profile where pw_chgtime < @EndTime
-            AND pw_chgtime > @StartTime";
+            AND pw_chgtime > @StartTime
+            and locked = @Locked and (is_pwchange_remind <> 'Y' OR is_pwchange_remind is null)";
 
             Dictionary<string, object> Paras = new();
 
@@ -175,12 +178,10 @@ WHERE
             string MailContent = jsonDoc.RootElement.GetProperty("PasswordResetEmailTemplate").GetString();
             MailContent = MailContent.Replace("{{VendorName}}", StoreVendorName);
             MailContent = MailContent.Replace("{{ResetPasswordUrl}}", ResetPasswordUrl);
-             
+
             string InsertMailPoolCmd = $@"INSERT INTO tb_mailpool
 (Subject, Content, EstimateSendTime, RealSendTime, SendStatus, ErrorMsg, Status, Creator, CreateTime, Updater, UpdateTime, DestinationEmail)
 VALUES(@Subject, @Content, @EstimateSendTime, @RealSendTime, @SendStatus, @ErrorMsg, @Status, @Creator, @CreateTime, @Updater, @UpdateTime, @DestinationEmail)";
-
-
 
             Dictionary<string, object> Paras = new Dictionary<string, object>
             {
@@ -197,8 +198,6 @@ VALUES(@Subject, @Content, @EstimateSendTime, @RealSendTime, @SendStatus, @Error
                   { "UpdateTime",  DateTime.Now },
                  { "DestinationEmail", MailTo },
             };
-
-
 
             GetDBHelper().Execute(InsertMailPoolCmd, Paras);
         }
@@ -274,83 +273,5 @@ INSERT INTO tb_vender_password_history(
             GetDBHelper().Execute(InsertVenderPWHistoryCmd, Paras);
         }
     }
-
-    public partial class CheckVenderPWLoginTimeHandler
-    {
-        public void CheckLastLoginTime()
-        {
-
-
-            List<user_login_logDTO> User_Login_Log_InLastLoginOver90days = new();
-            List<store_vender_profileDTO> Store_Vender_ProfileNoLoginOver90Days = new();
-            try
-            {
-
-                User_Login_Log_InLastLoginOver90days = GetLastLoginOver90days();
-                Store_Vender_ProfileNoLoginOver90Days = GetStoreVendorNoLoginOver90Days(User_Login_Log_InLastLoginOver90days);
-                foreach (var each in Store_Vender_ProfileNoLoginOver90Days)
-                {
-                    LockVenderProfile_ByOrderId(each, LockReason: (int)LockReasonEnum.LockedByNoLoginOver90Days);
-                    //InsertVenderPWHistory(each);
-                    GetDBHelper().Commit();
-                }
-
-                //超過90天未登入，似乎不用寄信
-                //InsertPWChangeRemindAndRemindStatus(Store_Vendor_ProfileNoLoginOver90Days);
-
-            }
-            catch (Exception ex)
-            {
-                LogError(ex.Message, "CheckLastLoginTime");
-            }
-        }
-
-        public List<store_vender_profileDTO> GetStoreVendorNoLoginOver90Days(List<user_login_logDTO> User_Login_Log_InLastLogin)
-        {
-            List<string> StoreVendorAccount = new List<string>();
-            foreach (var each in User_Login_Log_InLastLogin)
-            {
-                if (!each.account.IsNullOrEmpty())
-                {
-                    StoreVendorAccount.Add(each.account);
-                }
-            }
-
-            string queryForStoreNoLoginOver90Days = "";
-
-            List<store_vender_profileDTO> StoreNoLoginOver90Days = new();
-            if (StoreVendorAccount.Count > 0)
-            {
-                queryForStoreNoLoginOver90Days = $@"Select * from store_vender_profile where locked <> @Locked and merchant_login in @StoreVendorAccount";
-
-                Dictionary<string, object> Paras = new Dictionary<string, object>();
-                Paras.Add("Locked", "Y");
-                Paras.Add("StoreVendorAccount", StoreVendorAccount);
-
-                StoreNoLoginOver90Days = GetDBHelper().FindList<store_vender_profileDTO>(queryForStoreNoLoginOver90Days, Paras);
-            }
-
-            return StoreNoLoginOver90Days;
-
-        }
-
-        public List<user_login_logDTO> GetLastLoginOver90days()
-        {
-            string queryForLastLogin = $@"SELECT * FROM (
-    SELECT 
-        *, 
-        ROW_NUMBER() OVER (PARTITION BY account ORDER BY createtime DESC) AS rn 
-    FROM 
-        user_login_log
-    WHERE
-        createtime < NOW() - INTERVAL '90 days'
-) t 
-WHERE 
-    rn = 1;";
-
-            List<user_login_logDTO> ResultList = GetDBHelper().FindList<user_login_logDTO>(queryForLastLogin, new Dictionary<string, object>());
-
-            return ResultList;
-        }
-    }
+     
 }

@@ -263,7 +263,7 @@
                                     }
 
                                     swal({
-                                        text: `確定要發送密碼郵件？`,
+                                        text: `確定要發送重設密碼郵件？`,
                                         buttons: ['@(mapText.Btn_Cancel.ToHtmlString())', '@(mapText.Btn_Confirm.ToHtmlString())'],
                                         icon: "info"
                                     }).then((result) => {
@@ -288,7 +288,7 @@
                     { name: "cp_tel", title: "聯絡人電話", type: "text", width: 150, align: "center" },
                     { name: "email", title: "Email", type: "text", width: 150, align: "center" },
                     { name: "merchant_login", title: "登入帳號", type: "text", width: 150, align: "center" },
-                    { name: "merchant_password", title: "登入密碼", type: "text", width: 150, align: "center" },
+                    { name: "lock_reson_str", title: "鎖定原因", type: "text", width: 200, align: "center" },
 
                 ],
 
