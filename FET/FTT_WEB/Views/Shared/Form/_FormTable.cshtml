@@ -565,9 +565,17 @@
                         if (data.Success) {
                             alert('新增檔案完成');
 
-                            //Client DOM Stored XSS 2
+                                const el = GetFileElement2($('#fildTD a').length,encodeHTML(data.Data.Text), (data.Data.Value));
 
-                        $('#fildTD').append(GetFileElement2($('#fildTD a').length, encodeHTML(data.Data.Text), encodeHTML(data.Data.Value))); // 1
+                                const createDOMPurify = require("dompurify");
+                                const DOMPurifyInstance = createDOMPurify(window);
+                                el.innerHTML = DOMPurifyInstance.sanitize(el.innerHTML);
+
+                                const container = document.getElementById("fildTD");
+
+                                // 'beforeend' 等同於 appendChild 的效果
+                                container.insertAdjacentElement('beforeend', el); // 2
+
 
                             $('#File').val('');
                         } else {
