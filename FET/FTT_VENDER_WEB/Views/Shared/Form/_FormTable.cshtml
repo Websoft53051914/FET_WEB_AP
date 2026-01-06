@@ -833,7 +833,7 @@
                 e.preventDefault();
                 showLoader();
 
-                if ($(this).is(':invalid')||$("#SELECTSTATUS").val()=='') {
+                if ($(this).is(':invalid')||($('#STATUS_DESC').val()=='已派工'&&$("#SELECTSTATUS").val()=='')) {
 
                     $("#SELECTSTATUS").attr('required', 'required');
                     MyApp.Alert.warning('請輸入表單狀態');

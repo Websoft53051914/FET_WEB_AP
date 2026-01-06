@@ -177,7 +177,14 @@ INSERT INTO tb_vender_password_history(
                     }
                     catch (Exception ex)
                     {
-                        errorMsg = "Error authenticating. [" + HttpUtility.HtmlEncode(vm.AC) + "] : " + ex.ToString();
+                        if (ex.Message == "The input is not a valid Base-64 string as it contains a non-base 64 character, more than two padding characters, or an illegal character among the padding characters.")
+                        {
+                            errorMsg = "帳號或密碼輸入錯誤，請重新輸入！";
+                        }
+                        else
+                        {
+                            errorMsg = "Error authenticating. [" + HttpUtility.HtmlEncode(vm.AC) + "] : " + ex.ToString();
+                        }
                     }
                 }
                 else
