@@ -253,7 +253,7 @@ namespace FTT_API.Controllers.DispatchRuleMgt
         
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
-        public IActionResult ExportExcelQuery(string jsonData)
+        public IActionResult ExportExcelQuery([FromBody] string jsonData)
         {
             try
             {

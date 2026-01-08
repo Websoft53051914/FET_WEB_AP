@@ -185,10 +185,10 @@ namespace FTT_API.Controllers.Query
         /// 列印維修單
         /// </summary>
         /// <returns></returns>
-        
+
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
-        public IActionResult ExportExcel(string jsonData)
+        public IActionResult ExportExcel([FromBody] string jsonData)
         {
             try
             {

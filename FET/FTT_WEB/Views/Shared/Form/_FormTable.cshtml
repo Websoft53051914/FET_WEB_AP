@@ -446,19 +446,20 @@
                 // 安全抓取 filename
                 let filename = "download";
                 const disposition = response.headers.get("Content-Disposition");
-    if (disposition) {
-        // 先嘗試抓 filename* (UTF-8)
-        let match = disposition.match(/filename\*=[^']*'[^']*'(.+)/i);
-        if (match && match[1]) {
-            filename = decodeURIComponent(match[1]);
-        } else {
-            // fallback 抓 filename
-            match = disposition.match(/filename=["']?([^;"']+)["']?/i);
-            if (match && match[1]) {
-                filename = match[1];
-            }
-        }
-    }
+
+                if (disposition) {
+                    // 先嘗試抓 filename* (UTF-8)
+                    let match = disposition.match(/filename\*=[^']*'[^']*'(.+)/i);
+                    if (match && match[1]) {
+                        filename = decodeURIComponent(match[1]);
+                    } else {
+                        // fallback 抓 filename
+                        match = disposition.match(/filename=["']?([^;"']+)["']?/i);
+                        if (match && match[1]) {
+                            filename = match[1];
+                        }
+                    }
+                }
 
                 const temp = document.createElement("a");
                 temp.style.display = "none";

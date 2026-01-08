@@ -92,10 +92,8 @@ namespace FTT_API.Controllers.CIConfig
         /// [/Storemgt/CIConfig.aspx.cs]btnExport_Click()<para/>
         /// </summary>
         /// <returns></returns>
-        [ValidateAntiForgeryToken]
-        [HttpPost("[action]")]
-        
-        public IActionResult ExportExcel(string jsonData)
+        [ValidateAntiForgeryToken]        [HttpPost("[action]")]
+        public IActionResult ExportExcel([FromBody] string jsonData)
         {
             try
             {

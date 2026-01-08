@@ -507,12 +507,70 @@
             context['@(mapData.Grid.Id)'].reload();
         });
 
-        $('#btnExportExcel').on('click', function (e) {
+        $('#btnExportExcel').on('click', async function (e) {
             let data = {};
             $.extend(data, $('#@(mapData.FormSearch.Id)').serializeObject(), context['@(mapData.Grid.Id)'].filter);
             console.log(data);
 
-            postSubmitJson('@(mapData.UrlExportExcel?.ToHtmlString())', data);
+            // postSubmitJson('@(mapData.UrlExportExcel?.ToHtmlString())', data);
+
+            try {
+                const xsrfToken = getCookie("X-CSRF-TOKEN");
+                const response = await fetch(
+                    '@(mapData.UrlExportExcel?.ToHtmlString())',
+                    {
+                        method: "POST",
+                        credentials: "include" ,
+                        headers: {
+                            "Authorization": "Bearer " + token,
+                            "X-CSRF-TOKEN": decodeURIComponent(xsrfToken),
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(JSON.stringify(data)) // 注意 fetch POST 不能用 data，改用 body
+
+                    }
+                );
+
+                if (!response.ok) {
+                    alert("下載失敗");
+                    return;
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
+                // 安全抓取 filename
+                let filename = "download";
+                const disposition = response.headers.get("Content-Disposition");
+
+                if (disposition) {
+                    // 先嘗試抓 filename* (UTF-8)
+                    let match = disposition.match(/filename\*=[^']*'[^']*'(.+)/i);
+                    if (match && match[1]) {
+                        filename = decodeURIComponent(match[1]);
+                    } else {
+                        // fallback 抓 filename
+                        match = disposition.match(/filename=["']?([^;"']+)["']?/i);
+                        if (match && match[1]) {
+                            filename = match[1];
+                        }
+                    }
+                }
+
+                const temp = document.createElement("a");
+                temp.style.display = "none";
+                temp.href = url;
+                temp.download = filename;
+                document.body.appendChild(temp);
+                temp.click();
+
+                URL.revokeObjectURL(url);
+                temp.remove();
+
+            } catch (ex) {
+                console.error(ex);
+                alert("下載過程發生錯誤");
+            }
         });
 
 
