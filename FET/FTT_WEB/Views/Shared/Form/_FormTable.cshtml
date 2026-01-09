@@ -326,16 +326,16 @@
                                 </div>
                                 <div class="col">
                                     <label class="col-form-label websoft-form-label pt-2">數量</label>
-                                    <input id="QTY" min="1" type="number" class="form-control " style="width: 80px" />
+                                    <input id="QTY" min="1" type="number" class="form-control " style="width: 180px" />
                                     <div class="invalid-feedback">請輸入數量</div>
                                 </div>
                                 <div class="col">
                                     <label class="col-form-label websoft-form-label pt-2">單位</label>
-                                    <input id="UNIT" class="form-control " style="width: 80px" />
+                                    <input id="UNIT" class="form-control " style="width: 180px" />
                                 </div>
                                 <div class="col">
                                     <label class="col-form-label websoft-form-label pt-2">單價</label>
-                                    <input id="PRICE" min="1" type="number" class="form-control " style="width: 80px" />
+                                    <input id="PRICE" min="1" type="number" class="form-control " style="width: 180px" />
                                     <div class="invalid-feedback">請輸入單價</div>
                                 </div>
                             </div>
@@ -1508,10 +1508,11 @@
 
     function createSafeCell(value, name, index) {
         const safeValue = sanitizeText(value ?? '');
+        const safeName = sanitizeText(name ?? '');
 
         // 建立 td
         const td = document.createElement('td');
-        td.textContent = safeValue; // 安全文字
+        td.textContent = safeName; // 安全文字
 
         // 建立 input（不使用 innerHTML、不使用插值字串）
         const input = document.createElement('input');
