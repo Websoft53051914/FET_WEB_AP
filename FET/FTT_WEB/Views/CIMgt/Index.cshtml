@@ -72,12 +72,12 @@
                                         <tbody>
                                             <tr>
                                                 <th class="text-end">
-                                                    <label class="col-form-label websoft-form-label pt-2 required">名稱類別：</label>
+                                                    <label class="col-form-label websoft-form-label pt-2 required">名稱：</label>
                                                 </th>
                                                 <td><input type="text" class="form-control" value="" id="Add_ciname" required></td>
                                             </tr>
                                             <tr>
-                                                <th class="text-end">隸屬於：</th>
+                                                <th class="text-end">類別：</th>
                                                 <td>
                                                     <select class="form-control" id="Add_cicategory" readonly">
                                                         <option value="1006" selected>報修品項類別</option>
@@ -85,6 +85,10 @@
                                                 </td>
                                             </tr>
 
+                                            <tr>
+                                                <th class="text-end">隸屬於：</th>
+                                                <td><textarea type="text" class="form-control" value="" id="Add_tempinput" readonly></textarea></td>
+                                            </tr>
                                             <tr>
                                                 <th class="text-end">備註：</th>
                                                 <td><input type="text" class="form-control" value="" id="Add_remark"></td>
@@ -171,12 +175,12 @@
                                 </tr>
                                 <tr>
                                     <th class="text-end">
-                                        <label class="col-form-label websoft-form-label pt-2 required">名稱類別：</label>
+                                        <label class="col-form-label websoft-form-label pt-2 required">名稱：</label>
                                     </th>
                                     <td><input type="text" class="form-control" value="" id="ciname" required></td>
                                 </tr>
                                 <tr>
-                                    <th class="text-end">隸屬於：</th>
+                                    <th class="text-end">類別：</th>
                                     <td>
                                         <select class="form-control" id="cicategory" readonly">
                                             <option value="1006" selected>報修品項類別</option>
@@ -184,7 +188,10 @@
                                         @* @await Html.PartialAsync("Form/_ItemsTree", new CommonPartailVM() { ComponentId = Guid.NewGuid().ToString() }) *@
                                     </td>
                                 </tr>
-
+                                <tr>
+                                    <th class="text-end">隸屬於：</th>
+                                    <td><textarea type="text" class="form-control" value="" id="tempinput" readonly></textarea></td>
+                                </tr>
                                 <tr>
                                     <th class="text-end">備註：</th>
                                     <td><input type="text" class="form-control" value="" id="remark"></td>
@@ -280,8 +287,20 @@
     <script src="~/lib/jsTree/jstree3.3.17.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jstree/3.2.1/jstree.min.js"></script>
 
-
     <script>
+        function autoGrowTextArea($ta) {
+            $ta.each(function () {
+                this.style.height = "auto";              // 先重置高度
+                this.style.height = (this.scrollHeight+5) + "px"; // 設置為內容高度
+            });
+        }
+
+        function encodeHTML(str) {
+            return String(str).replace(/[&<>"']/g, m => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[m]));
+        }
+
         var currentID = 0;
         var context = context || {};
 
@@ -399,6 +418,19 @@
                     $('#btnDelete').show();
                     $('.editshell').show();
                 }
+
+        var tree = data.instance;
+
+         // 取得路徑陣列（文字）
+         var pathArray = tree.get_path(data.node, "-");
+
+        $('#tempinput').val(encodeHTML(pathArray));
+        $('#Add_tempinput').val(encodeHTML(pathArray));
+        // 立即自動增高
+        autoGrowTextArea($('#tempinput'));
+        autoGrowTextArea($('#Add_tempinput'));
+
+
             });
 
             $("#createform").submit(function (e) {
