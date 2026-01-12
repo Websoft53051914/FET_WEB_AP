@@ -92,9 +92,9 @@ namespace FTT_API.Models.Handler
             Paras = new Dictionary<string, object>
                         {
                             { "StartTime", DateTime.Now.AddDays(-90)},
-                            { "Locked", "N" },
                             { "EndTime", DateTime.Now.AddDays(-80)},
-                            { "IsPwChangeRemind", "Y" },
+                            //{ "Locked", "N" },
+                            //{ "IsPwChangeRemind", "Y" },
 
                         };
 

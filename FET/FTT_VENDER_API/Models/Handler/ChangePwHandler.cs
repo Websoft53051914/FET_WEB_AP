@@ -148,7 +148,7 @@ geturltime=null
 
         private List<vender_pw_historyDTO> GetTheNewestVenderPwHistory(string AC)
         {
-            string sql = @"SELECT * FROM tb_vender_password_history WHERE account = @AC and locked_reason=0 ORDER BY createtime DESC LIMIT 3";
+            string sql = @"SELECT * FROM tb_vender_password_history WHERE account = @AC and locked_reason=4 ORDER BY createtime DESC LIMIT 3";
             Dictionary<string, object> parameters = new Dictionary<string, object>
             {
                 { "AC", AC },
