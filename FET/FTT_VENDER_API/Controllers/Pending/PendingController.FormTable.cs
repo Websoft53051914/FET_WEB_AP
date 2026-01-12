@@ -19,7 +19,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// </summary>
         /// <param name="form_no"></param>
         /// <returns></returns>
-        
+
         [ValidateAntiForgeryToken]
         [HttpGet("[action]")]
         public IActionResult GetDetail(string form_no)
@@ -400,12 +400,13 @@ namespace FTT_VENDER_API.Controllers.Pending
 
                     if (!string.IsNullOrEmpty(_Ftt_formDTO.CIDesc))
                     {
-                        string filePath = $"images/Item/{_Ftt_formDTO.CIDesc.Trim()}.jpg";
+                        string filePath = $"Item/{_Ftt_formDTO.CIDesc.Trim()}.jpg";
                         string path = Path.Combine(_hostingEnvironment.WebRootPath, filePath);
                         if (System.IO.File.Exists(path))
                         {
                             vm.hasTT_IMAGE = true;
                             vm.newImageSRC = filePath;
+
                         }
                     }
 
@@ -526,7 +527,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// </summary>
         /// <param name="vm"></param>
         /// <returns></returns>
-        
+
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public ActionResult Add_Ftt_form_amount(Add_Ftt_form_amount_VM vm)
@@ -574,7 +575,7 @@ namespace FTT_VENDER_API.Controllers.Pending
         /// 表單送出
         /// </summary>
         /// <returns></returns>
-        
+
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult Detail(Ftt_formDTO vm)
@@ -633,6 +634,12 @@ namespace FTT_VENDER_API.Controllers.Pending
                     dic.Add("vendor_arrive_date", tempTime);
                 }
 
+                if (!string.IsNullOrEmpty(vm.delay_reason))
+                {
+                    updateSQL += " delay_reason=@delay_reason, ";
+                    dic.Add("delay_reason", vm.delay_reason);
+                }
+
                 //先取得當下的狀態
                 var oldEntity = baseHandler.GetDBHelper().Find<approve_formEntity>("select * from approve_form where form_no=@form_no ", dic);
 
@@ -642,7 +649,6 @@ ticket_info=@ticket_info,
 
 category_id=@category_id,
 category_name=@category_name,
-
 {updateSQL}
 
 
@@ -795,7 +801,7 @@ form_no=@form_no
             public string ExpenseType { get; set; }
         }
 
-        
+
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public ActionResult SelectDesc(SelectDescVM vm)
@@ -817,7 +823,7 @@ form_no=@form_no
             }
         }
 
-        
+
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public ActionResult ShowDesc(TemplateConfigVM vm)
@@ -845,7 +851,7 @@ form_no=@form_no
             }
         }
 
-        
+
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult FileUpload(IFormFile file, string formNo)
@@ -923,7 +929,7 @@ form_no=@form_no
         }
 
 
-        
+
         [ValidateAntiForgeryToken]
         [HttpGet("[action]")]
         public IActionResult DownloadFile(string id)

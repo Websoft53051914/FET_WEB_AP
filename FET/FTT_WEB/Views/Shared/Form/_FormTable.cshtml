@@ -5,7 +5,11 @@
     ViewData["TreeModalId"] = TreeModalId;
 
     var form_no = ViewData["form_no"];
-
+    var mapData = new
+    {
+        UrlImage = $"{config.GetBackendUrl()}/",
+        UrlImageNoProduct = $"{config.GetBackendUrl()}/Item/no-product.gif",
+    };
 }
 
 <style>
@@ -181,6 +185,10 @@
                         </td>
                         <th class="table-header" rowspan="3">報修品項圖樣</th>
                         <td rowspan="3">
+                            <span id="TT_IMAGE_PANNEL"></span>
+                            <div class="d-flex justify-content-center">
+                                <img class="m-0" id="TT_IMAGE" src="@(mapData.UrlImageNoProduct?.ToHtmlString())" data-default-src="@(mapData.UrlImageNoProduct?.ToHtmlString())" width="100" onclick="window.open(this.src,'showImg', 'status=no,toolbar=no,scrollbars=yes,resizable=yes,width=600,Height=500');" style="cursor:pointer;" align="middle" />
+                            </div>
                         </td>
                         <th class="table-header">報修廠商</th>
                         <td id="VENDER_NAME">
@@ -411,7 +419,7 @@
             '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
         }[m]));
     }
-     
+
     function GetFileElement2(i,text, value) {
         const a = document.createElement("a");
         a.textContent = `【${text ?? ""}】`;
@@ -866,7 +874,7 @@
 
                             //Client DOM Stored XSS 1
 
-                            // 
+                            //
                             for (var i = 0; i < data.FileItems.length; i++) {
                                 const el = GetFileElement2(i,encodeHTML(data.FileItems[i].Text), encodeHTML(data.FileItems[i].Value));
 
@@ -915,6 +923,12 @@
                         $('#ACTION_NAME').val(data.ActionName);
                         $('#STORE_TYPE').val(data.Store_profileDTO.StoreType);
                         $('#IVRCODE').val(data.Store_profileDTO.IVRCode);
+                        if (data['newImageSRC']) {
+                            $('#TT_IMAGE').attr('src', '@(mapData.UrlImage?.ToHtmlString())' + data['newImageSRC']);
+                        }
+                        else {
+                            $('#TT_IMAGE').attr('src', $('#TT_IMAGE').data('defaultSrc'));
+                        }
 
                         var RequireField = data.RequireField;
                         context.RequireField = RequireField;
@@ -1161,89 +1175,89 @@
             });
         }
 
-        function addItemRow(obj, hideAmountDel) {
-            if (obj == null && checkAddItem() == false)
-                return false;
-            else {
-                var _EXPENSE_TYPE = sanitizeText($('#EXPENSE_TYPE').val());
-                var _EXPENSE_DESC_SEL =sanitizeText( $('#EXPENSE_DESC_SEL :selected').text());
-                var _EXPENSE_DESC_TEXT =sanitizeText( $('#EXPENSE_DESC_TEXT').val());
-                var _FAULT_REASON = sanitizeText($('#FAULT_REASON').val());
-                var _REPAIR_ACTION = sanitizeText($('#REPAIR_ACTION').val());
-                var _QTY = sanitizeText($('#QTY').val());
-                var _UNIT =sanitizeText( $('#UNIT').val());
-                var _PRICE =sanitizeText( $('#PRICE').val());
+    function addItemRow(obj, hideAmountDel) {
+        if (obj == null && checkAddItem() == false)
+            return false;
+        else {
+            var _EXPENSE_TYPE = sanitizeText($('#EXPENSE_TYPE').val());
+            var _EXPENSE_DESC_SEL = sanitizeText($('#EXPENSE_DESC_SEL :selected').text());
+            var _EXPENSE_DESC_TEXT = sanitizeText($('#EXPENSE_DESC_TEXT').val());
+            var _FAULT_REASON = sanitizeText($('#FAULT_REASON').val());
+            var _REPAIR_ACTION = sanitizeText($('#REPAIR_ACTION').val());
+            var _QTY = sanitizeText($('#QTY').val());
+            var _UNIT = sanitizeText($('#UNIT').val());
+            var _PRICE = sanitizeText($('#PRICE').val());
 
-                if (obj != null) {
-                    _EXPENSE_TYPE = obj.expense_type || '';
-                    _EXPENSE_DESC_SEL = obj.expense_desc || '';
-                    _EXPENSE_DESC_TEXT = obj.expense_desc || '';
-                    _FAULT_REASON = obj.fault_reason || '';
-                    _REPAIR_ACTION = obj.repair_action || '';
-                    _QTY = obj.qty || '';
-                    _UNIT = obj.unit || '';
-                    _PRICE = obj.price || '';
+            if (obj != null) {
+                _EXPENSE_TYPE = obj.expense_type || '';
+                _EXPENSE_DESC_SEL = obj.expense_desc || '';
+                _EXPENSE_DESC_TEXT = obj.expense_desc || '';
+                _FAULT_REASON = obj.fault_reason || '';
+                _REPAIR_ACTION = obj.repair_action || '';
+                _QTY = obj.qty || '';
+                _UNIT = obj.unit || '';
+                _PRICE = obj.price || '';
+            }
+            try {// 計算 index
+                const index = parseInt(document.getElementById('AMOUNT_MAX_IDX').value) + 1;
+
+                // 建立 tr
+                const tr = document.createElement('tr');
+                tr.id = 'AMOUNT_TR_' + index;
+                tr.setAttribute('name', 'TableTR');
+
+                // 刪除按鈕 td
+                const tdDel = document.createElement('td');
+                if (!hideAmountDel) {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.className = 'btn btn-link text-danger icofont icofont-trash fs-6 p-1';
+                    btn.style.cursor = 'pointer';
+                    btn.addEventListener('click', () => DelAMOUNT(btn));
+                    tdDel.appendChild(btn);
                 }
-                    try {// 計算 index
-    const index = parseInt(document.getElementById('AMOUNT_MAX_IDX').value) + 1;
+                tr.appendChild(tdDel);
+                console.log('addItemRow', obj);
+                tr.appendChild(createSafeCell(_EXPENSE_TYPE, 'EXPENSE_TYPE', index));
+                const descValue = (document.getElementById('AMOUNT_CONFIG').value === "Y")
+                    ? _EXPENSE_DESC_SEL
+                    : _EXPENSE_DESC_TEXT;
+                tr.appendChild(createSafeCell(descValue, 'EXPENSE_DESC', index));
 
-    // 建立 tr
-    const tr = document.createElement('tr');
-    tr.id = 'AMOUNT_TR_' + index;
-    tr.setAttribute('name', 'TableTR');
+                tr.appendChild(createSafeCell(_FAULT_REASON, 'FAULT_REASON', index));
+                tr.appendChild(createSafeCell(_REPAIR_ACTION, 'REPAIR_ACTION', index));
+                tr.appendChild(createSafeCell(_QTY, 'QTY', index));
+                tr.appendChild(createSafeCell(_UNIT, 'UNIT', index));
+                tr.appendChild(createSafeCell(_PRICE, 'PRICE', index));
 
-    // 刪除按鈕 td
-    const tdDel = document.createElement('td');
-    if (!hideAmountDel) {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'btn btn-link text-danger icofont icofont-trash fs-6 p-1';
-        btn.style.cursor = 'pointer';
-        btn.addEventListener('click', () => DelAMOUNT(btn));
-        tdDel.appendChild(btn);
-    }
-    tr.appendChild(tdDel);
+                // 小計
+                const tmpTotal = parseInt(_QTY) * parseInt(_PRICE);
+                calSubTotal('Add', tmpTotal);
+                const tmpTotalDisplay = "$" + tmpTotal + ".-";
 
-    tr.appendChild(createSafeCell(_EXPENSE_TYPE, 'EXPENSE_TYPE', index));
-    const descValue = (document.getElementById('AMOUNT_CONFIG').value === "Y")
-                      ? _EXPENSE_DESC_SEL
-                      : _EXPENSE_DESC_TEXT;
-    tr.appendChild(createSafeCell(descValue, 'EXPENSE_DESC', index));
+                const tdSubtotal = document.createElement('td');
+                tdSubtotal.textContent = tmpTotalDisplay;
+                const inputSubtotal = document.createElement('input');
+                inputSubtotal.type = 'hidden';
+                inputSubtotal.id = 'SUBTOTAL_' + index;
+                inputSubtotal.name = 'SUBTOTAL';
+                inputSubtotal.value = tmpTotalDisplay;
+                tdSubtotal.appendChild(inputSubtotal);
+                tr.appendChild(tdSubtotal);
 
-    tr.appendChild(createSafeCell(_FAULT_REASON, 'FAULT_REASON', index));
-    tr.appendChild(createSafeCell(_REPAIR_ACTION, 'REPAIR_ACTION', index));
-    tr.appendChild(createSafeCell(_QTY, 'QTY', index));
-    tr.appendChild(createSafeCell(_UNIT, 'UNIT', index));
-    tr.appendChild(createSafeCell(_PRICE, 'PRICE', index));
+                // 更新 index
+                document.getElementById('AMOUNT_MAX_IDX').value = index;
 
-    // 小計
-    const tmpTotal = parseInt(_QTY) * parseInt(_PRICE);
-    calSubTotal('Add', tmpTotal);
-    const tmpTotalDisplay = "$" + tmpTotal + ".-";
-
-    const tdSubtotal = document.createElement('td');
-    tdSubtotal.textContent = tmpTotalDisplay;
-    const inputSubtotal = document.createElement('input');
-    inputSubtotal.type = 'hidden';
-    inputSubtotal.id = 'SUBTOTAL_' + index;
-    inputSubtotal.name = 'SUBTOTAL';
-    inputSubtotal.value = tmpTotalDisplay;
-    tdSubtotal.appendChild(inputSubtotal);
-    tr.appendChild(tdSubtotal);
-
-    // 更新 index
-    document.getElementById('AMOUNT_MAX_IDX').value = index;
-
-    // 安全 append 到 container
-    document.getElementById('AMOUNT_LIST').appendChild(tr);
+                // 安全 append 到 container
+                document.getElementById('AMOUNT_LIST').appendChild(tr);
 
 
-                }
-                catch (ex) {
-                    MyApp.Alert.error(ex.message);
-                }
+            }
+            catch (ex) {
+                MyApp.Alert.error(ex.message);
             }
         }
+    }
 
         function checkAddItem() {
             if ($('#EXPENSE_TYPE').val() == "") {
@@ -1280,7 +1294,7 @@
                 var delPrice = $(thisTR).find('[name="PRICE"]').val();
                 var delQty = $(thisTR).find('[name="QTY"]').val();
 
-                var tmpTotal = parseInt(delQty) * parseInt(delPrice);
+                var tmpTotal = parseInt(delQty || '0') * parseInt(delPrice || '0');
 
                 calSubTotal('Del', tmpTotal);
 
@@ -1292,21 +1306,22 @@
                 MyApp.Alert.error(ex.message);
             }
         }
-        function calSubTotal(type, obj) {
-            var cost1 = parseInt(obj);
-            var cost2 = parseInt($('#AMOUNT_COST').val());
 
-            var total_cost;
-            if (type == 'Add') {
-                total_cost = parseInt(cost1) + parseInt(cost2);
-            }
-            else if (type == 'Del') {
-                total_cost = parseInt(cost2) - parseInt(cost1);
-            }
+    function calSubTotal(type, obj) {
+        var cost1 = parseInt(obj || '0');
+        var cost2 = parseInt($('#AMOUNT_COST').val() || '0');
 
-            $('#AMOUNT_COST').val(total_cost);
-            $('#Totals').text(total_cost);
+        var total_cost;
+        if (type == 'Add') {
+            total_cost = parseInt(cost1) + parseInt(cost2);
         }
+        else if (type == 'Del') {
+            total_cost = parseInt(cost2) - parseInt(cost1);
+        }
+
+        $('#AMOUNT_COST').val(total_cost);
+        $('#Totals').text(total_cost);
+    }
 
         function form_access_control(formobj, allowed_field) {
             allowed_field = convertToFormField(allowed_field);
@@ -1508,11 +1523,10 @@
 
     function createSafeCell(value, name, index) {
         const safeValue = sanitizeText(value ?? '');
-        const safeName = sanitizeText(name ?? '');
 
         // 建立 td
         const td = document.createElement('td');
-        td.textContent = safeName; // 安全文字
+        td.textContent = safeValue; // 安全文字
 
         // 建立 input（不使用 innerHTML、不使用插值字串）
         const input = document.createElement('input');
