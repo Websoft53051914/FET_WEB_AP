@@ -472,7 +472,7 @@ namespace FTT_API.Controllers.Pending
 
                     if (!string.IsNullOrEmpty(_Ftt_formDTO.CIDesc))
                     {
-                        string filePath = $"images/Item/{_Ftt_formDTO.CIDesc.Trim()}.jpg";
+                        string filePath = $"Item/{_Ftt_formDTO.CIDesc.Trim()}.jpg";
                         string path = Path.Combine(_hostingEnvironment.WebRootPath, filePath);
                         if (System.IO.File.Exists(path))
                         {

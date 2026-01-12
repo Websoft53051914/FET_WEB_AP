@@ -468,9 +468,9 @@ namespace FTT_API.Common
         }
 
         //20251218為了解決部署在linux後，一段時間會出現異常訊息，系統就掛掉
-            //IOException: The configured user limit (512) on the number of inotify instances has been reached,
-            //or the per-process limit on the number of open file descriptors has been reached.
-        
+        //IOException: The configured user limit (512) on the number of inotify instances has been reached,
+        //or the per-process limit on the number of open file descriptors has been reached.
+
         //20251218 1.在 Method 類別中新增一個私有的靜態變數
         private static IConfiguration _cachedConfig;
 
@@ -878,11 +878,12 @@ namespace FTT_API.Common
                     if (store_vender_profile != null)
                     {
                         revier = store_vender_profile.email;
+                        if (string.IsNullOrEmpty(reviverName))
+                        {
+                            reviverName = store_vender_profile.merchant_name;
+                        }
                     }
-                    if (string.IsNullOrEmpty(reviverName))
-                    {
-                        reviverName = store_vender_profile.merchant_name;
-                    }
+
                     break;
 
                 case "SECURITY":
