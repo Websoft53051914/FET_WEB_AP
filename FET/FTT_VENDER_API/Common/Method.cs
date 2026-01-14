@@ -566,6 +566,7 @@ namespace FTT_VENDER_API.Common
         new Claim(nameof(SessionVO.usertype),vo.usertype),
                 new Claim(nameof(SessionVO.ivrcode),vo.ivrcode),
                 new Claim(nameof(SessionVO.username),vo.username),
+                new Claim(nameof(SessionVO.empname),vo.empname ?? ""), // 加入廠商名稱
                 new Claim(JwtRegisteredClaimNames.Jti, jti), // 設定 JTI
         }),
 

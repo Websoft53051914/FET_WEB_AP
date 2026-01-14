@@ -82,8 +82,69 @@
 }
 <script src="~/lib/jsCookie/js.cookie.min.js"></script>
 <script>
+    // 解析 JWT Token 獲取使用者資訊
+    function getUserInfoFromToken() {
+        try {
+            // 讀取 JWT Token
+            function getCookie(name) {
+                const value = `; ${document.cookie}`;
+                const parts = value.split(`; ${name}=`);
+                if (parts.length === 2) return parts.pop().split(';').shift();
+                return null;
+            }
+            
+            const token = getCookie('Token');
+            if (token) {
+                // 解析 JWT Token payload
+                const base64Url = token.split('.')[1];
+                const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+                const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+                    return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+                }).join(''));
+                
+                const payload = JSON.parse(jsonPayload);
+                // JWT 中包含的欄位：userrole, usertype, ivrcode, username, empname
+                const userName = payload.empname || payload.username || '未知使用者';
+                $('#userloginname').text(userName);
+            } else {
+                $('#userloginname').text('未登入');
+            }
+        } catch (error) {
+            console.log('無法解析使用者資訊:', error);
+            $('#userloginname').text('載入中...');
+            // 如果 JWT 解析失敗，嘗試通過 API 獲取使用者資訊
+            getUserInfoFromAPI();
+        }
+    }
+    
+    // 通過 API 獲取使用者資訊
+    function getUserInfoFromAPI() {
+        $.ajax({
+            url: '@(config.GetBackendUrl())/Api/GetCurrentUser',
+            type: 'GET',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            success: function (response) {
+                if (response.Success && response.Data) {
+                    const userName = response.Data.empname || response.Data.username || '未知使用者';
+                    $('#userloginname').text(userName);
+                } else {
+                    $('#userloginname').text('無法取得');
+                }
+            },
+            error: function (xhr, status, error) {
+                console.log('獲取使用者資訊失敗:', error);
+                $('#userloginname').text('取得失敗');
+            }
+        });
+    }
+    
     $(document).ready(function () {
-        $('#userloginname').text(decodeURIComponent(localStorage.userLoginName))
+        //20260114 $('#userloginname').text(decodeURIComponent(localStorage.userLoginName))
+        //修正：從 JWT Token 中解析使用者資訊
+        getUserInfoFromToken();
+        
         $('#btn-logout').on('click', function () {
             showLoader();
             // var data = { formNo: formNo };
