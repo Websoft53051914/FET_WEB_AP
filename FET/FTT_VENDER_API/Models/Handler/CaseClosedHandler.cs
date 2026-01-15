@@ -39,6 +39,7 @@ WHERE  statusid IN ( 'CLOSE', 'CANCEL', 'REJECT' )
                        WHERE  User_Type = @USERROLE
                                AND deptcode = @IVRCODE
                                AND @EMPNO IS NOT NULL)
+ORDER  BY updatetime DESC, form_no DESC
 
 ";
              
@@ -74,6 +75,7 @@ WHERE  statusid IN ( 'CLOSE', 'CANCEL', 'REJECT' )
                        WHERE  User_Type = @USERROLE
                                AND deptcode = @IVRCODE
                                AND @EMPNO IS NOT NULL)
+ORDER  BY updatetime DESC, form_no DESC
 
 ";
 
