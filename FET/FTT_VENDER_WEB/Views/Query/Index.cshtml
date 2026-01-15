@@ -300,10 +300,71 @@
             $('#@(mapData.PartialIT.Id)').modal('show');
         });
 
-        function printWp(formNoList) {
-            postSubmitJson('@(mapData.UrlPrintWP?.ToHtmlString())', {
+        async function printWp(formNoList) {
+            let data = {};
+            data['@(nameof(OnsitePrintUpdateStatusReqVO.FormNoList))'] = formNoList;
+
+            try {
+                const xsrfToken = getCookie("X-CSRF-TOKEN");
+                const response = await fetch(
+                    '@(mapData.UrlPrintWP?.ToHtmlString())',
+                    {
+                        method: "POST",
+                        credentials: "include",
+                        headers: {
+                            "Authorization": "Bearer " + token,
+                            "X-CSRF-TOKEN": decodeURIComponent(xsrfToken),
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(JSON.stringify(data)) // 注意 fetch POST 不能用 data，改用 body
+
+                    }
+                );
+
+                if (!response.ok) {
+                    alert("下載失敗");
+                    return;
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
+                // 安全抓取 filename
+                let filename = "download";
+                const disposition = response.headers.get("Content-Disposition");
+
+                if (disposition) {
+                    // 先嘗試抓 filename* (UTF-8)
+                    let match = disposition.match(/filename\*=[^']*'[^']*'(.+)/i);
+                    if (match && match[1]) {
+                        filename = decodeURIComponent(match[1]);
+                    } else {
+                        // fallback 抓 filename
+                        match = disposition.match(/filename=["']?([^;"']+)["']?/i);
+                        if (match && match[1]) {
+                            filename = match[1];
+                        }
+                    }
+                }
+
+                const temp = document.createElement("a");
+                temp.style.display = "none";
+                temp.href = url;
+                temp.download = filename;
+                document.body.appendChild(temp);
+                temp.click();
+
+                URL.revokeObjectURL(url);
+                temp.remove();
+
+            } catch (ex) {
+                console.error(ex);
+                alert("下載過程發生錯誤");
+            }
+
+            @*postSubmitJson('@(mapData.UrlPrintWP?.ToHtmlString())', {
                 '@(nameof(OnsitePrintUpdateStatusReqVO.FormNoList))': formNoList,
-            });
+            });*@
         }
 
         $('#@(mapData.FormSearch.IdBtnSearch)').on('click', function (e) {
@@ -353,8 +414,8 @@
                 const xsrfToken = getCookie("X-CSRF-TOKEN");
                 const response = await fetch(
                     '@(mapData.UrlExportExcel?.ToHtmlString())',
-                    { 
-                        method: "POST", 
+                    {
+                        method: "POST",
                         credentials: "include" ,
                         headers: {
                             "Authorization": "Bearer " + token,
@@ -430,7 +491,7 @@
                 pageLoading: true,
                 pagerContainer: '#@(mapData.Grid.IdPagers)',
                 autoload: true,
-                sorting:true,
+                sorting: true,
                 rowDoubleClick: function (e) {
                     // [/pool/query.aspx]gridView_RowDataBound()
                     let formNo = e.item['@(nameof(OnsitePrintVO.FormNo))'];
@@ -441,7 +502,7 @@
                         var d = $.Deferred();
                         ctxGrid.filter = { ...filter };
                         filter.vm = {};
-                         $.extend(filter.vm, $('#@(mapData.FormSearch.Id)').serializeObject());
+                        $.extend(filter.vm, $('#@(mapData.FormSearch.Id)').serializeObject());
 
                         //分頁頁數紀錄相關 紀錄查詢時將查詢條件、頁數 start
                         var cookieobj = {
@@ -488,21 +549,21 @@
                             return $("<div>操作<div>").attr({ class: 'd-flex' });
                         },
                         itemTemplate: (value, item) => {
-        // 建立列印按鈕
-        const btnPrint = document.createElement("button");
-        btnPrint.className = "icofont icofont-print fs-5 m-0 p-0 btn btn-link";
-        btnPrint.title = "列印維修單";
+                            // 建立列印按鈕
+                            const btnPrint = document.createElement("button");
+                            btnPrint.className = "icofont icofont-print fs-5 m-0 p-0 btn btn-link";
+                            btnPrint.title = "列印維修單";
 
-        btnPrint.addEventListener("click", () => {
-            const formNo = item['@(nameof(QueryGridVO.FormNo))'] ?? "";
-            printWp([formNo]);
-        });
+                            btnPrint.addEventListener("click", async () => {
+                                const formNo = item['@(nameof(QueryGridVO.FormNo))'] ?? "";
+                                await printWp([formNo]);
+                            });
 
-        // 建立容器
-        const container = document.createElement("div");
-        container.appendChild(btnPrint);
+                            // 建立容器
+                            const container = document.createElement("div");
+                            container.appendChild(btnPrint);
 
-        return container;
+                            return container;
 
                         }
                     },

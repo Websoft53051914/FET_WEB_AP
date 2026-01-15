@@ -204,13 +204,14 @@
                             return $cb;
                         },
                         itemTemplate: (value, item) => {
-                            let $cb = buildCheckboxSingle({
+                            let cb = buildCheckboxSingle({
                                 id: item['@(nameof(OnsitePrintVO.FormNo))'],
                                 text: ' ',
                                 inputClassNames: 'cb-item',
                                 dataGroup: '@(mapData.Grid.CbGroup)',
                                 selected: ctx.setSelected.has(item['@(nameof(OnsitePrintVO.FormNo))']),
                             });
+                            let $cb = $(cb);
                             $($cb.find('input')).on('change', function (e) {
                                 let $control = $(e.currentTarget);
                                 let val = $control.val();
@@ -374,7 +375,7 @@
                 return;
             }
 
-            printWp(arrSelected);
+            await printWp(arrSelected);
         });
 
         $('#btnSave').on('click', async function (e) {
@@ -441,10 +442,71 @@
                 });
         });
 
-        function printWp(formNoList) {
-            postSubmitJson('@(mapData.UrlPrintWP?.ToHtmlString())', {
+        async function printWp(formNoList) {
+            let data = {};
+            data['@(nameof(OnsitePrintUpdateStatusReqVO.FormNoList))'] = formNoList;
+
+            try {
+                const xsrfToken = getCookie("X-CSRF-TOKEN");
+                const response = await fetch(
+                    '@(mapData.UrlPrintWP?.ToHtmlString())',
+                    {
+                        method: "POST",
+                        credentials: "include",
+                        headers: {
+                            "Authorization": "Bearer " + token,
+                            "X-CSRF-TOKEN": decodeURIComponent(xsrfToken),
+                            "Content-Type": "application/json"
+                        },
+                        body: JSON.stringify(JSON.stringify(data)) // 注意 fetch POST 不能用 data，改用 body
+
+                    }
+                );
+
+                if (!response.ok) {
+                    alert("下載失敗");
+                    return;
+                }
+
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+
+                // 安全抓取 filename
+                let filename = "download";
+                const disposition = response.headers.get("Content-Disposition");
+
+                if (disposition) {
+                    // 先嘗試抓 filename* (UTF-8)
+                    let match = disposition.match(/filename\*=[^']*'[^']*'(.+)/i);
+                    if (match && match[1]) {
+                        filename = decodeURIComponent(match[1]);
+                    } else {
+                        // fallback 抓 filename
+                        match = disposition.match(/filename=["']?([^;"']+)["']?/i);
+                        if (match && match[1]) {
+                            filename = match[1];
+                        }
+                    }
+                }
+
+                const temp = document.createElement("a");
+                temp.style.display = "none";
+                temp.href = url;
+                temp.download = filename;
+                document.body.appendChild(temp);
+                temp.click();
+
+                URL.revokeObjectURL(url);
+                temp.remove();
+
+            } catch (ex) {
+                console.error(ex);
+                alert("下載過程發生錯誤");
+            }
+
+            @*postSubmitJson('@(mapData.UrlPrintWP?.ToHtmlString())', {
                 '@(nameof(OnsitePrintUpdateStatusReqVO.FormNoList))': formNoList,
-            });
+            });*@
         }
     </script>
     <script>
@@ -517,19 +579,20 @@
                                 id: uuidv4(),
                                 text: ' ',
                                 inputClassNames: 'cb-all',
-                                dataGroup: '@(mapData.Grid.CbGroup)',
+                                dataGroup: '@(mapData.Grid2.CbGroup)',
                             });
 
                             return $cb;
                         },
                         itemTemplate: (value, item) => {
-                            let $cb = buildCheckboxSingle({
+                            let cb = buildCheckboxSingle({
                                 id: item['@(nameof(OnsitePrintVO.FormNo))'],
                                 text: ' ',
                                 inputClassNames: 'cb-item',
-                                dataGroup: '@(mapData.Grid.CbGroup)',
+                                dataGroup: '@(mapData.Grid2.CbGroup)',
                                 selected: ctx.setSelected.has(item['@(nameof(OnsitePrintVO.FormNo))']),
                             });
+                            let $cb = $(cb);
                             $($cb.find('input')).on('change', function (e) {
                                 let $control = $(e.currentTarget);
                                 let val = $control.val();

@@ -154,7 +154,7 @@ namespace FTT_API.Controllers.OnsitePrint
         
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
-        public IActionResult PrintWP(string jsonData)
+        public IActionResult PrintWP([FromBody] string jsonData)
         {
             try
             {

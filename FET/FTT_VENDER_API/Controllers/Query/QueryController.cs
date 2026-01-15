@@ -44,7 +44,7 @@ namespace FTT_VENDER_API.Controllers.Query
         /// <summary>
         /// 取得頁面資料
         /// </summary>
-        
+
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetInitData()
@@ -73,7 +73,7 @@ namespace FTT_VENDER_API.Controllers.Query
         /// 取得分頁資料<para/>
         /// [/pool/query.aspx]SearchCode_Click
         /// </summary>
-        
+
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetPageList(DataSourceRequest request, QueryIndexVO vm)
@@ -329,10 +329,10 @@ namespace FTT_VENDER_API.Controllers.Query
         /// 對應[FTT_API/OnsitePrintController]
         /// </summary>
         /// <returns></returns>
-        
+
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
-        public IActionResult PrintWP(string jsonData)
+        public IActionResult PrintWP([FromBody] string jsonData)
         {
             try
             {
