@@ -469,17 +469,54 @@ namespace FTT_API.Controllers.Pending
                         vm.Create_Time = tempDt.ToString("yyyy/MM/dd");
                     }
 
+                    //20260119 begin
+                    //if (!string.IsNullOrEmpty(_Ftt_formDTO.CIDesc))
+                    //{
+                    //    string ciDesc = _Ftt_formDTO.CIDesc.Trim();
+                    //    string filePath = null;
+                    //    string path = null;
 
+                    //    // 嘗試不同的檔案副檔名 (.jpg, .JPG)
+                    //    string[] extensions = { ".jpg", ".JPG" };
+                    //    foreach (string ext in extensions)
+                    //    {
+                    //        filePath = $"Item/{ciDesc}{ext}";
+                    //        path = Path.Combine(_hostingEnvironment.WebRootPath, filePath);
+                    //        if (System.IO.File.Exists(path))
+                    //        {
+                    //            vm.hasTT_IMAGE = true;
+                    //            vm.newImageSRC = filePath;
+                    //            break;
+                    //        }
+                    //    }
+                    //}
+                    //20260119 end
+
+                    //20260119 begin
                     if (!string.IsNullOrEmpty(_Ftt_formDTO.CIDesc))
                     {
-                        string filePath = $"Item/{_Ftt_formDTO.CIDesc.Trim()}.jpg";
-                        string path = Path.Combine(_hostingEnvironment.WebRootPath, filePath);
-                        if (System.IO.File.Exists(path))
+                        string ciDesc = _Ftt_formDTO.CIDesc.Trim();
+                        // 確保路徑與 Linux 實際資料夾大小寫一致 ("Item")
+                        string itemFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, "Item");
+
+                        if (Directory.Exists(itemFolderPath))
                         {
-                            vm.hasTT_IMAGE = true;
-                            vm.newImageSRC = filePath;
+                            // 取得目錄下所有檔案，並找出主檔名一致的檔案 (忽略大小寫與編碼正規化差異)
+                            var matchedFile = Directory.EnumerateFiles(itemFolderPath)
+                                .FirstOrDefault(f => {
+                                    string fileNameOnDisk = Path.GetFileNameWithoutExtension(f);
+                                    return string.Equals(fileNameOnDisk, ciDesc, StringComparison.OrdinalIgnoreCase);
+                                });
+
+                            if (matchedFile != null)
+                            {
+                                vm.hasTT_IMAGE = true;
+                                // 關鍵：回傳「實體檔案的真正名稱」，確保前端 URL 能對應到 Linux 檔案
+                                vm.newImageSRC = $"Item/{Path.GetFileName(matchedFile)}";
+                            }
                         }
                     }
+                    //20260119 end
 
                     //mRunScript += "setCATEGORY_LABEL(\"" + _Ftt_formDTO.category_id + "\"); \r\n";
 
@@ -688,12 +725,64 @@ form_no=@form_no
                 switch (mFormAction)
                 {
                     case "TT_IMAGE":
-                        mCIName = Path.Combine(_hostingEnvironment.WebRootPath, "Images/Item/" + mCIName + ".jpg");
-                        if (System.IO.File.Exists(Path.Combine(_hostingEnvironment.WebRootPath, "Images/Item/" + mCIName + ".jpg")) == true)
-                            mResult = "/Images/Item/" + mCIName;
-                        else
-                            mResult = "/images/item/no-product.gif";
+                        //20260119 begin
+                        //string ciName = mCIName.Trim();
+                        //string[] extensions = { ".jpg", ".JPG" };
+                        //bool fileFound = false;
+
+                        //foreach (string ext in extensions)
+                        //{
+                        //    string testPath = Path.Combine(_hostingEnvironment.WebRootPath, "Item/" + ciName + ext);
+                        //    if (System.IO.File.Exists(testPath))
+                        //    {
+                        //        mResult = "/Item/" + ciName + ext;
+                        //        fileFound = true;
+                        //        break;
+                        //    }
+                        //}
+
+                        //if (!fileFound)
+                        //{
+                        //    mResult = "/Item/no-product.gif";
+                        //}
+                        //break;
+                        //20260119 end
+
+                        //20260119 begin
+                        string ciName = mCIName.Trim();
+                        // 取得 Item 資料夾的實體路徑 (請確認 Linux 上資料夾名稱是否為大寫 'Item')
+                        string itemFolderPath = Path.Combine(_hostingEnvironment.WebRootPath, "Item");
+                        bool fileFound = false;
+
+                        if (Directory.Exists(itemFolderPath))
+                        {
+                            // 搜尋該目錄下所有檔案，並比對主檔名是否一致 (忽略大小寫)
+                            var matchedFile = Directory.EnumerateFiles(itemFolderPath)
+                                .FirstOrDefault(f => {
+                                    string fileNameOnDisk = Path.GetFileNameWithoutExtension(f);
+                                    string extensionOnDisk = Path.GetExtension(f).ToLower();
+
+                                    // 比對主檔名是否相同 (忽略大小寫)，並檢查是否為 jpg 格式
+                                    return string.Equals(fileNameOnDisk, ciName, StringComparison.OrdinalIgnoreCase)
+                                           && (extensionOnDisk == ".jpg" || extensionOnDisk == ".jpeg");
+                                });
+
+                            if (matchedFile != null)
+                            {
+                                // 關鍵：必須回傳磁碟上「實際的檔案路徑與檔名」，包括正確的大小寫
+                                // 這樣回傳給前端的 URL 才能被 Linux 的 Web Server 正確識別
+                                mResult = "/Item/" + Path.GetFileName(matchedFile);
+                                fileFound = true;
+                            }
+                        }
+
+                        // 若找不到符合的圖片，則使用預設圖
+                        if (!fileFound)
+                        {
+                            mResult = "/Item/no-product.gif";
+                        }
                         break;
+                        //20260119 end
                     case "TT_CATEGORY_NOTE":
                         mResult = dtoTEMP.notes;
                         break;
