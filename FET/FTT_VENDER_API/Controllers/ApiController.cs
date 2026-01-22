@@ -39,7 +39,7 @@ namespace FTT_VENDER_API.Controllers
         /// 取得維修品項指定 parentId 下的子項目資料
         /// </summary>
         /// <returns></returns>
-        
+
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetListTreeChildrenCi(int? parentId, string reqSrc = "ALL", string acType = "")
@@ -102,7 +102,7 @@ namespace FTT_VENDER_API.Controllers
         /// 取得維修品項指定 id 下的項目資料與其階層資料
         /// </summary>
         /// <returns></returns>
-        
+
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetListTreeItemCi(List<int> idList, string reqSrc = "ALL", string acType = "")
@@ -139,7 +139,7 @@ namespace FTT_VENDER_API.Controllers
                         var safeFileName = Path.GetFileName(dto.ciname.Trim()) + ".jpg";
 
                         // 2️⃣ 指定固定資料夾
-                        var filePath = Path.Combine("images", "Item", safeFileName);
+                        var filePath = Path.Combine("Item", safeFileName);
                         var path = Path.Combine(_env.WebRootPath, filePath);
 
                         // 3️⃣ 驗證檔案存在
@@ -165,7 +165,7 @@ namespace FTT_VENDER_API.Controllers
         /// <summary>
         /// 取得門市分頁資料
         /// </summary>
-        
+
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetPageListStore(DataSourceRequest request, DialogIvrCodeGridVO vm)
@@ -225,7 +225,7 @@ namespace FTT_VENDER_API.Controllers
         /// 取得選單待處理筆數資料
         /// </summary>
         /// <returns></returns>
-        
+
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetMenuDataCount([FromBody] List<int> funcIdList)
