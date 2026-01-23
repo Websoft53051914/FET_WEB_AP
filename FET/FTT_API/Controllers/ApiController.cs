@@ -217,7 +217,7 @@ namespace FTT_API.Controllers
                         var safeFileName = Path.GetFileName(dto.ciname.Trim()) + ".jpg";
 
                         // 2️⃣ 指定固定資料夾
-                        var filePath = Path.Combine("images", "Item", safeFileName);
+                        var filePath = Path.Combine("Item", safeFileName);
                         var path = "";
                         // ⭐ 修復：檢查 _env.WebRootPath 是否為 null
                         if (string.IsNullOrEmpty(_env.WebRootPath))
