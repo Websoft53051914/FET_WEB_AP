@@ -215,7 +215,7 @@ app.UseStaticFiles();
 app.UseRequestLocalization(localizationoptions);
 #endregion
 
-app.UseHangfireDashboard();
+//20260126 app.UseHangfireDashboard();
 
 app.UseRouting();
 
@@ -226,6 +226,12 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.UseSession();
+
+// 修改這裡：
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new MyAuthorizationFilter() }
+});
 
 //app.MapRazorPages();
 
@@ -277,3 +283,15 @@ RecurringJob.AddOrUpdate<CheckVenderPWLoginTimeHandler>(
     );
 
 app.Run();
+
+//20260126 begin
+public class MyAuthorizationFilter : Hangfire.Dashboard.IDashboardAuthorizationFilter
+{
+    public bool Authorize(Hangfire.Dashboard.DashboardContext context)
+    {
+        // 測試階段：先讓所有人都能存取
+        // 正式環境建議：return context.GetHttpContext().User.Identity.IsAuthenticated;
+        return true;
+    }
+}
+//20260126 end
