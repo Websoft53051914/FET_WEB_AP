@@ -210,6 +210,19 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+// 設定 PublicStaticFile 目錄為可下載的靜態檔案
+var publicStaticFilePath = Path.Combine(builder.Environment.ContentRootPath, "PublicStaticFile");
+if (!Directory.Exists(publicStaticFilePath))
+{
+    Directory.CreateDirectory(publicStaticFilePath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(publicStaticFilePath),
+    RequestPath = "/download"
+});
+
 #region Localization
 //app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
 app.UseRequestLocalization(localizationoptions);
@@ -240,17 +253,6 @@ app.MapControllerRoute(
     pattern: "swagger/index.html");
 //pattern: "triptest/{controller=Home}/{action=Index}/{id?}");
 
-//app.UseStaticFiles(new StaticFileOptions
-//{
-//    FileProvider = new PhysicalFileProvider(
-//        Path.Combine(builder.Environment.ContentRootPath, "PublicStaticFile")
-//    ),
-//    RequestPath = "/download"
-//});
-
-//// 專案啟動時載入
-//var container = new Unity.UnityContainer();
-//Business.BusinessFactory.Register(container);
 FTT_API.Common.HttpContext.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());
 RecurringJob.AddOrUpdate<SendMailHandler>(
     nameof(SendMailHandler.Send),

@@ -29,12 +29,12 @@ builder.Services.AddRazorPages();
 builder.Services.AddControllersWithViews();
 builder.Services.AddDistributedMemoryCache();
 
-// ¥[¤J Data Protection ³]©w - ¸ó¥­¥x¬Û®e
+// ï¿½[ï¿½J Data Protection ï¿½]ï¿½w - ï¿½ó¥­¥xï¿½Û®e
 var dataProtectionKeysPath = Environment.OSVersion.Platform == PlatformID.Win32NT
     ? Path.Combine(Directory.GetCurrentDirectory(), "DataProtectionKeys")
     : "/home/wmliou75/FTT/DataProtectionKeys";
 
-// ½T«O¥Ø¿ı¦s¦b
+// ï¿½Tï¿½Oï¿½Ø¿ï¿½ï¿½sï¿½b
 Directory.CreateDirectory(dataProtectionKeysPath);
 
 builder.Services.AddDataProtection()
@@ -56,15 +56,15 @@ builder.Services.AddSession(options =>
 {
     options.Cookie.Name = ".net.core.Session";
     options.IdleTimeout = TimeSpan.FromMinutes(15);
-    options.Cookie.IsEssential = true; //¬[³]http «D https ­nµù¸Ñ
+    options.Cookie.IsEssential = true; //ï¿½[ï¿½]http ï¿½D https ï¿½nï¿½ï¿½ï¿½ï¿½
 
-    options.Cookie.HttpOnly = true; //¬[³]http «D https ­nµù¸Ñ
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //¬[³]http «D https ­nµù¸Ñ
+    options.Cookie.HttpOnly = true; //ï¿½[ï¿½]http ï¿½D https ï¿½nï¿½ï¿½ï¿½ï¿½
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //ï¿½[ï¿½]http ï¿½D https ï¿½nï¿½ï¿½ï¿½ï¿½
 });
 
 builder.Services.AddAntiforgery(options =>
 {
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //¬[³]http «D https ­nµù¸Ñ
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //ï¿½[ï¿½]http ï¿½D https ï¿½nï¿½ï¿½ï¿½ï¿½
 });
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -72,7 +72,7 @@ builder.Services.AddHttpClient();
 builder.Services.AddControllersWithViews()
     .AddJsonOptions(options =>
     {
-        // response ¦^¶ÇÄİ©Ê¤£±j¨î§ï¦¨ camelcase
+        // response ï¿½^ï¿½ï¿½ï¿½İ©Ê¤ï¿½ï¿½jï¿½ï¿½ï¦¨ camelcase
         options.JsonSerializerOptions.PropertyNamingPolicy = null;
     });
 
@@ -99,11 +99,26 @@ if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
-    app.UseHsts(); //¬[³]http «D https ­nµù¸Ñ
+    app.UseHsts(); //ï¿½[ï¿½]http ï¿½D https ï¿½nï¿½ï¿½ï¿½ï¿½
 }
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+// è¨­å®š PublicStaticFile ç›®éŒ„ç‚ºå¯ä¸‹è¼‰çš„éœæ…‹æª”æ¡ˆ
+var publicStaticFilePath = Path.Combine(builder.Environment.ContentRootPath, "PublicStaticFile");
+if (!Directory.Exists(publicStaticFilePath))
+{
+    Directory.CreateDirectory(publicStaticFilePath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(publicStaticFilePath),
+    RequestPath = "/download",
+    ServeUnknownFileTypes = true, // å…è¨±æä¾›æœªçŸ¥æª”æ¡ˆé¡å‹
+    DefaultContentType = "application/octet-stream" // è¨­å®šé è¨­ MIME é¡å‹
+});
 
 #region Localization
 //app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
@@ -128,17 +143,6 @@ app.MapControllerRoute(
     pattern: "{controller=login}/{action=Index}/{id?}");
 //pattern: "triptest/{controller=Home}/{action=Index}/{id?}");
 
-//app.UseStaticFiles(new StaticFileOptions
-//{
-//    FileProvider = new PhysicalFileProvider(
-//        Path.Combine(builder.Environment.ContentRootPath, "PublicStaticFile")
-//    ),
-//    RequestPath = "/download"
-//});
-
-//// ±M®×±Ò°Ê®É¸ü¤J
-//var container = new Unity.UnityContainer();
-//Business.BusinessFactory.Register(container);
 FTT_VENDER_WEB.Common.HttpContext.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());
 
 //RecurringJob.AddOrUpdate<SendMailHandler>(
