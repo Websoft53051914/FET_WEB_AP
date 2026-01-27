@@ -473,6 +473,12 @@ namespace FTT_API.Controllers
                     }
                     else if (funcId == Enums.FuncID.CaseClosed_View.ToInt())
                     {
+                        // === 加入日誌確認計數查詢被呼叫 ===
+                        try {
+                            System.IO.File.AppendAllText(@"d:\caseclosed_api_debug.log", 
+                                $"[{DateTime.Now}] ApiController CaseClosed_View - User: {_sessionVO.username}, Role: {_sessionVO.userrole}, EmpNo: {_sessionVO.empno}\n");
+                        } catch { }
+                        
                         CaseClosedHandler handler = new(_configHelper, HttpContext);
                         PageResult<v_ftt_form2DTO> pageResult = handler.FindPageListForCount(pageEntity, new v_ftt_form2DTO
                         {
@@ -480,6 +486,13 @@ namespace FTT_API.Controllers
                             IVRCODE = _sessionVO.ivrcode,
                             EMPNO = _sessionVO.empno,
                         });
+                        
+                        // === 記錄計數結果 ===
+                        try {
+                            System.IO.File.AppendAllText(@"d:\caseclosed_api_debug.log", 
+                                $"[{DateTime.Now}] ApiController CaseClosed_View - Count Result: {pageResult.DataCount}\n");
+                        } catch { }
+                        
                         result.Add(funcId.ToString(), pageResult.DataCount);
                     }
                 }

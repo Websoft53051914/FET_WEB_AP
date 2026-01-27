@@ -17,6 +17,11 @@ IConfiguration Config = new ConfigurationBuilder().AddJsonFile("appsettings.json
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
+
+// --- 關鍵修正：在 Linux 環境必須註冊編碼提供者 ---
+System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+// ------
+
 #region Localization
 var localizationoptions = new RequestLocalizationOptions();
 var supportedCultures = new List<System.Globalization.CultureInfo> {

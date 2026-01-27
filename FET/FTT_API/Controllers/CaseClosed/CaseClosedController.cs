@@ -26,6 +26,21 @@ namespace FTT_API.Controllers.CaseClosed
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> GetPageList(DataSourceRequest request, v_ftt_form2DTO vm)
         {
+            // === 確認這個才是真正的查詢方法 ===
+            try
+            {
+                var timestamp = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss");
+                var testMessage = $"=== CASECLOSED CONTROLLER CALLED at {timestamp} ===\n";
+                testMessage += $"User: {_sessionVO?.username}, Role: {_sessionVO?.userrole}, EmpNo: {_sessionVO?.empno}\n";
+                testMessage += $"Request StatusId: {vm?.StatusId}\n";
+                
+                // 強制寫入多個位置
+                System.IO.File.AppendAllText(@"D:\BACK_OFFICE\FTT\3101N2\github\FET_WEB_AP\FET\FTT_API\CASECLOSED_FOUND.txt", testMessage);
+                System.IO.File.AppendAllText(@"D:\BACK_OFFICE\FTT\3101N2\github\FET_WEB_AP\FET\FTT_API\wwwroot\caseclosed_debug.txt", testMessage);
+                System.IO.File.AppendAllText(@"d:\caseclosed_debug.log", testMessage);
+                
+            } catch { }
+            
             try
             {
                 PageEntity pageEntity = base.GetPageEntity(request);
