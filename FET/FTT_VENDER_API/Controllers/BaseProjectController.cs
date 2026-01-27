@@ -185,7 +185,11 @@ namespace FTT_VENDER_API.Controllers
             }
             else
             {
-                if (context.RouteData.Values["action"] != null && (context.RouteData.Values["action"].ToString() == "GetCaptcha" || context.RouteData.Values["action"].ToString() == "VerifyCaptcha"))
+                if (context.RouteData.Values["action"] != null && 
+                    (context.RouteData.Values["action"].ToString() == "GetCaptcha" || 
+                     context.RouteData.Values["action"].ToString() == "VerifyCaptcha" ||
+                     context.RouteData.Values["action"].ToString() == "Submit" ||
+                     context.RouteData.Values["action"].ToString() == "SendMail"))
                 {
 
                 }
