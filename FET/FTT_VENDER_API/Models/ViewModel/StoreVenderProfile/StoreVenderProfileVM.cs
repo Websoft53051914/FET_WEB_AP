@@ -17,6 +17,7 @@
 
         public string? locked { get; set; }
         public DateTime locked_time { get; set; }
+        public short? locked_reason { get; set; }
         public TimeSpan? kpi_days { get; set; }
 
 
