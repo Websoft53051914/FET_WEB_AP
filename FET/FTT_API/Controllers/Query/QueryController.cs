@@ -13,7 +13,6 @@ using NPOI.SS.UserModel;
 using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using System.IO;
 
 namespace FTT_API.Controllers.Query
 {
@@ -193,22 +192,13 @@ namespace FTT_API.Controllers.Query
         {
             try
             {
-                // 記錄環境資訊
-                var envInfo = $"OS: {Environment.OSVersion}, Platform: {Environment.OSVersion.Platform}";
-                this.LogError($"ExportExcel 開始執行 - {envInfo}");
-                
                 ArgumentNullException.ThrowIfNullOrWhiteSpace(jsonData);
-                this.LogError("JSON 資料驗證通過");
-                
                 QueryIndexVO? vm = JsonConvert.DeserializeObject<QueryIndexVO>(jsonData);
                 DataSourceRequest? request = JsonConvert.DeserializeObject<DataSourceRequest>(jsonData);
                 ArgumentNullException.ThrowIfNull(vm);
                 ArgumentNullException.ThrowIfNull(request);
-                this.LogError("JSON 反序列化完成");
-                
                 QueryHandler queryHandler = new(_configHelper);
                 queryHandler.SessionVO = _sessionVO;
-                this.LogError($"QueryHandler 建立完成，使用者角色: {_sessionVO?.userrole ?? "null"}");
                 VFttForm2DTO searchVO = new()
                 {
                     CreateDateGte = vm.CreateDateGte,
@@ -245,20 +235,11 @@ namespace FTT_API.Controllers.Query
                 {
                     searchVO.UserRoleOtherFilter = true;
                 }
-                
-                this.LogError($"角色過濾設定完成，搜尋條件: VENDOR={searchVO.UserRoleVenderFilter}, OTHER={searchVO.UserRoleOtherFilter}");
 
                 ExcelWriterHelper writer = new();
-                this.LogError("ExcelWriterHelper 建立完成");
-                
                 IWorkbook wb = writer.CreateWorkBook(ExcelType.HSSF);
-                this.LogError("Excel Workbook 建立完成");
-                
                 ISheet sheet = writer.CreateSheet(DateTime.Now.ToString(DbConst.FORMAT_DATETIME));
-                this.LogError($"Excel Sheet 建立完成，名稱: {DateTime.Now.ToString(DbConst.FORMAT_DATETIME)}");
-                
                 writer.SetRowCellIndex(0, 0);
-                this.LogError("開始設定 Excel 標題");
                 #region -- 設定標題 --
                 writer.SetCellValue("公司別");
                 writer.SetCellValue("店格");
@@ -304,8 +285,6 @@ namespace FTT_API.Controllers.Query
                 writer.SetCellValue("KPI Result");
                 writer.SetCellValue("延遲原因");
                 #endregion -- 設定標題 --
-                
-                this.LogError("Excel 標題設定完成，開始調整欄寬");
 
                 // 調整欄寬
                 for (int i = 0; i < writer.GetRow().LastCellNum; i++)
@@ -314,36 +293,27 @@ namespace FTT_API.Controllers.Query
                     int lenTitle = Encoding.UTF8.GetByteCount(writer.GetCell().StringCellValue);
                     writer.GetSheet().SetColumnWidth(writer.GetCellIndex(), (lenTitle + 6) * 256);
                 }
-                
-                this.LogError("欄寬調整完成，開始資料分頁處理");
 
                 int totalPage = 1;
                 int currentPage = 1;
                 int pageDataSize = 100;
                 int posRow = 1;
                 request.pageSize = pageDataSize;
-                
-                this.LogError($"分頁參數設定: pageSize={pageDataSize}, 開始第一頁資料查詢");
                 do
                 {
                     request.pageIndex = currentPage;
-                    this.LogError($"處理第 {currentPage} 頁資料");
 
                     PageEntity pageEntity = GetPageEntity<QueryGridVO>(request);
                     // 取得資料
                     PageResult<VFttForm2DTO> pageList = queryHandler.GetPageListExport(pageEntity, searchVO);
-                    
-                    this.LogError($"第 {currentPage} 頁查詢完成，資料筆數: {pageList.Results.Count}, 總筆數: {pageList.DataCount}");
 
                     if (currentPage == 1)
                     {
                         totalPage = (int)Math.Ceiling((double)pageList.DataCount / pageDataSize);
-                        this.LogError($"總頁數計算: {totalPage} 頁");
                     }
 
                     if (pageList.Results.Count == 0)
                     {
-                        this.LogError("沒有更多資料，跳出迴圈");
                         break;
                     }
 
@@ -399,58 +369,23 @@ namespace FTT_API.Controllers.Query
 
                     currentPage++;
                 } while (currentPage <= totalPage);
-                
-                this.LogError($"所有資料處理完成，總共寫入 {posRow-1} 筆資料，開始產生 Excel 檔案");
 
                 MemoryStream? memoryStream = null;
                 using (MemoryStream stream = new())
                 {
-                    this.LogError("開始將 Excel 寫入 MemoryStream");
                     writer.GetWorkBook().Write(stream, false);
-                    this.LogError($"Excel 寫入完成，檔案大小: {stream.Length} bytes");
                     memoryStream = new MemoryStream(stream.ToArray());
                 }
 
-                this.LogError("開始關閉 Excel Workbook");
                 writer.GetWorkBook().Close();
-                this.LogError("Excel Workbook 關閉完成");
 
                 this.LogSuccess();
                 return File(memoryStream, "application/vnd.ms-excel", "CodeList.xls");
             }
             catch (Exception ex)
             {
-                this.LogError($"ExportExcel 發生錯誤:");
-                this.LogError($"錯誤類型: {ex.GetType().FullName}");
-                this.LogError($"錯誤訊息: {ex.Message}");
-                this.LogError($"Stack Trace: {ex.StackTrace}");
-                
-                if (ex.InnerException != null)
-                {
-                    this.LogError($"內部異常類型: {ex.InnerException.GetType().FullName}");
-                    this.LogError($"內部異常訊息: {ex.InnerException.Message}");
-                }
-                
-                // 檢查是否為 Linux 環境常見問題
-                var errorMsg = ex.Message.ToLower();
-                if (errorMsg.Contains("libgdiplus") || errorMsg.Contains("gdi+"))
-                {
-                    this.LogError("檢測到 GDI+ 相關錯誤，這是 Linux 環境常見問題");
-                    return JsonValidFail("Linux 環境缺少 libgdiplus 套件，請執行: sudo apt-get install libgdiplus");
-                }
-                else if (errorMsg.Contains("font") || errorMsg.Contains("字型"))
-                {
-                    this.LogError("檢測到字型相關錯誤");
-                    return JsonValidFail("Linux 環境字型問題，請安裝字型套件: sudo apt-get install fonts-liberation");
-                }
-                else if (errorMsg.Contains("memory") || errorMsg.Contains("outofmemory"))
-                {
-                    this.LogError("檢測到記憶體不足錯誤");
-                    return JsonValidFail("記憶體不足，請增加伺服器記憶體或減少資料量");
-                }
-                
-                // 原本的錯誤處理
-                return JsonValidFail(ex.ToString());
+                this.LogError(ex.ToString());
+                return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
     }

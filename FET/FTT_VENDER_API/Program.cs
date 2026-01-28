@@ -41,6 +41,7 @@ localizationoptions.ApplyCurrentCultureToResponseHeaders = true;
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddDistributedMemoryCache();
+builder.Services.AddMemoryCache(); // 修正：加入 IMemoryCache 服務註冊
 
 builder.Services.AddSwaggerGen(c =>
 {

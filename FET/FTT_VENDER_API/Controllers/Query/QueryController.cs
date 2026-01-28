@@ -158,22 +158,13 @@ namespace FTT_VENDER_API.Controllers.Query
         {
             try
             {
-                // 記錄環境資訊
-                var envInfo = $"OS: {Environment.OSVersion}, Platform: {Environment.OSVersion.Platform}";
-                this.LogError($"VENDER ExportExcel 開始執行 - {envInfo}");
-                
                 ArgumentNullException.ThrowIfNullOrWhiteSpace(jsonData);
-                this.LogError("JSON 資料驗證通過");
-                
                 QueryIndexVO? vm = JsonConvert.DeserializeObject<QueryIndexVO>(jsonData);
                 DataSourceRequest? request = JsonConvert.DeserializeObject<DataSourceRequest>(jsonData);
                 ArgumentNullException.ThrowIfNull(vm);
                 ArgumentNullException.ThrowIfNull(request);
-                this.LogError("JSON 反序列化完成");
-                
                 QueryHandler queryHandler = new(_configHelper);
                 queryHandler.SessionVO = _sessionVO;
-                this.LogError($"QueryHandler 建立完成，使用者角色: {_sessionVO?.userrole ?? "null"}");
                 VFttForm2DTO searchVO = new()
                 {
                     CreateDateGte = vm.CreateDateGte,
@@ -327,11 +318,8 @@ namespace FTT_VENDER_API.Controllers.Query
             }
             catch (Exception ex)
             {
-                //this.LogError(ex.ToString());
-                //return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
                 this.LogError(ex.ToString());
-                // 暫時將 ex.ToString() 回傳，這樣您打開 download.json 就能看到真正的報錯內容
-                return JsonValidFail(ex.ToString());
+                return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
 
