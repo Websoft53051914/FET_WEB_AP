@@ -132,9 +132,16 @@ namespace FTT_API.Models.Handler
 
                     if (emp.hasData())
                     {
-                        // 檢查是否為ADMIN群組成員
-                        bool isAdmin = CheckUserIsAdmin(emp.EmpNO);
-                        if (!isAdmin)
+                        // 只有 EMPLOYEE 需要檢查 ADMIN 群組，RETAIL 和 FRANCHISE 不需要
+                        bool needAdminCheck = (vm.Role == "EMPLOYEE");
+                        bool isAdmin = true; // 預設允許
+                        
+                        if (needAdminCheck)
+                        {
+                            isAdmin = CheckUserIsAdmin(emp.EmpNO);
+                        }
+                        
+                        if (needAdminCheck && !isAdmin)
                         {
                             errorMsg = "請以正確身分登入系統";
                             logLoginStatus = false;
