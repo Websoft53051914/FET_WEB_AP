@@ -280,14 +280,11 @@ INSERT INTO tb_vender_password_history(
         public void CheckLastLoginTime()
         {
 
-
-            List<user_login_logDTO> User_Login_Log_InLastLoginOver90days = new();
             List<store_vender_profileDTO> Store_Vender_ProfileNoLoginOver90Days = new();
             try
             {
-
-                User_Login_Log_InLastLoginOver90days = GetLastLoginOver90days();
-                Store_Vender_ProfileNoLoginOver90Days = GetStoreVendorNoLoginOver90Days(User_Login_Log_InLastLoginOver90days);
+                // 修正90天未登入邏輯：直接查詢需要鎖定的帳號
+                Store_Vender_ProfileNoLoginOver90Days = GetStoreVendorNoLoginOver90Days();
                 foreach (var each in Store_Vender_ProfileNoLoginOver90Days)
                 {
                     LockVenderProfile_ByOrderId(each, LockReason: (int)LockReasonEnum.LockedByNoLoginOver90Days);
@@ -305,7 +302,41 @@ INSERT INTO tb_vender_password_history(
             }
         }
 
-        public List<store_vender_profileDTO> GetStoreVendorNoLoginOver90Days(List<user_login_logDTO> User_Login_Log_InLastLogin)
+        public List<store_vender_profileDTO> GetStoreVendorNoLoginOver90Days()
+        {
+            // 寬鬆模式：同時考慮最後登入時間和密碼變更時間
+            // 任一活動都算作使用者活動，可重置90天計時器
+            string queryForStoreNoLoginOver90Days = $@"
+SELECT svp.* 
+FROM store_vender_profile svp
+LEFT JOIN (
+    SELECT 
+        account,
+        MAX(createtime) as last_login_time
+    FROM user_login_log 
+    WHERE loginstatus in ('True','TRUE')
+    GROUP BY account
+) ull ON svp.merchant_login = ull.account
+WHERE svp.locked <> @Locked 
+  AND (
+    -- 情況1: 沒有登入記錄且密碼變更時間超過90天
+    (ull.last_login_time IS NULL AND svp.pw_chgtime < NOW() - INTERVAL '90 days')
+    -- 情況2: 有登入記錄，但登入和密碼變更都超過90天
+    OR (ull.last_login_time IS NOT NULL 
+        AND ull.last_login_time < NOW() - INTERVAL '90 days'
+        AND svp.pw_chgtime < NOW() - INTERVAL '90 days')
+  )";
+
+            Dictionary<string, object> Paras = new Dictionary<string, object>();
+            Paras.Add("Locked", "Y");
+
+            List<store_vender_profileDTO> StoreNoLoginOver90Days = GetDBHelper().FindList<store_vender_profileDTO>(queryForStoreNoLoginOver90Days, Paras);
+
+            return StoreNoLoginOver90Days;
+        }
+
+        // 保留原方法供參考，但不再使用
+        public List<store_vender_profileDTO> GetStoreVendorNoLoginOver90Days_Old(List<user_login_logDTO> User_Login_Log_InLastLogin)
         {
             List<string> StoreVendorAccount = new List<string>();
             foreach (var each in User_Login_Log_InLastLogin)
@@ -334,19 +365,25 @@ INSERT INTO tb_vender_password_history(
 
         }
 
-        public List<user_login_logDTO> GetLastLoginOver90days()
+        // 保留原方法供參考，但不再使用
+        public List<user_login_logDTO> GetLastLoginOver90days_Old()
         {
+            // 修正90天未登入SQL邏輯：
+            // 1. 先找每個帳號的最後一次登入記錄
+            // 2. 再篩選超過90天的帳號
+            // 3. 確保與登入時的判斷邏輯一致
             string queryForLastLogin = $@"SELECT * FROM (
     SELECT 
         *, 
         ROW_NUMBER() OVER (PARTITION BY account ORDER BY createtime DESC) AS rn 
     FROM 
         user_login_log
-    WHERE
-        createtime < NOW() - INTERVAL '90 days'
+    WHERE 
+        loginstatus in ('True','TRUE')
 ) t 
 WHERE 
-    rn = 1;";
+    rn = 1 
+    AND createtime < NOW() - INTERVAL '90 days';";
 
             List<user_login_logDTO> ResultList = GetDBHelper().FindList<user_login_logDTO>(queryForLastLogin, new Dictionary<string, object>());
 

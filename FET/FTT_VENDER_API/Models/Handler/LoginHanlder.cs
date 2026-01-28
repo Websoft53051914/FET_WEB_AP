@@ -405,24 +405,44 @@ INSERT INTO tb_vender_password_history(
 
         private bool IsOver90DaysNoLogin(string ac)
         {
-            string sql = @"
-SELECT *
+            try
+            {
+                // 寬鬆模式：考慮登入和密碼變更時間
+                // 任一活動都算作使用者活動
+                
+                // 1. 檢查90天內是否有登入記錄
+                string loginSql = @"
+SELECT COUNT(1)
 FROM USER_LOGIN_LOG 
 WHERE loginstatus in ('True','TRUE')
-  AND account=@AC
-  AND createtime>=@dtNow
-ORDER BY createtime DESC 
-LIMIT 1";
-            Dictionary<string, object> parameters = new Dictionary<string, object>
+  AND account = @AC
+  AND createtime >= @Date90DaysAgo";
+                
+                // 2. 檢查密碼變更時間是否在90天內
+                string pwChangeSql = @"
+SELECT COUNT(1)
+FROM STORE_VENDER_PROFILE 
+WHERE merchant_login = @AC
+  AND pw_chgtime >= @Date90DaysAgo";
+                
+                Dictionary<string, object> parameters = new Dictionary<string, object>
+                {
+                    { "AC", ac },
+                    { "Date90DaysAgo", DateTime.Now.AddDays(-90) }
+                };
+                
+                var recentLoginCount = base.dbHelper.Find<int>(loginSql, parameters);
+                var recentPwChangeCount = base.dbHelper.Find<int>(pwChangeSql, parameters);
+                
+                // 如果90天內沒有登入記錄且沒有密碼變更，視為超過90天未活動
+                return recentLoginCount == 0 && recentPwChangeCount == 0;
+            }
+            catch (Exception ex)
             {
-                { "dtNow", DateTime.Now.AddDays(-90)},
-                { "AC", ac },
-            };
-            var result = base.dbHelper.Find<object>(sql, parameters);
-            if (result == null)
+                // 發生錯誤時，基於安全考量，假設已超過90天未活動
+                Console.WriteLine($"檢查90天未活動時發生錯誤: {ex.Message}");
                 return true;
-
-            return false;
+            }
         }
 
         private StoreVenderProfileVM GetStoreVenderProfileNoPWD(string AC)
