@@ -279,14 +279,20 @@ INSERT INTO tb_vender_password_history(
     {
         public void CheckLastLoginTime()
         {
-
+            // 增加日誌記錄
+            Console.WriteLine($"CheckLastLoginTime started at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            
             List<store_vender_profileDTO> Store_Vender_ProfileNoLoginOver90Days = new();
             try
             {
                 // 修正90天未登入邏輯：直接查詢需要鎖定的帳號
                 Store_Vender_ProfileNoLoginOver90Days = GetStoreVendorNoLoginOver90Days();
+                
+                Console.WriteLine($"Found {Store_Vender_ProfileNoLoginOver90Days.Count} accounts to lock");
+                
                 foreach (var each in Store_Vender_ProfileNoLoginOver90Days)
                 {
+                    Console.WriteLine($"Locking account: {each.merchant_login}");
                     LockVenderProfile_ByOrderId(each, LockReason: (int)LockReasonEnum.LockedByNoLoginOver90Days);
                     //InsertVenderPWHistory(each);
                     GetDBHelper().Commit();
@@ -294,18 +300,22 @@ INSERT INTO tb_vender_password_history(
 
                 //超過90天未登入，似乎不用寄信
                 //InsertPWChangeRemindAndRemindStatus(Store_Vendor_ProfileNoLoginOver90Days);
+                
+                Console.WriteLine($"CheckLastLoginTime completed successfully");
 
             }
             catch (Exception ex)
             {
+                Console.WriteLine($"CheckLastLoginTime failed: {ex.Message}");
                 LogError(ex.Message, "CheckLastLoginTime");
             }
         }
 
         public List<store_vender_profileDTO> GetStoreVendorNoLoginOver90Days()
         {
-            // 寬鬆模式：同時考慮最後登入時間和密碼變更時間
-            // 任一活動都算作使用者活動，可重置90天計時器
+            // 寬鬆模式：登入或密碼變更任一活動在90天內都不鎖定
+            // 只有當「最後登入」AND「密碼變更」都超過90天才鎖定
+            // 注意：pw_chgtime 為 NULL 視為很久以前，應該被鎖定
             string queryForStoreNoLoginOver90Days = $@"
 SELECT svp.* 
 FROM store_vender_profile svp
@@ -319,18 +329,54 @@ LEFT JOIN (
 ) ull ON svp.merchant_login = ull.account
 WHERE svp.locked <> @Locked 
   AND (
-    -- 情況1: 沒有登入記錄且密碼變更時間超過90天
-    (ull.last_login_time IS NULL AND svp.pw_chgtime < NOW() - INTERVAL '90 days')
-    -- 情況2: 有登入記錄，但登入和密碼變更都超過90天
+    -- 情況1: 沒有登入記錄且密碼變更時間超過90天(包含NULL)
+    (ull.last_login_time IS NULL AND (svp.pw_chgtime IS NULL OR svp.pw_chgtime < NOW() - INTERVAL '90 days'))
+    -- 情況2: 有登入記錄但超過90天，且密碼變更也超過90天(包含NULL)
     OR (ull.last_login_time IS NOT NULL 
         AND ull.last_login_time < NOW() - INTERVAL '90 days'
-        AND svp.pw_chgtime < NOW() - INTERVAL '90 days')
+        AND (svp.pw_chgtime IS NULL OR svp.pw_chgtime < NOW() - INTERVAL '90 days'))
   )";
 
             Dictionary<string, object> Paras = new Dictionary<string, object>();
             Paras.Add("Locked", "Y");
 
+            // 除錯：執行查詢前先記錄相關資訊
+            Console.WriteLine($"Debug: Executing query to find accounts over 90 days");
+            Console.WriteLine($"Debug: Current time: {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            Console.WriteLine($"Debug: 90 days ago: {DateTime.Now.AddDays(-90):yyyy-MM-dd HH:mm:ss}");
+            Console.WriteLine($"Debug: SQL Query: {queryForStoreNoLoginOver90Days}");
+
+            // 先執行一些除錯查詢來了解資料狀況
+            try
+            {
+                // 查詢總共有多少個未鎖定的廠商帳號
+                string countQuery = "SELECT COUNT(*) FROM store_vender_profile WHERE locked <> @Locked";
+                var totalCount = GetDBHelper().Find<int>(countQuery, Paras);
+                Console.WriteLine($"Debug: Total unlocked vendor accounts: {totalCount}");
+
+                // 查詢有多少廠商的密碼變更時間超過90天(包含NULL)
+                string pwQuery = "SELECT COUNT(*) FROM store_vender_profile WHERE locked <> @Locked AND (pw_chgtime IS NULL OR pw_chgtime < NOW() - INTERVAL '90 days')";
+                var pwCount = GetDBHelper().Find<int>(pwQuery, Paras);
+                Console.WriteLine($"Debug: Accounts with password changed > 90 days ago (including NULL): {pwCount}");
+
+                // 查詢NULL密碼變更時間的帳號數
+                string pwNullQuery = "SELECT COUNT(*) FROM store_vender_profile WHERE locked <> @Locked AND pw_chgtime IS NULL";
+                var pwNullCount = GetDBHelper().Find<int>(pwNullQuery, Paras);
+                Console.WriteLine($"Debug: Accounts with NULL pw_chgtime: {pwNullCount}");
+
+                // 查詢登入記錄表的一些基本資訊
+                string loginQuery = "SELECT COUNT(DISTINCT account) FROM user_login_log WHERE loginstatus in ('True','TRUE')";
+                var loginAccounts = GetDBHelper().Find<int>(loginQuery, new Dictionary<string, object>());
+                Console.WriteLine($"Debug: Total accounts with successful login records: {loginAccounts}");
+            }
+            catch (Exception debugEx)
+            {
+                Console.WriteLine($"Debug query error: {debugEx.Message}");
+            }
+
             List<store_vender_profileDTO> StoreNoLoginOver90Days = GetDBHelper().FindList<store_vender_profileDTO>(queryForStoreNoLoginOver90Days, Paras);
+
+            Console.WriteLine($"Debug: Final query returned {StoreNoLoginOver90Days.Count} accounts");
 
             return StoreNoLoginOver90Days;
         }
@@ -388,6 +434,33 @@ WHERE
             List<user_login_logDTO> ResultList = GetDBHelper().FindList<user_login_logDTO>(queryForLastLogin, new Dictionary<string, object>());
 
             return ResultList;
+        }
+
+        /// <summary>
+        /// 測試方法：只查詢應該被鎖定的帳號，不實際執行鎖定
+        /// </summary>
+        public void TestCheckLastLoginTime()
+        {
+            Console.WriteLine($"TestCheckLastLoginTime started at {DateTime.Now:yyyy-MM-dd HH:mm:ss}");
+            
+            try
+            {
+                List<store_vender_profileDTO> accountsToLock = GetStoreVendorNoLoginOver90Days();
+                
+                Console.WriteLine($"Test Result: Found {accountsToLock.Count} accounts that should be locked");
+                
+                foreach (var account in accountsToLock)
+                {
+                    Console.WriteLine($"Should lock: {account.merchant_login} ({account.merchant_name})");
+                }
+                
+                Console.WriteLine($"TestCheckLastLoginTime completed successfully");
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"TestCheckLastLoginTime failed: {ex.Message}");
+                LogError(ex.Message, "TestCheckLastLoginTime");
+            }
         }
     }
 }
