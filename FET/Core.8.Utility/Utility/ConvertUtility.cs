@@ -141,6 +141,31 @@ namespace Core.Utility.Utility
             return result;
         }
 
+        /// <summary>
+        /// 轉換物件為 DateTime
+        /// </summary>
+        public static DateTime? ConvertObjectToDateTime(object val)
+        {
+            DateTime? result = null;
+            if (val != DBNull.Value && val != null)
+            {
+                if (val is DateTime dt)
+                {
+                    result = dt;
+                }
+                else if (DateTime.TryParse(
+                    val.ToString(),
+                    CultureInfo.InvariantCulture,
+                    DateTimeStyles.None,
+                    out var oVal))
+                {
+                    result = oVal;
+                }
+            }
+
+            return result;
+        }
+
 
         public static class NumberConvertCHNUtility
         {

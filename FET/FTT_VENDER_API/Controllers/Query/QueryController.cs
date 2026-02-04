@@ -1,21 +1,22 @@
-﻿using Const.DTO;
+﻿using Const;
+using Const.DTO;
 using Const.VO;
-using Const;
+using Core.Utility.Extensions;
 using Core.Utility.Helper.DB.Entity;
 using Core.Utility.Helper.Excel;
+using Core.Utility.Helper.Word;
+using Core.Utility.Utility;
 using Core.Utility.Web.EX;
+using FTT_VENDER_API.Common;
+using FTT_VENDER_API.Common.ConfigurationHelper;
+using FTT_VENDER_API.Models.Handler;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Newtonsoft.Json;
 using NPOI.SS.UserModel;
-using System.Text;
-using FTT_VENDER_API.Models.Handler;
-using FTT_VENDER_API.Common.ConfigurationHelper;
-using Core.Utility.Extensions;
 using System.Data;
-using Microsoft.Reporting.NETCore;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
+using System.Globalization;
+using System.Text;
 
 namespace FTT_VENDER_API.Controllers.Query
 {
@@ -73,7 +74,6 @@ namespace FTT_VENDER_API.Controllers.Query
         /// 取得分頁資料<para/>
         /// [/pool/query.aspx]SearchCode_Click
         /// </summary>
-
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetPageList(DataSourceRequest request, QueryIndexVO vm)
@@ -151,7 +151,6 @@ namespace FTT_VENDER_API.Controllers.Query
         /// 列印維修單
         /// </summary>
         /// <returns></returns>
-
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult ExportExcel([FromBody] string jsonData)
@@ -329,7 +328,6 @@ namespace FTT_VENDER_API.Controllers.Query
         /// 對應[FTT_API/OnsitePrintController]
         /// </summary>
         /// <returns></returns>
-
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult PrintWP([FromBody] string jsonData)
@@ -346,12 +344,23 @@ namespace FTT_VENDER_API.Controllers.Query
 
                 QueryHandler queryHandler = new(_configHelper);
                 DataTable dataTable = queryHandler.GetDataTablePrintWP(req.FormNoList);
-                using Stream reportFileStream = new FileStream(Path.Combine(_env.WebRootPath, "Report6.rdlc"), FileMode.Open, FileAccess.Read);
-                LocalReport localReport = new();
-                localReport.LoadReportDefinition(reportFileStream);
-                localReport.EnableHyperlinks = true;
-                localReport.DataSources.Add(new ReportDataSource("DataSet1_V_FTT_FORM", dataTable));
-                byte[] pdfFileBytes = localReport.Render("PDF");
+                Dictionary<string, object> wordPara = ToPrintWPWordPara(dataTable);
+
+                MiniWordHelper helper = new();
+                string path = Path.Combine(_env.WebRootPath, "Report6.docx");
+                byte[] byteWordFile = helper.Print(path, wordPara);
+
+                using MemoryStream msWord = new(byteWordFile);
+                LibreOfficeConverter libreOfficeConverter = new(_env, _configHelper.Config);
+                byte[] pdfFileBytes = libreOfficeConverter.WordToPdf(msWord);
+
+                // ReportViewerCore.NETCore 在 Linux 環境無法執行
+                //using Stream reportFileStream = new FileStream(Path.Combine(_env.WebRootPath, "Report6.rdlc"), FileMode.Open, FileAccess.Read);
+                //LocalReport localReport = new();
+                //localReport.LoadReportDefinition(reportFileStream);
+                //localReport.EnableHyperlinks = true;
+                //localReport.DataSources.Add(new ReportDataSource("DataSet1_V_FTT_FORM", dataTable));
+                //byte[] pdfFileBytes = localReport.Render("PDF");
 
                 this.LogSuccess();
                 return File(pdfFileBytes, "application/pdf");
@@ -361,6 +370,50 @@ namespace FTT_VENDER_API.Controllers.Query
                 this.LogError(ex.ToString());
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
+        }
+
+        /// <summary>
+        /// DataTable 轉為列印維修單的參數
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        private Dictionary<string, object> ToPrintWPWordPara(DataTable dt)
+        {
+            DateTime now = DateTime.Now;
+            Dictionary<string, object> result = [];
+            List<Dictionary<string, object>> t1 = [];
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                DataRow row = dt.Rows[i];
+                Dictionary<string, object> t1Item = [];
+                string valFORM_NO = row["FORM_NO"]?.ToString() ?? string.Empty;
+                string valL1_DESC = row["L1_DESC"]?.ToString() ?? string.Empty;
+                string valL2_DESC = row["L2_DESC"]?.ToString() ?? string.Empty;
+                string valCINAME = row["CINAME"]?.ToString() ?? string.Empty;
+                string valDESCR = row["DESCR"]?.ToString() ?? string.Empty;
+
+                t1Item["No"] = (i + 1).ToString();
+                t1Item["FORM_NO"] = valFORM_NO;
+                t1Item["CINAME"] = $"{valL1_DESC} - {valL2_DESC} - {valCINAME}";
+                t1Item["DESCR"] = valDESCR;
+                t1.Add(t1Item);
+
+                if (i == 0)
+                {
+                    string valSHOP_NAME = row["SHOP_NAME"]?.ToString() ?? string.Empty;
+                    string valVENDER = row["VENDER"]?.ToString() ?? string.Empty;
+                    DateTime? valCreateTime = ConvertUtility.ConvertObjectToDateTime(row["CREATETIME"]);
+
+                    result["SHOP_NAME"] = valSHOP_NAME;
+                    result["VENDER"] = valVENDER;
+                    result["CREATETIME"] = valCreateTime?.ToString("yyyy/M/d tt h:mm:ss", new CultureInfo("zh-TW")) ?? string.Empty;
+                    result["NOWTIME"] = now.ToString("yyyy/M/d tt h:mm:ss", new CultureInfo("zh-TW"));
+                }
+            }
+
+            result["T1"] = t1;
+
+            return result;
         }
     }
 }

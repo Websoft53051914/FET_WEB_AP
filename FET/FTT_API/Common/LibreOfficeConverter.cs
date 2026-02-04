@@ -10,22 +10,22 @@ namespace FTT_API.Common
     {
         private readonly IWebHostEnvironment _hostingEnvironment;
         private readonly IConfiguration _configuration;
-        public LibreOfficeConverter(IWebHostEnvironment hostingEnvironment , IConfiguration configuration)
+        public LibreOfficeConverter(IWebHostEnvironment hostingEnvironment, IConfiguration configuration)
         {
             _hostingEnvironment = hostingEnvironment;
             _configuration = configuration;
         }
-        public  byte[] ExcelToOds(MemoryStream source)
+        public byte[] ExcelToOds(MemoryStream source)
         {
             return Todo(source, "xlsx", "ods");
         }
 
-        public  byte[] WordToPdf(MemoryStream source)
+        public byte[] WordToPdf(MemoryStream source)
         {
             return Todo(source, "docx", "pdf");
         }
 
-        private byte[] Todo(MemoryStream source,string sourceFileExtension , string targetExtension)
+        private byte[] Todo(MemoryStream source, string sourceFileExtension, string targetExtension)
         {
             bool IsLinuxServer = _configuration.GetValue<bool>("IsLinuxServer");
 
@@ -53,11 +53,12 @@ namespace FTT_API.Common
                 UseShellExecute = false,
                 CreateNoWindow = true
             };
-            if (IsLinuxServer)
-            {
-                startInfo.Environment["HOME"] = "/tmp";
-            }
+            //if (IsLinuxServer)
+            //{
+            //    startInfo.Environment["HOME"] = "/tmp";
+            //}
 
+            string targetPath = tempSourcePath.Replace(sourceFileExtension, targetExtension);
             using (System.Diagnostics.Process process = new System.Diagnostics.Process())
             {
                 process.StartInfo = startInfo;
@@ -66,14 +67,22 @@ namespace FTT_API.Common
                 string output = process.StandardOutput.ReadToEnd();
                 string error = process.StandardError.ReadToEnd();
 
-                if (!string.IsNullOrEmpty(error))
-                {
-                    throw new Exception(error);
-                }
+                process.WaitForExit(30 * 1000);
 
-                process.WaitForExit();
+                if (process.ExitCode != 0 || !File.Exists(targetPath))
+                {
+                    // Windows 環境下執行 error = "Could not find platform independent libraries <prefix>" 但實際上檔案有產生
+                    if (!string.IsNullOrEmpty(error))
+                    {
+                        throw new Exception(error);
+                    }
+                    else
+                    {
+                        throw new Exception("File Not Found");
+                    }
+                }
             }
-            string targetPath = tempSourcePath.Replace(sourceFileExtension, targetExtension);
+
             // 讀ods 寫入 FileStream 
             byte[] outPutFile = null;
             using (FileStream fs = new FileStream(targetPath, FileMode.Open))
