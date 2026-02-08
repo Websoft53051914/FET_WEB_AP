@@ -163,17 +163,40 @@ AND form_no IN (SELECT form_no
                         var logPath = Environment.OSVersion.Platform == PlatformID.Win32NT 
                             ? @"d:\debug_query.log" 
                             : "/tmp/debug_query.log";
-                        System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] GetPageList - UserRoleOtherFilter empno: {SessionVO.empno}\n"); 
+                        System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] GetPageList - UserRoleOtherFilter empno: {SessionVO.empno}, usertype: {SessionVO.usertype}, ivrcode: {SessionVO.ivrcode}\n"); 
                     } catch { }
                     
-                    condition.Append($@"
+                    // 針對門市人員(RETAIL 或 STORE)使用不同的查詢邏輯
+                    if (SessionVO.usertype == "RETAIL" || SessionVO.usertype == "STORE")
+                    {
+                        // 除錯：記錄門市人員查詢參數
+                        try { 
+                            var logPath2 = Environment.OSVersion.Platform == PlatformID.Win32NT 
+                                ? @"d:\debug_query.log" 
+                                : "/tmp/debug_query.log";
+                            System.IO.File.AppendAllText(logPath2, $"[{DateTime.Now}] GetPageList - STORE/RETAIL Query - empno: {SessionVO.empno}, deptcode: {SessionVO.ivrcode}\n"); 
+                        } catch { }
+                        
+                        condition.Append($@"
+AND form_no IN (SELECT form_no
+                       FROM   access_role
+                       WHERE  action = 'Y'
+                              AND (empno = @empno OR deptcode = @deptcode))
+");
+                        paras.Add("empno", SessionVO.empno);
+                        paras.Add("deptcode", SessionVO.ivrcode);
+                    }
+                    else
+                    {
+                        condition.Append($@"
 AND form_no IN (SELECT form_no
                        FROM   access_role
                        WHERE  action = 'Y'
                               AND empno = @empno)
 AND EXISTS (SELECT 1 FROM access_role WHERE action = 'Y' AND empno = @empno)
 ");
-                    paras.Add("empno", SessionVO.empno);
+                        paras.Add("empno", SessionVO.empno);
+                    }
                 }
             }
             
@@ -356,7 +379,7 @@ AND form_no IN (SELECT form_no
                         var logPath = Environment.OSVersion.Platform == PlatformID.Win32NT 
                             ? @"d:\debug_query.log" 
                             : "/tmp/debug_query.log";
-                        System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] GetPageListExport - UserRoleOtherFilter empno: {SessionVO.empno}\n"); 
+                        System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] GetPageListExport - UserRoleOtherFilter empno: {SessionVO.empno}, usertype: {SessionVO.usertype}, ivrcode: {SessionVO.ivrcode}\n"); 
                     } catch (Exception ex) { 
                         // 如果檔案寫入失敗，嘗試寫入應用程式目錄
                         try {
@@ -365,14 +388,29 @@ AND form_no IN (SELECT form_no
                         } catch { }
                     }
                     
-                    condition.Append($@"
+                    // 針對門市人員(RETAIL 或 STORE)使用不同的查詢邏輯
+                    if (SessionVO.usertype == "RETAIL" || SessionVO.usertype == "STORE")
+                    {
+                        condition.Append($@"
+AND form_no IN (SELECT form_no
+                       FROM   access_role
+                       WHERE  action = 'Y'
+                              AND (empno = @empno OR deptcode = @deptcode))
+");
+                        paras.Add("empno", SessionVO.empno);
+                        paras.Add("deptcode", SessionVO.ivrcode);
+                    }
+                    else
+                    {
+                        condition.Append($@"
 AND form_no IN (SELECT form_no
                        FROM   access_role
                        WHERE  action = 'Y'
                               AND empno = @empno)
 AND EXISTS (SELECT 1 FROM access_role WHERE action = 'Y' AND empno = @empno)
 ");
-                    paras.Add("empno", SessionVO.empno);
+                        paras.Add("empno", SessionVO.empno);
+                    }
                 }
             }
             

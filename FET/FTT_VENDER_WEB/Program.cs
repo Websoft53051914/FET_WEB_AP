@@ -35,9 +35,13 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDistributedMemoryCache();
 
 // �[�J Data Protection �]�w - �󥭥x�ۮe
-var dataProtectionKeysPath = Environment.OSVersion.Platform == PlatformID.Win32NT
-    ? Path.Combine(Directory.GetCurrentDirectory(), "DataProtectionKeys")
-    : "/home/wmliou75/FTT/DataProtectionKeys";
+//20260202 var dataProtectionKeysPath = Environment.OSVersion.Platform == PlatformID.Win32NT
+//    ? Path.Combine(Directory.GetCurrentDirectory(), "DataProtectionKeys")
+//    : "/home/wmliou75/FTT/DataProtectionKeys";
+
+//20260202
+var dataProtectionKeysPath = builder.Configuration["DataProtectionPath"]
+?? Path.Combine(AppContext.BaseDirectory, "DataProtectionKeys");
 
 // �T�O�ؿ��s�b
 Directory.CreateDirectory(dataProtectionKeysPath);

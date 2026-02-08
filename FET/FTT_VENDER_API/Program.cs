@@ -135,9 +135,12 @@ builder.Services.AddAuthentication(options =>
 //builder.Services.AddHostedService(provider => provider.GetRequiredService<FETTaskService>());
 
 // 加入 Data Protection 設定 - 跨平台相容
-var dataProtectionKeysPath = Environment.OSVersion.Platform == PlatformID.Win32NT
-    ? Path.Combine(Directory.GetCurrentDirectory(), "DataProtectionKeys")
-    : "/home/wmliou75/FTT/DataProtectionKeys";
+//20260202 var dataProtectionKeysPath = Environment.OSVersion.Platform == PlatformID.Win32NT
+//    ? Path.Combine(Directory.GetCurrentDirectory(), "DataProtectionKeys")
+//    : "/home/wmliou75/FTT/DataProtectionKeys";
+//20260202
+var dataProtectionKeysPath = builder.Configuration["DataProtectionPath"]
+?? Path.Combine(AppContext.BaseDirectory, "DataProtectionKeys");
 
 // 確保目錄存在
 Directory.CreateDirectory(dataProtectionKeysPath);
@@ -174,8 +177,13 @@ builder.Services.AddCors(options =>
                   "https://10.68.16.109:50402",       // 測試區 Ubuntu HTTPS for 廠商                  
                   "http://10.68.16.109:50902",        // Ubuntu HTTP (備用)
                   "http://192.168.1.107:50902",       // 原有設定
-                 
-                  "https://61.20.223.1:50402"         // 正式區 Ubuntu HTTPS for franchise
+
+                  "https://ftt-vender.fareastone.com.tw",
+                  "https://61.20.223.1",         
+                  "https://ftt-vender.fareastone.com.tw:50402",
+                  "https://ftt-vender.fareastone.com.tw:50702",
+                  "https://61.20.223.1:50402",         // 正式區 Ubuntu HTTPS for franchise
+                  "https://61.20.223.1:50702"         // 正式區 Ubuntu HTTPS for franchise
               )
               .AllowAnyHeader()
               .AllowAnyMethod()

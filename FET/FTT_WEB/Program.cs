@@ -4,10 +4,14 @@ using Microsoft.Extensions.FileProviders;
 //using Hangfire;
 using FTT_WEB.Models.Handler;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides; // 記得在檔案最上方加入 using
 
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
+
+
+
 
 // --- 關鍵修正：在 Linux 環境必須註冊編碼提供者 ---
 System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
@@ -28,15 +32,18 @@ localizationoptions.ApplyCurrentCultureToResponseHeaders = true;
 
 // Add services to the container.
 builder.Services.AddRazorPages();
- 
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddDistributedMemoryCache();
 
+
 // 加入 Data Protection 設定 - 跨平台相容
-var dataProtectionKeysPath = Environment.OSVersion.Platform == PlatformID.Win32NT
-    ? Path.Combine(Directory.GetCurrentDirectory(), "DataProtectionKeys")
-    : "/home/wmliou75/FTT/DataProtectionKeys";
+//20260202 var dataProtectionKeysPath = Environment.OSVersion.Platform == PlatformID.Win32NT
+//    ? Path.Combine(Directory.GetCurrentDirectory(), "DataProtectionKeys")
+//    : "/home/wmliou75/FTT/DataProtectionKeys";
+//20260202
+var dataProtectionKeysPath = builder.Configuration["DataProtectionPath"]
+?? Path.Combine(AppContext.BaseDirectory, "DataProtectionKeys");
 
 // 確保目錄存在
 Directory.CreateDirectory(dataProtectionKeysPath);
@@ -53,7 +60,8 @@ builder.Services.AddAuthentication(options =>
  .AddCookie(options =>
  {
      options.Cookie.HttpOnly = true;
-     options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+     //20260203 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
  });
 
 builder.Services.AddSession(options =>
@@ -63,12 +71,14 @@ builder.Services.AddSession(options =>
     options.Cookie.IsEssential = true; //架設http 非 https 要註解
 
     options.Cookie.HttpOnly = true; //架設http 非 https 要註解
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解
+    //20260203 options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
 builder.Services.AddAntiforgery(options =>
 {
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解
+    //20260203 options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -94,10 +104,22 @@ builder.Services.AddSingleton<ConfigurationHelper>();
 //          );
 //builder.Services.AddHangfireServer();
 //builder.Services.AddSingleton<SendMailHandler>();
-builder.Services.AddScoped<SendMailHandler>(); 
+builder.Services.AddScoped<SendMailHandler>();
 
+//20260203 var app = builder.Build();
 var app = builder.Build();
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
+// ----------------------------------------
 
+// Configure the HTTP request pipeline.
+if (!app.Environment.IsDevelopment())
+{
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
@@ -106,7 +128,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts(); //架設http 非 https 要註解
 }
 
-app.UseHttpsRedirection();
+//20260203 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 // 設定 PublicStaticFile 目錄為可下載的靜態檔案

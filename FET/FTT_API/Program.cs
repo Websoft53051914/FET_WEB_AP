@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 
 
 IConfiguration Config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
@@ -85,10 +86,12 @@ builder.Services.AddAntiforgery(options =>
     options.Cookie.Name = "CSRF-COOKIE";
 
     // 🌟 錯誤點 2：跨域必須設置為 None
-    options.Cookie.SameSite = SameSiteMode.None;
+    //20260203 options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SameSite = SameSiteMode.Lax;
 
     // 🌟 錯誤點 1：設置為 None 時，Secure 必須為 Always
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解  2025/12/8解除
+    //20260203 options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解  2025/12/8解除
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -138,9 +141,12 @@ builder.Services.AddSingleton<FETUnlockService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<FETUnlockService>());
 
 // 加入 Data Protection 設定 - 跨平台相容
-var dataProtectionKeysPath = Environment.OSVersion.Platform == PlatformID.Win32NT
-    ? Path.Combine(Directory.GetCurrentDirectory(), "DataProtectionKeys")
-    : "/home/wmliou75/FTT/DataProtectionKeys";
+//20260202 var dataProtectionKeysPath = Environment.OSVersion.Platform == PlatformID.Win32NT
+//    ? Path.Combine(Directory.GetCurrentDirectory(), "DataProtectionKeys")
+//    : "/home/wmliou75/FTT/DataProtectionKeys";
+//20260202
+var dataProtectionKeysPath = builder.Configuration["DataProtectionPath"]
+?? Path.Combine(AppContext.BaseDirectory, "DataProtectionKeys");
 
 // 確保目錄存在
 Directory.CreateDirectory(dataProtectionKeysPath);
@@ -176,7 +182,9 @@ builder.Services.AddCors(options =>
                       "http://10.68.16.109:50102",        // Ubuntu HTTP (備用)
                       "http://192.168.1.107:50102",       // 原有設定
 
+                      "https://ftt-web-api",
                       "https://10.68.58.133:50102",       // 正式區 Ubuntu HTTPS for 門市
+                      "https://10.68.58.133",       // 正式區 Ubuntu HTTPS for 門市
                       "https://61.20.223.2:50702"         // 正式區 Ubuntu HTTPS for Franchise
                   )
                   .AllowAnyHeader()
@@ -194,6 +202,11 @@ builder.Services.AddHsts(options =>
 });
 
 var app = builder.Build();
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 app.UseSwagger();
 if (Config.GetValue<string>("EnableSwaggerUI") == "Y")
@@ -213,7 +226,7 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts(); //架設http 非 https 要註解
 }
 
-app.UseHttpsRedirection();
+//20260203 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
 // 設定 PublicStaticFile 目錄為可下載的靜態檔案
