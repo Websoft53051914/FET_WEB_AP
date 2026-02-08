@@ -2,17 +2,17 @@
 using Const.VO;
 using Core.Utility.Extensions;
 using Core.Utility.Helper.DB.Entity;
+using Core.Utility.Helper.Word;
+using Core.Utility.Utility;
 using Core.Utility.Web.EX;
 using FTT_API.Common;
 using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Common.OriginClass.EntiityClass;
 using FTT_API.Models.Handler;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Reporting.NETCore;
 using Newtonsoft.Json;
 using System.Data;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.AspNetCore.Authorization;
+using System.Globalization;
 
 namespace FTT_API.Controllers.OnsitePrint
 {
@@ -20,9 +20,6 @@ namespace FTT_API.Controllers.OnsitePrint
     /// 列印到場單 API
     /// </summary>
     [Route("[controller]")]
-
-
-
     public partial class OnsitePrintController : BaseProjectController
     {
         /// <summary>
@@ -45,7 +42,6 @@ namespace FTT_API.Controllers.OnsitePrint
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetPageListPrwp(DataSourceRequest request)
@@ -98,7 +94,6 @@ namespace FTT_API.Controllers.OnsitePrint
         /// </summary>
         /// <param name="request"></param>
         /// <returns></returns>
-        
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult GetPageListConfirm(DataSourceRequest request)
@@ -151,7 +146,6 @@ namespace FTT_API.Controllers.OnsitePrint
         /// [/pool/printwp.aspx]PrintWP_Click()<para/>
         /// </summary>
         /// <returns></returns>
-        
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult PrintWP([FromBody] string jsonData)
@@ -168,12 +162,23 @@ namespace FTT_API.Controllers.OnsitePrint
 
                 OnsitePrintHandler onsitePrintHandler = new(_configHelper);
                 DataTable dataTable = onsitePrintHandler.GetDataTablePrintWP(req.FormNoList);
-                using Stream reportFileStream = new FileStream(Path.Combine(_env.WebRootPath, "Report6.rdlc"), FileMode.Open, FileAccess.Read);
-                LocalReport localReport = new();
-                localReport.LoadReportDefinition(reportFileStream);
-                localReport.EnableHyperlinks = true;
-                localReport.DataSources.Add(new ReportDataSource("DataSet1_V_FTT_FORM", dataTable));
-                byte[] pdfFileBytes = localReport.Render("PDF");
+                Dictionary<string, object> wordPara = ToPrintWPWordPara(dataTable);
+
+                MiniWordHelper helper = new();
+                string path = Path.Combine(_env.WebRootPath, "Report6.docx");
+                byte[] byteWordFile = helper.Print(path, wordPara);
+
+                using MemoryStream msWord = new(byteWordFile);
+                LibreOfficeConverter libreOfficeConverter = new(_env, _configHelper.Config);
+                byte[] pdfFileBytes = libreOfficeConverter.WordToPdf(msWord);
+
+                // ReportViewerCore.NETCore 在 Linux 環境無法執行
+                //using Stream reportFileStream = new FileStream(Path.Combine(_env.WebRootPath, "Report6.rdlc"), FileMode.Open, FileAccess.Read);
+                //LocalReport localReport = new();
+                //localReport.LoadReportDefinition(reportFileStream);
+                //localReport.EnableHyperlinks = true;
+                //localReport.DataSources.Add(new ReportDataSource("DataSet1_V_FTT_FORM", dataTable));
+                //byte[] pdfFileBytes = localReport.Render("PDF");
 
                 this.LogSuccess();
                 return File(pdfFileBytes, "application/pdf");
@@ -186,11 +191,54 @@ namespace FTT_API.Controllers.OnsitePrint
         }
 
         /// <summary>
+        /// DataTable 轉為列印維修單的參數
+        /// </summary>
+        /// <param name="dt"></param>
+        /// <returns></returns>
+        private Dictionary<string, object> ToPrintWPWordPara(DataTable dt)
+        {
+            DateTime now = DateTime.Now;
+            Dictionary<string, object> result = [];
+            List<Dictionary<string, object>> t1 = [];
+            for (int i = 0; i < dt.Rows.Count; i++)
+            {
+                DataRow row = dt.Rows[i];
+                Dictionary<string, object> t1Item = [];
+                string valFORM_NO = row["FORM_NO"]?.ToString() ?? string.Empty;
+                string valL1_DESC = row["L1_DESC"]?.ToString() ?? string.Empty;
+                string valL2_DESC = row["L2_DESC"]?.ToString() ?? string.Empty;
+                string valCINAME = row["CINAME"]?.ToString() ?? string.Empty;
+                string valDESCR = row["DESCR"]?.ToString() ?? string.Empty;
+
+                t1Item["No"] = (i + 1).ToString();
+                t1Item["FORM_NO"] = valFORM_NO;
+                t1Item["CINAME"] = $"{valL1_DESC} - {valL2_DESC} - {valCINAME}";
+                t1Item["DESCR"] = valDESCR;
+                t1.Add(t1Item);
+
+                if (i == 0)
+                {
+                    string valSHOP_NAME = row["SHOP_NAME"]?.ToString() ?? string.Empty;
+                    string valVENDER = row["VENDER"]?.ToString() ?? string.Empty;
+                    DateTime? valCreateTime = ConvertUtility.ConvertObjectToDateTime(row["CREATETIME"]);
+
+                    result["SHOP_NAME"] = valSHOP_NAME;
+                    result["VENDER"] = valVENDER;
+                    result["CREATETIME"] = valCreateTime?.ToString("yyyy/M/d tt h:mm:ss", new CultureInfo("zh-TW")) ?? string.Empty;
+                    result["NOWTIME"] = now.ToString("yyyy/M/d tt h:mm:ss", new CultureInfo("zh-TW"));
+                }
+            }
+
+            result["T1"] = t1;
+
+            return result;
+        }
+
+        /// <summary>
         /// [/pool/printwp.aspx]NextButton_Click()<para/>
         /// 廠商已到場-Y
         /// </summary>
         /// <returns></returns>
-        
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult UpdateStatusToTicket(OnsitePrintUpdateStatusReqVO req)
@@ -251,7 +299,6 @@ namespace FTT_API.Controllers.OnsitePrint
         /// 廠商未到場-N
         /// </summary>
         /// <returns></returns>
-        
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult UpdateStatusToPrwp(OnsitePrintUpdateStatusReqVO req)
@@ -312,7 +359,6 @@ namespace FTT_API.Controllers.OnsitePrint
         /// 廠商未到場-N
         /// </summary>
         /// <returns></returns>
-        
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
         public IActionResult UpdateStatusToConfirm(OnsitePrintUpdateStatusReqVO req)
