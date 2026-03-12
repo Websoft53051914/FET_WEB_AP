@@ -311,6 +311,7 @@ FROM STORE_VENDER_PROFILE WHERE MERCHANT_LOGIN= @AC ";
         /// 錯誤訊息資訊
         /// </summary>
         /// <returns></returns>
+        [NonAction] //20260209 <--- 加上這個，對應 GetMessage 衝突        
         [ApiExplorerSettings(IgnoreApi = true)]
         public MessageHelper GetMessage()
         {
@@ -323,6 +324,7 @@ FROM STORE_VENDER_PROFILE WHERE MERCHANT_LOGIN= @AC ";
         /// SelectListHandler
         /// </summary>
         /// <returns></returns>
+        [NonAction] //20260209 <--- 加上這個，對應 GetSelectListHandler 衝突
         [ApiExplorerSettings(IgnoreApi = true)]
         public SelectListHandler GetSelectListHandler()
         {

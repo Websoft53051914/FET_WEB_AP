@@ -1,8 +1,8 @@
-﻿
-using FTT_API.Common.ConfigurationHelper;
+﻿using FTT_API.Common.ConfigurationHelper;
 using Microsoft.Extensions.FileProviders;
 using Hangfire;
 using FTT_API.Models.Handler;
+using FTT_API.Background;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using Const.VO;
@@ -167,7 +167,9 @@ builder.Services.AddHangfire(config =>
 builder.Services.AddHangfireServer();
 //builder.Services.AddSingleton<SendMailHandler>();
 builder.Services.AddScoped<SendMailHandler>();
-//builder.Services.AddScoped<CheckVenderPWLoginTimeHandler>();
+builder.Services.AddScoped<CheckVenderPWLoginTimeHandler>();  // ← 取消註解
+builder.Services.AddScoped<CheckReminderTimeHandler>();       // ← 新增催單服務註冊
+builder.Services.AddHostedService<NSPStoreSyncBackgroundService>(); // ← 新增NSP門市資料同步背景服務
 
 // 註冊 CORS - 統一設定，適用於所有環境
 builder.Services.AddCors(options =>
@@ -182,10 +184,11 @@ builder.Services.AddCors(options =>
                       "http://10.68.16.109:50102",        // Ubuntu HTTP (備用)
                       "http://192.168.1.107:50102",       // 原有設定
 
-                      "https://ftt-web-api",
-                      "https://10.68.58.133:50102",       // 正式區 Ubuntu HTTPS for 門市
-                      "https://10.68.58.133",       // 正式區 Ubuntu HTTPS for 門市
-                      "https://61.20.223.2:50702"         // 正式區 Ubuntu HTTPS for Franchise
+                      "https://ftt-web-api",                    // 正式區 Intranet DNS
+                      "https://10.68.58.133:50102",             // 正式區 Ubuntu HTTPS for 門市
+                      "https://10.68.58.133",                   // 正式區 Ubuntu HTTPS for 門市
+                      "https://61.20.223.2:50702",              // 正式區 Ubuntu HTTPS for Franchise
+                      "https://ftt-vender.fareastone.com.tw"    // 正式區 DMZ VIP DNS
                   )
                   .AllowAnyHeader()
                   .AllowAnyMethod()
@@ -267,10 +270,18 @@ app.UseHangfireDashboard("/hangfire", new DashboardOptions
 
 //app.MapRazorPages();
 
+//20260208 Add begin
+app.MapControllerRoute(
+    name: "api_standard",
+    pattern: "{controller}/{action}/{id?}");
+//20260208 Add end
+
 app.MapControllerRoute(
     name: "default",
     pattern: "swagger/index.html");
 //pattern: "triptest/{controller=Home}/{action=Index}/{id?}");
+
+
 
 FTT_API.Common.HttpContext.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());
 RecurringJob.AddOrUpdate<SendMailHandler>(
@@ -297,6 +308,17 @@ RecurringJob.AddOrUpdate<CheckVenderPWLoginTimeHandler>(
         nameof(CheckVenderPWLoginTimeHandler.CheckLastLoginTime),
         (job) => job.CheckLastLoginTime(),
          builder.Configuration["HangFireScheduledTime:CheckVendorLastLogin"],
+         new RecurringJobOptions
+         {
+             TimeZone = TimeZoneInfo.FindSystemTimeZoneById("Taipei Standard Time")
+         }
+    );
+
+//20260309 - 每日催單檢查排程
+RecurringJob.AddOrUpdate<CheckReminderTimeHandler>(
+        nameof(CheckReminderTimeHandler.CheckReminderTask),
+        (job) => job.CheckReminderTask(),
+         builder.Configuration["HangFireScheduledTime:DailyReminderCheck"],
          new RecurringJobOptions
          {
              TimeZone = TimeZoneInfo.FindSystemTimeZoneById("Taipei Standard Time")

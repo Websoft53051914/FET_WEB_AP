@@ -23,6 +23,8 @@ namespace FTT_VENDER_WEB.Controllers
         /// 錯誤訊息資訊
         /// </summary>
         /// <returns></returns>
+        [NonAction] //20260209 <--- 加上這個，對應 GetMessage 衝突        
+        [ApiExplorerSettings(IgnoreApi = true)]
         public MessageHelper GetMessage()
         {
             _msgHelper ??= new MessageHelper();
@@ -34,6 +36,8 @@ namespace FTT_VENDER_WEB.Controllers
         /// SelectListHandler
         /// </summary>
         /// <returns></returns>
+        [NonAction] //20260209 <--- 加上這個，對應 GetSelectListHandler 衝突
+        [ApiExplorerSettings(IgnoreApi = true)]
         public SelectListHandler GetSelectListHandler()
         {
             _selectListHandler ??= new SelectListHandler();

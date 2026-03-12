@@ -300,6 +300,7 @@ namespace FTT_API.Controllers
         /// 錯誤訊息資訊
         /// </summary>
         /// <returns></returns>
+        [NonAction] //20260209 <--- 加上這個，對應 GetMessage 衝突
         [ApiExplorerSettings(IgnoreApi = true)]
         public MessageHelper GetMessage()
         {
@@ -312,6 +313,7 @@ namespace FTT_API.Controllers
         /// SelectListHandler
         /// </summary>
         /// <returns></returns>
+        [NonAction] //20260209 <--- 加上這個，對應 GetSelectListHandler 衝突
         [ApiExplorerSettings(IgnoreApi = true)]
         public SelectListHandler GetSelectListHandler()
         {

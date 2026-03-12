@@ -24,6 +24,7 @@ namespace Const
             FuncID.FTTGroupMgt_View,
             FuncID.CIMgt_View,
             FuncID.MailServerSetting_View,
+            FuncID.NSPStoreSync_View,
         };
 
 
@@ -41,6 +42,7 @@ namespace Const
             FuncID.CIConfig_View,
             FuncID.SecurityMgt_View,
             FuncID.FTTGroupMgt_View,
+            FuncID.NSPStoreSync_View,
         };
         public static List<FuncID> ASSETER = new List<FuncID> { FuncID.Home_View, FuncID.Pending_View, FuncID.InProcess_View, FuncID.CaseClosed_View, FuncID.Query_View, FuncID.CIMgt_View };
         public static List<FuncID> SECURITY = new List<FuncID> { FuncID.Home_View, FuncID.Pending_View, FuncID.InProcess_View, FuncID.CaseClosed_View, FuncID.Query_View, FuncID.CIMgt_View, FuncID.SecurityMgt_View };
@@ -81,7 +83,8 @@ namespace Const
                 new MenuModel { FuncId=FuncID.SecurityMgt_View, FuncName="保全廠商維護", Url="/SecurityMgt" },
                 new MenuModel { FuncId=FuncID.FTTGroupMgt_View, FuncName="角色權限維護", Url="/FTTGroupMgt" },
                 new MenuModel { FuncId=FuncID.CIMgt_View, FuncName="報修品項維護", Url="/CIMgt" },
-                new MenuModel { FuncId=FuncID.MailServerSetting_View, FuncName="Mail Server 設定", Url="/MailServerSetting" }
+                new MenuModel { FuncId=FuncID.MailServerSetting_View, FuncName="Mail Server 設定", Url="/MailServerSetting" },
+                new MenuModel { FuncId=FuncID.NSPStoreSync_View, FuncName="門市資料同步", Url="/NSPStoreSync" }
 
             }
         };

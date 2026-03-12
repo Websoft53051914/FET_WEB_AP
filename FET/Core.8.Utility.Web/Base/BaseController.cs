@@ -15,6 +15,7 @@ namespace Core.Utility.Web.Base
         /// 錯誤訊息alert
         /// </summary>
         /// <param name="msg">錯誤訊息</param>
+        [NonAction] //20260209 <--- 加上這個，對應 ErrorAlert/WarningAlert/GetMessage 衝突
         [ApiExplorerSettings(IgnoreApi = true)]
         public void ErrorAlert(String msg)
         {
@@ -25,6 +26,7 @@ namespace Core.Utility.Web.Base
         /// 警告訊息alert
         /// </summary>
         /// <param name="msg">警告訊息</param>
+        [NonAction] //20260209 <--- 加上這個，對應 WarningAlert 衝突
         [ApiExplorerSettings(IgnoreApi = true)]
         /// 
         public void WarningAlert(String msg)

@@ -109,6 +109,11 @@ namespace Const
             /// </summary>
             MailServerSetting_View = 10018,
 
+            /// <summary>
+            /// 門市資料同步
+            /// </summary>
+            NSPStoreSync_View = 10019,
+
         }
 
         public enum StatusEnum

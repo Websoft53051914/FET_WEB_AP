@@ -590,6 +590,22 @@
                     return;
                 }
 
+                // 前端副檔名檢查
+                var allowedExtensions = ['.pdf', '.jpg', '.jpeg', '.png', '.docx', '.xlsx'];
+                var fileName = file.name.toLowerCase();
+                var fileExtension = fileName.substring(fileName.lastIndexOf('.'));
+                
+                if (!allowedExtensions.includes(fileExtension)) {
+                    MyApp.Alert.warning('不允許的檔案格式！<br/>允許的格式：' + allowedExtensions.join(', '));
+                    return;
+                }
+
+                // 前端檔案大小檢查 (10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    MyApp.Alert.warning('檔案過大，最大允許 10MB');
+                    return;
+                }
+
                 showLoader();
 
                 var formData = new FormData();
