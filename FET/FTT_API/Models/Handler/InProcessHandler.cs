@@ -29,7 +29,12 @@ namespace FTT_API.Models.Handler
             };
 
             string tableName = " APPROVE_FORM ";
-            string strWhere = " FORM_NO=@FORM_NO AND CHK_WORKING_DAY2(UPDATETIME,SYSDATE,'S') > @kpiTime ";
+            
+            // 【原始版本 - CHK_WORKING_DAY2 函數有問題時暫時保留】
+            // string strWhere = " FORM_NO=@FORM_NO AND CHK_WORKING_DAY2(UPDATETIME,SYSDATE,'S') > @kpiTime ";
+            
+            // 【替代方案 - 簡單工作日計算，排除週末但不含國定假日】
+            string strWhere = " FORM_NO=@FORM_NO AND (SYSDATE - UPDATETIME) - (TRUNC((SYSDATE - UPDATETIME)/7) * 2) > @kpiTime ";
 
             return CheckDataExist(tableName, strWhere, paras);
         }

@@ -81,13 +81,24 @@ namespace FTT_API.Models.Handler
         /// </summary>
         private List<dynamic> GetOverdueFormList()
         {
+            // 【原始版本 - CHK_WORKING_DAY2 函數有問題時暫時保留】
+            // string sql = @"
+            //     SELECT DISTINCT f.form_no, f.category_id, NVL(c.kpitime, 3) as kpitime
+            //     FROM FTT_FORM f
+            //     JOIN APPROVE_FORM af ON f.form_no = af.form_no
+            //     LEFT JOIN CI_RELATIONS_CATEGORY c ON f.category_id = c.cisid
+            //     WHERE f.statusid IN (2, 3, 4, 5)  -- 處理中狀態
+            //     AND CHK_WORKING_DAY2(af.UPDATETIME, SYSDATE, 'S') > NVL(c.kpitime, 3)
+            //     ORDER BY f.form_no";
+            
+            // 【替代方案 - 簡單工作日計算，排除週末但不含國定假日】
             string sql = @"
                 SELECT DISTINCT f.form_no, f.category_id, NVL(c.kpitime, 3) as kpitime
                 FROM FTT_FORM f
                 JOIN APPROVE_FORM af ON f.form_no = af.form_no
                 LEFT JOIN CI_RELATIONS_CATEGORY c ON f.category_id = c.cisid
                 WHERE f.statusid IN (2, 3, 4, 5)  -- 處理中狀態
-                AND CHK_WORKING_DAY2(af.UPDATETIME, SYSDATE, 'S') > NVL(c.kpitime, 3)
+                AND (SYSDATE - af.UPDATETIME) - (TRUNC((SYSDATE - af.UPDATETIME)/7) * 2) > NVL(c.kpitime, 3)
                 ORDER BY f.form_no";
 
             return GetDBHelper().FindList<dynamic>(sql, null);
