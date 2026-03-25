@@ -166,7 +166,8 @@ namespace Const.VO
             Area = dto.area ?? string.Empty;
             StoreName = dto.shop_name ?? string.Empty;
             EMail = dto.email ?? string.Empty;
-            Owner = dto.owner_name ?? string.Empty;
+            //Owner = dto.owner_name ?? string.Empty;
+            Owner = dto.owner_cname ?? string.Empty;
             Manager = dto.as_cname ?? string.Empty;
             ManagerEmpno = dto.as_empno ?? string.Empty;
             Phone = dto.owner_tel ?? string.Empty;

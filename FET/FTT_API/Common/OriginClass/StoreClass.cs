@@ -363,7 +363,7 @@ namespace FTT_API.Common.OriginClass
                     mArea = storeData.Rows[0]["AREA"].ToString();
                     mStoreName = storeData.Rows[0]["SHOP_NAME"].ToString();
                     mEMail = storeData.Rows[0]["EMAIL"].ToString();
-                    mOwner = storeData.Rows[0]["OWNER_CNAME"].ToString();
+                    mOwner = storeData.Rows[0]["OWNER_CNAME"].ToString(); // 使用中文名稱
                     mManager = storeData.Rows[0]["AS_CNAME"].ToString();
                     mManagerEmpno = storeData.Rows[0]["AS_EMPNO"].ToString();
                     mPhone = storeData.Rows[0]["OWNER_TEL"].ToString();

@@ -9,7 +9,7 @@ using FTT_WEB.Models.Handler;
 using FTT_WEB.Models.ViewModel;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Microsoft.Graph.Models;
+// using Microsoft.Graph.Models; // 註釋掉以移除 Microsoft.Graph 依賴
 using Npgsql;
 using NPOI.OpenXmlFormats.Dml.Diagram;
 using NPOI.POIFS.Crypt.Agile;

@@ -737,7 +737,6 @@
                         });
                     },
                     error: function (msg) {
-                        console.log(msg);
                         MyApp.Alert.error('呼叫 API 異常');
                     }
                 });
@@ -790,7 +789,6 @@
                         }
                     })
                     .fail((err) => {
-                        console.log(err);
                         MyApp.Alert.error('呼叫 API 異常');
                     })
                     .always(() => {
@@ -839,7 +837,6 @@
                             }
                         })
                         .fail((err) => {
-                            console.log(err);
                             MyApp.Alert.error('呼叫 API 異常');
                         })
                         .always(() => {
@@ -913,7 +910,8 @@
                         $('#StoreClass_Area').text(data.Store_profileDTO.Area);
                         $('#StoreClass_StoreName').text(data.Store_profileDTO.StoreName);
                         $('#StoreClass_eMail').text(data.Store_profileDTO.eMail);
-                        $('#StoreClass_Owner').text(data.Store_profileDTO.Owner);
+                        // $('#StoreClass_Owner').text(data.Store_profileDTO.Owner);
+                        $('#StoreClass_Owner').text(data.Store_profileDTO.owner_cname);
                         $('#StoreClass_PhoneUrgent').text(data.Store_profileDTO.PhoneUrgent);
                         $('#StoreClass_Manager').text(data.Store_profileDTO.Manager);
                         $('#StoreClass_Phone').text(data.Store_profileDTO.Phone);
@@ -1233,7 +1231,6 @@
                     tdDel.appendChild(btn);
                 }
                 tr.appendChild(tdDel);
-                console.log('addItemRow', obj);
                 tr.appendChild(createSafeCell(_EXPENSE_TYPE, 'EXPENSE_TYPE', index));
                 const descValue = (document.getElementById('AMOUNT_CONFIG').value === "Y")
                     ? _EXPENSE_DESC_SEL
@@ -1456,7 +1453,6 @@
                 return;
             }
 
-            console.log(iFrameIsSubmit);
             if (!iFrameIsSubmit) {
                 $('#SubmitFormAddAmount').trigger('click');
                 return false;
