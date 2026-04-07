@@ -161,7 +161,7 @@ namespace Const.VO
         public StoreVO(StoreProfileDTO dto)
         {
             Company = dto.company_leaves ?? string.Empty;
-            StoreType = dto.store_type ?? string.Empty;
+            //20260325與FTT Admin討論後不顯示 StoreType = dto.store_type ?? string.Empty;
             Channel = dto.channel ?? string.Empty;
             Area = dto.area ?? string.Empty;
             StoreName = dto.shop_name ?? string.Empty;
@@ -170,7 +170,7 @@ namespace Const.VO
             Owner = dto.owner_cname ?? string.Empty;
             Manager = dto.as_cname ?? string.Empty;
             ManagerEmpno = dto.as_empno ?? string.Empty;
-            Phone = dto.owner_tel ?? string.Empty;
+            //20260325與FTT Admin討論後不顯示Phone = dto.owner_tel ?? string.Empty;
             PhoneUrgent = dto.urgent_tel ?? string.Empty;
             PhoneFax = dto.fax_tel ?? string.Empty;
             Address = dto.address ?? string.Empty;
@@ -178,7 +178,7 @@ namespace Const.VO
             BusinessTime2 = dto.business_hour_range2 ?? string.Empty;
             BusinessTime3 = dto.business_hour_range3 ?? string.Empty;
             BusinessTime4 = dto.business_hour_range4 ?? string.Empty;
-            DecorationCondition = dto.decoration_condition ?? string.Empty;
+            //20260325與FTT Admin討論後不顯示DecorationCondition = dto.decoration_condition ?? string.Empty;
             Note = dto.note ?? string.Empty;
             ApprovalDate = dto.approval_date?.ToString(DbConst.FORMAT_DATE2) ?? string.Empty;
             IVRCode = dto.ivr_code ?? string.Empty;

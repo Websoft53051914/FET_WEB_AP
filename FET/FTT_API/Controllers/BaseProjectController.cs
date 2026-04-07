@@ -181,7 +181,12 @@ namespace FTT_API.Controllers
                     logAccount = ivrCode;
                     if (true == boolIsAuthenticated)
                     {
-                        var info = GetStoreInfo(ivrCode, "TEST");
+                        //20260407 var info = GetStoreInfo(ivrCode, "TEST");
+                        // 20260407 修正：JWT token 已驗證合法，憑 token 中的 ivrcode 重建 session；
+                        // 不再驗密碼（密碼未存入 token，且 SSO 進入時根本沒有密碼）。
+                        // 修正前使用 GetStoreInfo(ivrCode, "TEST") 以硬寫密碼 "TEST" 查詢，
+                        // 導致門市資料查不到，sessionVO 為 null，_sessionVO.ivrcode 為空，新開單初始化失敗。
+                        var info = GetStoreInfoByIvrCode(ivrCode);//20260407
                         if (info != null)
                         {
                             logLoginStatus = true;
@@ -244,6 +249,26 @@ namespace FTT_API.Controllers
             {
                 { "IVR_CODE", ivr_code },
                 { "SHOP_PASSWORD", pd }
+            };
+            StoreProfileVM? result = _BaseDBHandler.GetDBHelper().Find<StoreProfileVM>(sql, parameters);
+            return result;
+        }
+
+        /// <summary>
+        /// 20260407 新增：依 IVR_CODE 查詢門市資料（不驗密碼）。
+        /// 用於 OnActionExecuting 還原 VASS session：
+        /// 登入或 SSO 時已完成身份驗證並簽發 JWT，
+        /// 後續 request 只需憑 token 中的 ivrcode 重建 session，無需再驗密碼。
+        /// </summary>
+        protected StoreProfileVM GetStoreInfoByIvrCode(string ivr_code)
+        {
+            BaseDBHandler _BaseDBHandler = new BaseDBHandler();
+            string sql = @"SELECT *
+                           FROM STORE_PROFILE
+                           WHERE IVR_CODE = @IVR_CODE";
+            Dictionary<string, object> parameters = new Dictionary<string, object>
+            {
+                { "IVR_CODE", ivr_code }
             };
             StoreProfileVM? result = _BaseDBHandler.GetDBHelper().Find<StoreProfileVM>(sql, parameters);
             return result;

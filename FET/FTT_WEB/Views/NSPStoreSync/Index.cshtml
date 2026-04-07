@@ -70,7 +70,9 @@
 
 <script>
 // 指定API服務的端點 - FTT_API專案端口
-const API_BASE = 'https://localhost:50302';
+//const API_BASE = 'https://localhost:50302';
+ //   const API_BASE = 'http://localhost:50302';
+    const API_BASE = '@config.GetBackendUrl()';//20260407
 
 async function healthCheck() {
     const result = document.getElementById('result');

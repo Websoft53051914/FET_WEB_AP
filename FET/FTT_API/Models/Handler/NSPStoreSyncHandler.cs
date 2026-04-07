@@ -191,8 +191,7 @@ namespace FTT_API.Models.Handler
                     STOREOPENTM_FRI, STORECLOSETM_FRI,
                     STOREOPENTM_SAT, STORECLOSETM_SAT,
                     STOREOPENTM_SUN, STORECLOSETM_SUN
-                FROM {tableName}
-                WHERE ROWNUM <= 10"; // 先只取10筆測試
+                FROM {tableName}"; // 移除測試限制，取得完整資料
 
             using (var connection = new OracleConnection(_oracleConnectionString))
             {
@@ -246,9 +245,20 @@ namespace FTT_API.Models.Handler
         /// </summary>
         private void ClearExistingData()
         {
+            // 先查詢現有資料筆數
+            string countSql = "SELECT COUNT(*) FROM nsp_store_profile";
+            var existingCountResult = GetDBHelper().FindList<dynamic>(countSql, new Dictionary<string, object>());
+            var existingCount = existingCountResult.FirstOrDefault()?.count ?? 0;
+            LogInfo($"清空前現有門市資料筆數: {existingCount}", "ClearExistingData");
+            
+            // 清空資料
             string sql = "DELETE FROM nsp_store_profile";
             GetDBHelper().Execute(sql, new Dictionary<string, object>());
-            LogInfo("已清空現有門市資料", "ClearExistingData");
+            
+            // 確認清空結果
+            var afterCountResult = GetDBHelper().FindList<dynamic>(countSql, new Dictionary<string, object>());
+            var afterCount = afterCountResult.FirstOrDefault()?.count ?? 0;
+            LogInfo($"清空後門市資料筆數: {afterCount}", "ClearExistingData");
         }
 
         /// <summary>
@@ -259,6 +269,10 @@ namespace FTT_API.Models.Handler
         private int InsertStoreProfileData(List<VIEW_DP2FTTEntity> oracleData)
         {
             int insertCount = 0;
+            var duplicateCheck = new HashSet<string>();
+            var skippedDuplicates = new List<string>();
+            
+            LogInfo($"準備插入 {oracleData.Count} 筆門市資料", "InsertStoreProfileData");
             
             string sql = @"
                 INSERT INTO nsp_store_profile (
@@ -288,6 +302,22 @@ namespace FTT_API.Models.Handler
             {
                 try
                 {
+                    // 檢查 STOREID 是否為空或重複
+                    if (string.IsNullOrWhiteSpace(data.STOREID))
+                    {
+                        LogError($"跳過空的STOREID，門市名稱: {data.STORENAME}", "InsertStoreProfileData");
+                        continue;
+                    }
+                    
+                    if (duplicateCheck.Contains(data.STOREID))
+                    {
+                        skippedDuplicates.Add($"{data.STOREID} ({data.STORENAME})");
+                        LogError($"跳過重複的STOREID: {data.STOREID}, 門市名稱: {data.STORENAME}", "InsertStoreProfileData");
+                        continue;
+                    }
+                    
+                    duplicateCheck.Add(data.STOREID);
+
                     // 資料轉換邏輯
                     var parameters = new Dictionary<string, object>
                     {
@@ -322,14 +352,26 @@ namespace FTT_API.Models.Handler
 
                     GetDBHelper().Execute(sql, parameters);
                     insertCount++;
+                    
+                    if (insertCount % 50 == 0) // 每50筆記錄一次進度
+                    {
+                        LogInfo($"已插入 {insertCount} 筆門市資料", "InsertStoreProfileData");
+                    }
                 }
                 catch (Exception ex)
                 {
-                    LogError($"插入門市資料失敗 (STOREID: {data.STOREID}): {ex.Message}", "InsertStoreProfileData");
+                    LogError($"插入門市資料失敗 (STOREID: {data.STOREID}, 門市名稱: {data.STORENAME}): {ex.Message}", "InsertStoreProfileData");
                 }
             }
             
+            // 記錄重複資料統計
+            if (skippedDuplicates.Count > 0)
+            {
+                LogInfo($"跳過的重複資料: {string.Join(", ", skippedDuplicates)}", "InsertStoreProfileData");
+            }
+            
             GetDBHelper().Commit();
+            LogInfo($"插入完成，成功插入 {insertCount} 筆，跳過重複 {skippedDuplicates.Count} 筆", "InsertStoreProfileData");
             return insertCount;
         }
 

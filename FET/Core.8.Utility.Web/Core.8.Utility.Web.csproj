@@ -15,9 +15,10 @@
     </ItemGroup>
 
     <ItemGroup>
-        <!-- 保留必要的 Web 相關套件 -->
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.3.0" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.ViewFeatures" Version="2.3.0" />
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
         <PackageReference Include="System.Text.Json" Version="8.0.5" />
     </ItemGroup>
