@@ -92,13 +92,17 @@ namespace FTT_API.Models.Handler
             //     ORDER BY f.form_no";
             
             // 【替代方案 - 簡單工作日計算，排除週末但不含國定假日】
+            // 【20260408 EDB PostgreSQL 修正】
+            // Oracle: SYSDATE - UPDATETIME 回傳數值(天數)，TRUNC(天數/7) 合法
+            // EDB PostgreSQL: SYSDATE - UPDATETIME 回傳 interval，TRUNC(interval) 不支援
+            // 修正: 使用 EXTRACT(EPOCH FROM ...) 將 interval 轉換為秒數，再除以 86400 得到天數
             string sql = @"
                 SELECT DISTINCT f.form_no, f.category_id, NVL(c.kpitime, 3) as kpitime
                 FROM FTT_FORM f
                 JOIN APPROVE_FORM af ON f.form_no = af.form_no
                 LEFT JOIN CI_RELATIONS_CATEGORY c ON f.category_id = c.cisid
                 WHERE f.statusid IN (2, 3, 4, 5)  -- 處理中狀態
-                AND (SYSDATE - af.UPDATETIME) - (TRUNC((SYSDATE - af.UPDATETIME)/7) * 2) > NVL(c.kpitime, 3)
+                AND EXTRACT(EPOCH FROM (SYSDATE - af.UPDATETIME)) / 86400.0 - (FLOOR(EXTRACT(EPOCH FROM (SYSDATE - af.UPDATETIME)) / 604800.0) * 2) > NVL(c.kpitime, 3)
                 ORDER BY f.form_no";
 
             return GetDBHelper().FindList<dynamic>(sql, null);
@@ -119,7 +123,8 @@ namespace FTT_API.Models.Handler
                 FROM FTT_FORM_LOG 
                 WHERE FORM_NO = @formNo 
                 AND FIELDNAME = '催單' 
-                AND TRUNC(UPDATETIME) = TRUNC(SYSDATE)";
+                -- 【20260408 EDB PostgreSQL 修正】Oracle: TRUNC(timestamp) → PostgreSQL: DATE_TRUNC('day', timestamp)
+                AND DATE_TRUNC('day', UPDATETIME) = DATE_TRUNC('day', SYSDATE)";
 
             var count = GetDBHelper().FindScalar<int>(sql, paras);
             return count > 0;
