@@ -33,12 +33,12 @@ namespace FTT_API.Controllers
             try
             {
                 NSPStoreSyncHandler handler = new NSPStoreSyncHandler(_configHelper);
-                string result = handler.SyncStoreProfileData();
+                var (isSuccess, result) = handler.SyncStoreProfileData();
                 
                 return Ok(new ResponseModel<string>
                 {
-                    IsSuccess = true,
-                    Message = "同步完成",
+                    IsSuccess = isSuccess,
+                    Message = isSuccess ? "同步完成" : "同步中止或失敗",
                     Data = result
                 });
             }

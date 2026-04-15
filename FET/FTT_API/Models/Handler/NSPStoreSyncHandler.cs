@@ -29,16 +29,22 @@ namespace FTT_API.Models.Handler
             var serviceName = oracleConfig["ServiceName"];
             var userId = oracleConfig["UserId"];
             var password = oracleConfig["Password"];
+            //20260413 Server 模式：DEDICATED（正式環境需要）或 SHARED，空白則不加入
+            var serverMode = oracleConfig["ServerMode"]; // 選填，正式環境設定 "DEDICATED"
             
-            // 建立Oracle連接字串
-            _oracleConnectionString = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={host})(PORT={port}))(CONNECT_DATA=(SERVICE_NAME={serviceName})));User Id={userId};Password={password};";
+            //20260413 建立Oracle連接字串，若有 ServerMode 則加入 (SERVER=DEDICATED)
+            string connectData = string.IsNullOrWhiteSpace(serverMode)
+                ? $"(SERVICE_NAME={serviceName})"
+                : $"(SERVER={serverMode})(SERVICE_NAME={serviceName})";
+            
+            _oracleConnectionString = $"Data Source=(DESCRIPTION=(ADDRESS=(PROTOCOL=TCP)(HOST={host})(PORT={port}))(CONNECT_DATA={connectData}));User Id={userId};Password={password};";
         }
 
         /// <summary>
         /// 同步VIEW_DP2FTT資料到nsp_store_profile
         /// </summary>
-        /// <returns>同步結果訊息</returns>
-        public string SyncStoreProfileData()
+        /// <returns>(IsSuccess: 是否成功, Message: 結果訊息)</returns>
+        public (bool IsSuccess, string Message) SyncStoreProfileData()
         {
             try
             {
@@ -48,8 +54,16 @@ namespace FTT_API.Models.Handler
                 var oracleData = GetOracleViewData();
                 
                 LogInfo($"從Oracle取得 {oracleData.Count} 筆門市資料", "SyncStoreProfileData");
-                
-                // 2. 清空現有資料（可依需求調整為增量更新）
+
+                // 安全防護：若Oracle回傳0筆，不清空現有資料，避免Oracle連線失敗時把nsp_store_profile清空
+                if (oracleData.Count == 0)
+                {
+                    string warnMsg = "Oracle回傳0筆資料，為避免誤刪，本次同步中止，nsp_store_profile資料保持不變";
+                    LogError(warnMsg, "SyncStoreProfileData");
+                    return (false, warnMsg);
+                }
+
+                // 2. 清空現有資料
                 ClearExistingData();
                 
                 // 3. 插入新資料
@@ -58,15 +72,13 @@ namespace FTT_API.Models.Handler
                 string result = $"同步完成：處理 {oracleData.Count} 筆資料，成功插入 {insertCount} 筆";
                 LogInfo(result, "SyncStoreProfileData");
                 
-                return result;
+                return (true, result);
             }
             catch (Exception ex)
             {
                 string errorMsg = $"同步失敗：{ex.Message}";
                 LogError(ex.Message, "SyncStoreProfileData");
-                
-                // 發生錯誤時不拋出例外，避免影響其他服務
-                return errorMsg;
+                return (false, errorMsg);
             }
         }
 
@@ -604,6 +616,27 @@ namespace FTT_API.Models.Handler
                 // 取得所有nsp_store_profile資料
                 var nspData = GetAllStoreProfiles();
                 LogInfo($"從nsp_store_profile取得 {nspData.Count} 筆資料", "BatchSyncNspToStoreProfile");
+
+                // 安全防護：nsp_store_profile 無資料時拒絕執行，避免誤清 store_profile
+                if (nspData.Count == 0)
+                {
+                    string warnMsg = "nsp_store_profile 無資料，批次同步中止。請先執行『執行同步』成功後再執行本操作";
+                    LogError(warnMsg, "BatchSyncNspToStoreProfile");
+                    return warnMsg;
+                }
+
+                // 安全防護：檢查 nsp_store_profile 最後同步時間，超過48小時視為資料過舊，拒絕執行
+                var latestSyncTime = nspData
+                    .Where(x => x.ftt_synctime.HasValue)
+                    .Max(x => x.ftt_synctime);
+                if (latestSyncTime == null || (DateTime.Now - latestSyncTime.Value).TotalHours > 48)
+                {
+                    string warnMsg = $"nsp_store_profile 資料已過舊（最後同步時間：{latestSyncTime?.ToString("yyyy-MM-dd HH:mm:ss") ?? "無記錄"}），批次同步中止。請先執行『執行同步』成功後再執行本操作";
+                    LogError(warnMsg, "BatchSyncNspToStoreProfile");
+                    return warnMsg;
+                }
+
+                LogInfo($"nsp_store_profile 資料確認有效，最後同步時間：{latestSyncTime:yyyy-MM-dd HH:mm:ss}", "BatchSyncNspToStoreProfile");
                 
                 // 記錄所有要處理的 ivr_code
                 var nspIvrCodes = nspData.Select(x => x.ivr_code).ToList();

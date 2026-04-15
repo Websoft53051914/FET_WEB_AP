@@ -32,15 +32,18 @@ namespace FTT_API.Background
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            // 檢查是否啟用同步功能
-            var isEnabled = _configuration.GetValue<bool>("NSPStoreSync:Enabled", true);
+            // 檢查是否啟用同步功能（正式環境測試階段請設定 Enabled: false）
+            var isEnabled = _configuration.GetValue<bool>("NSPStoreSync:Enabled", false);
             if (!isEnabled)
             {
-                _logger.LogInformation("NSP門市資料同步功能已停用");
+                _logger.LogInformation("NSP門市資料同步功能已停用（NSPStoreSync:Enabled = false）");
                 return;
             }
 
-            _logger.LogInformation("NSP門市資料同步背景服務已啟動");
+            // 啟動延遲，避免系統剛啟動時立即觸發同步，讀取 StartDelayMinutes 設定（預設5分鐘）
+            var startDelayMinutes = _configuration.GetValue<int>("NSPStoreSync:StartDelayMinutes", 5);
+            _logger.LogInformation($"NSP門市資料同步背景服務已啟動，將於 {startDelayMinutes} 分鐘後開始第一次同步");
+            await Task.Delay(TimeSpan.FromMinutes(startDelayMinutes), stoppingToken);
 
             while (!stoppingToken.IsCancellationRequested)
             {
@@ -71,9 +74,16 @@ namespace FTT_API.Background
                     
                     // 第一階段：從Oracle同步到nsp_store_profile
                     _logger.LogInformation("執行第一階段：Oracle → nsp_store_profile");
-                    string result1 = handler.SyncStoreProfileData();
-                    _logger.LogInformation($"第一階段同步完成：{result1}");
-                    
+                    var (stage1Success, result1) = handler.SyncStoreProfileData();
+                    _logger.LogInformation($"第一階段同步結果：{result1}");
+
+                    // 安全防護：第一階段若失敗，不執行第二階段，避免用空資料覆蓋store_profile
+                    if (!stage1Success)
+                    {
+                        _logger.LogWarning($"第一階段未成功，中止第二階段執行。原因：{result1}");
+                        return;
+                    }
+
                     // 第二階段：從nsp_store_profile批次同步到store_profile
                     _logger.LogInformation("執行第二階段：nsp_store_profile → store_profile");
                     string result2 = handler.BatchSyncNspToStoreProfile();

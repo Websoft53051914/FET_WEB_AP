@@ -44,6 +44,7 @@ WHERE  statusid IN ( 'AGREE', 'OFFER', 'COMPLETE', 'CONFIRM' )
                        FROM   access_role
                        WHERE  user_type = @USERROLE
                               AND deptcode = @IVRCODE
+                              AND action = 'Y'
                               AND @EMPNO IS NOT NULL)
 ORDER  BY updatetime DESC 
 ";
@@ -78,6 +79,7 @@ WHERE  statusid IN ( 'AGREE', 'OFFER', 'COMPLETE', 'CONFIRM' )
                        FROM   access_role
                        WHERE  user_type = @USERROLE
                               AND deptcode = @IVRCODE
+                              AND action = 'Y'
                               AND @EMPNO IS NOT NULL) 
 ";
 
