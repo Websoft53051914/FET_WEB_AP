@@ -1,4 +1,4 @@
-﻿@{
+﻿cd@{
     var backendUrl = config.GetBackendUrl();
     Layout = null;
 }
@@ -165,7 +165,36 @@
         function pro() {
             const urlParams = new URLSearchParams(window.location.search);
 
-            // 檢查參數是否存在
+            //20260416 Add begin - 新版加密 token 參數優先（資安要求，取代明碼 IVRCODE/EMPNO/RETAILID）
+            // ── 新版：加密 token 參數（優先使用）────────────────────────────
+            if (urlParams.has('token')) {
+                const token = urlParams.get('token');
+
+                $.ajax({
+                    type: 'POST',
+                    xhrFields: { withCredentials: true },
+                    headers: { "Content-From": "Login" },
+                    url: '@(config.GetBackendUrl() + Url.Action("CheckSSO_Encrypted", "login"))',
+                    data: { token: token },
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.Success == true) {
+                            window.location.href = "@Url.Action("index", "home")";
+                        } else {
+                            alert(data.Message);
+                            window.location.href = "../login/index";
+                        }
+                    },
+                    error: function (msg) {
+                        console.log(msg);
+                        alert('呼叫 API 異常');
+                    }
+                });
+                return;
+            }
+            //20260416 Add end
+
+            // ── 舊版：明碼參數（向下相容，未來可移除）───────────────────────
             if (urlParams.has('IVRCODE') == false || urlParams.has('EMPNO') == false || urlParams.has('RETAILID') == false) {
                 alert('資料不正確');
                 window.location.href = "../login/index";

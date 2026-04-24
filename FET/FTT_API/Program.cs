@@ -169,7 +169,7 @@ builder.Services.AddHangfireServer();
 builder.Services.AddScoped<SendMailHandler>();
 builder.Services.AddScoped<CheckVenderPWLoginTimeHandler>();  // ← 取消註解
 builder.Services.AddScoped<CheckReminderTimeHandler>();       // ← 新增催單服務註冊
-builder.Services.AddHostedService<NSPStoreSyncBackgroundService>(); // ← 新增NSP門市資料同步背景服務
+builder.Services.AddScoped<NSPStoreSyncJobHandler>();         // ← NSP門市資料同步 Hangfire Job（已從 BackgroundService 移轉）
 
 // 註冊 CORS - 統一設定，適用於所有環境
 builder.Services.AddCors(options =>
@@ -319,6 +319,17 @@ RecurringJob.AddOrUpdate<CheckReminderTimeHandler>(
         nameof(CheckReminderTimeHandler.CheckReminderTask),
         (job) => job.CheckReminderTask(),
          builder.Configuration["HangFireScheduledTime:DailyReminderCheck"],
+         new RecurringJobOptions
+         {
+             TimeZone = TimeZoneInfo.FindSystemTimeZoneById("Taipei Standard Time")
+         }
+    );
+
+//20260421 - NSP門市資料同步排程（從 BackgroundService 移轉至 Hangfire，cron 由 appsettings HangFireScheduledTime:NSPStoreSyncJob 控制）
+RecurringJob.AddOrUpdate<NSPStoreSyncJobHandler>(
+        nameof(NSPStoreSyncJobHandler.RunSync),
+        (job) => job.RunSync(),
+         builder.Configuration["HangFireScheduledTime:NSPStoreSyncJob"],
          new RecurringJobOptions
          {
              TimeZone = TimeZoneInfo.FindSystemTimeZoneById("Taipei Standard Time")

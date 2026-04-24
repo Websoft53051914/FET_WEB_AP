@@ -228,6 +228,12 @@ namespace FTT_API.Controllers
                 {
 
                 }
+                //20260416 Add begin - CheckSSO_Encrypted / GenerateSSOToken 不需要 JWT，比照 GetCaptcha 加入白名單
+                else if (context.RouteData.Values["action"] != null && (context.RouteData.Values["action"].ToString() == "CheckSSO_Encrypted" || context.RouteData.Values["action"].ToString() == "GenerateSSOToken"))
+                {
+                    // 允許通過，不需要 JWT Token
+                }
+                //20260416 Add end
                 else if (from != "Login" && from != "Logout" && from != "CheckSSO")
                 {
                     context.Result = new UnauthorizedObjectResult(JsonValiFail("無權限進入"));

@@ -192,18 +192,39 @@ namespace FTT_API.Models.Handler
         {
             List<VIEW_DP2FTTEntity> result = new List<VIEW_DP2FTTEntity>();
             
+            // 20260422 依正式環境 SPADMUSER.VIEW_DP2FTT 實際欄位調整：
+            // - STORESTYLE 不存在，改用 IS_PHYSICAL_STORE 判斷 RETAIL/FRANCHISE
+            // - storemanager_empno 不存在，改用 RESPONSEPERSON
+            // - sales_empno 不存在，以 NULL 代替
+            // - 營業時間簡化為 平日/週六/週日 3組，週一~週五共用同一組平日時間
             string sql = $@"
                 SELECT 
-                    STORESTYLE, STORETYPE, REGIONNAME, STORENAME, STOREID, EMAIL,
-                    storemanager_empno, sales_empno, CONTACTNUM1, FAXNUM, STOREADDRESS,
-                    STOREOPENTM_MON, STORECLOSETM_MON,
-                    STOREOPENTM_TUE, STORECLOSETM_TUE,
-                    STOREOPENTM_WED, STORECLOSETM_WED,
-                    STOREOPENTM_THU, STORECLOSETM_THU,
-                    STOREOPENTM_FRI, STORECLOSETM_FRI,
-                    STOREOPENTM_SAT, STORECLOSETM_SAT,
-                    STOREOPENTM_SUN, STORECLOSETM_SUN
-                FROM {tableName}"; // 移除測試限制，取得完整資料
+                    IS_PHYSICAL_STORE AS STORESTYLE,
+                    STORETYPE,
+                    REGIONNAME,
+                    STORENAME,
+                    STOREID,
+                    EMAIL,
+                    RESPONSEPERSON AS storemanager_empno,
+                    NULL AS sales_empno,
+                    CONTACTNUM1,
+                    FAXNUM,
+                    STOREADDRESS,
+                    BUSINESSSTARTTIME   AS STOREOPENTM_MON,
+                    BUSINESSENDTIME     AS STORECLOSETM_MON,
+                    BUSINESSSTARTTIME   AS STOREOPENTM_TUE,
+                    BUSINESSENDTIME     AS STORECLOSETM_TUE,
+                    BUSINESSSTARTTIME   AS STOREOPENTM_WED,
+                    BUSINESSENDTIME     AS STORECLOSETM_WED,
+                    BUSINESSSTARTTIME   AS STOREOPENTM_THU,
+                    BUSINESSENDTIME     AS STORECLOSETM_THU,
+                    BUSINESSSTARTTIME   AS STOREOPENTM_FRI,
+                    BUSINESSENDTIME     AS STORECLOSETM_FRI,
+                    BUSINESSSATSTARTTIME AS STOREOPENTM_SAT,
+                    BUSINESSSATENDTIME   AS STORECLOSETM_SAT,
+                    BUSINESSSUNSTARTTIME AS STOREOPENTM_SUN,
+                    BUSINESSSUNENDTIME   AS STORECLOSETM_SUN
+                FROM {tableName}";
 
             using (var connection = new OracleConnection(_oracleConnectionString))
             {
@@ -392,9 +413,12 @@ namespace FTT_API.Models.Handler
         /// </summary>
         /// <param name="storeStyle">門市風格</param>
         /// <returns>門市類型</returns>
-        private string GetStoreType(string storeStyle)
+        private string GetStoreType(string isPhysicalStore)
         {
-            return !string.IsNullOrEmpty(storeStyle) ? "RETAIL" : "FRANCHISE";
+            // IS_PHYSICAL_STORE: 1/Y = 直營 RETAIL，0/N 或空 = 加盟 FRANCHISE
+            if (string.IsNullOrWhiteSpace(isPhysicalStore)) return "FRANCHISE";
+            var val = isPhysicalStore.Trim().ToUpper();
+            return (val == "1" || val == "Y") ? "RETAIL" : "FRANCHISE";
         }
 
         /// <summary>
@@ -478,6 +502,9 @@ namespace FTT_API.Models.Handler
         {
             try
             {
+                // 20260422 診斷用：印出實際組出的連線字串（確認 appsettings.Production.json 是否正確讀入）
+                // 注意：確認後請移除此 log，避免密碼外洩
+                LogInfo($"[診斷] 實際連線字串: {_oracleConnectionString}", "TestOracleConnection");
                 LogInfo("開始測試Oracle連接", "TestOracleConnection");
                 
                 using (var connection = new OracleConnection(_oracleConnectionString))
@@ -486,8 +513,33 @@ namespace FTT_API.Models.Handler
                     LogInfo("Oracle連接成功", "TestOracleConnection");
                     
                     List<string> allResults = new List<string>();
-                    
-                    // 1. 查詢所有可存取的表格和檢視表 (包含其他Schema)
+
+                    // 0. 20260422 診斷：列出 SPADMUSER.VIEW_DP2FTT 的實際欄位清單
+                    try
+                    {
+                        allResults.Add("=== SPADMUSER.VIEW_DP2FTT 實際欄位 ===");
+                        string colSql = @"SELECT column_name, data_type, data_length 
+                                          FROM all_tab_columns 
+                                          WHERE owner = 'SPADMUSER' AND table_name = 'VIEW_DP2FTT'
+                                          ORDER BY column_id";
+                        using (var cmd = new OracleCommand(colSql, connection))
+                        using (var rdr = cmd.ExecuteReader())
+                        {
+                            int colCount = 0;
+                            while (rdr.Read())
+                            {
+                                allResults.Add($"  {rdr["column_name"]} ({rdr["data_type"]}({rdr["data_length"]}))");
+                                colCount++;
+                            }
+                            if (colCount == 0) allResults.Add("  (無法取得欄位，可能需要 DBA 授權)");
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        allResults.Add($"查詢欄位失敗: {ex.Message}");
+                    }
+
+                    allResults.Add("");
                     try
                     {
                         string sql1 = @"

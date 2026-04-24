@@ -14,6 +14,12 @@ namespace FTT_API.Background
         private readonly IConfiguration _configuration;
         private readonly TimeSpan _syncInterval;
 
+        /// <summary>
+        /// 初始化 NSPStoreSyncBackgroundService 的新實例。
+        /// </summary>
+        /// <param name="logger">日誌記錄器</param>
+        /// <param name="serviceProvider">服務提供者</param>
+        /// <param name="configuration">組態配置</param>
         public NSPStoreSyncBackgroundService(
             ILogger<NSPStoreSyncBackgroundService> logger,
             IServiceProvider serviceProvider,
@@ -30,6 +36,11 @@ namespace FTT_API.Background
             _logger.LogInformation($"NSP門市資料同步背景服務初始化完成，同步間隔: {intervalHours} 小時");
         }
 
+        /// <summary>
+        /// 執行店鋪同步的背景核心邏輯。
+        /// </summary>
+        /// <param name="stoppingToken">用於取消操作的權杖。</param>
+        /// <returns>代表非同步操作的 Task。</returns>
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             // 檢查是否啟用同步功能（正式環境測試階段請設定 Enabled: false）
@@ -47,13 +58,22 @@ namespace FTT_API.Background
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                try
+                // 每次執行前重新確認 Enabled 設定，支援不重啟服務直接改設定檔生效
+                var enabledNow = _configuration.GetValue<bool>("NSPStoreSync:Enabled", false);
+                if (!enabledNow)
                 {
-                    await DoWork();
+                    _logger.LogInformation("NSP門市資料同步功能已停用（NSPStoreSync:Enabled = false），本次跳過");
                 }
-                catch (Exception ex)
+                else
                 {
-                    _logger.LogError(ex, "NSP門市資料同步時發生錯誤，繼續執行下次同步");
+                    try
+                    {
+                        await DoWork();
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "NSP門市資料同步時發生錯誤，繼續執行下次同步");
+                    }
                 }
 
                 // 等待下次執行
@@ -98,6 +118,7 @@ namespace FTT_API.Background
             }
         }
 
+        /// <summary>
         public override async Task StopAsync(CancellationToken stoppingToken)
         {
             _logger.LogInformation("NSP門市資料同步背景服務正在停止");
