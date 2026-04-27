@@ -45,5 +45,8 @@ namespace Const.VO
         /// </summary>
         [SortColumn(nameof(VFttForm2DTO.updatetime), DefaultSortOrder = "DESC", IsDefault = true)]
         public string? UpdateTimeText { get; set; }
+
+        public string? ShopName { get; set; }
+
     }
 }

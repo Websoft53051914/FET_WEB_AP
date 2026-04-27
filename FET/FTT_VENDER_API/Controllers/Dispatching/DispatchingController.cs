@@ -61,6 +61,7 @@ namespace FTT_VENDER_API.Controllers.Dispatching
                         StatusName = data.statusname,
                         TtCategory = data.tt_category,
                         UpdateTimeText = data.updatetime_text,
+                        ShopName = data.shop_name,
                     };
 
                     dataList.Add(item);
