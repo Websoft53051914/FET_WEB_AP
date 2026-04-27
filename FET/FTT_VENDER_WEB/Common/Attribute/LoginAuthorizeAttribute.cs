@@ -30,7 +30,7 @@ namespace FTT_VENDER_WEB.Common.Attribute
                     }
                     else
                     {
-                        IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json", true, true).Build();
+                        IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json", true, false).Build();
                         String loginUrl = config["loginUrl"];
                         context.Result = new RedirectResult(loginUrl);
  

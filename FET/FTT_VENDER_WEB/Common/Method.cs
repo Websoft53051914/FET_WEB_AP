@@ -473,7 +473,7 @@ namespace FTT_VENDER_WEB.Common
                     .SetBasePath(Directory.GetCurrentDirectory())
                     // 將 reloadOnChange 設為 false (最安全) 
                     // 或者保留 true，但因為只執行一次，所以只會佔用 1 個 inotify
-                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
+                    .AddJsonFile("appsettings.json", optional: true, reloadOnChange: false)
                     .Build();
             }
 

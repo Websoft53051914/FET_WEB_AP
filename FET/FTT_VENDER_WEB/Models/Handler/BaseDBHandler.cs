@@ -7,7 +7,7 @@ namespace FTT_VENDER_WEB.Models.Handler
         protected IDBHelper? dbHelper = null;
         public BaseDBHandler()
         {
-            IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json", true, true).Build();
+            IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json", true, false).Build();
             var connectionString = config["ConnectionStrings:MainConnection"];
             this.dbHelper = new DBHelper((connectionString), Core.Utility.Helper.DB.Enums.DBTypeEnums.POSTGRESQL);
         }

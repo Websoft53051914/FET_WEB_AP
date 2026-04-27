@@ -10,7 +10,7 @@
 
         public JwtConfigVO()
         {
-            IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json", true, true).Build();
+            IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json", true, false).Build();
             Secret = config["JwtConfig:Secret"]??string.Empty;
             ExpireTimeDuration = config["JwtConfig:ExpireTimeDuration"] ?? string.Empty;
             Issuer = config["JwtConfig:Issuer"] ?? string.Empty;
