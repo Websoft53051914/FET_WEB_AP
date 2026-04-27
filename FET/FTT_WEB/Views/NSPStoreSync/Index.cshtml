@@ -1,0 +1,383 @@
+@{
+    ViewBag.Title = "門市資料同步";
+}
+
+<div class="container-fluid">
+    <div class="page-header" style="padding-bottom:20px">
+        <div class="row">
+            <div class="col-sm-6">
+                <h3>門市資料同步</h3>
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="/Home" data-bs-original-title="" title="">首頁</a></li>
+                    <li class="breadcrumb-item">後端管理</li>
+                    <li class="breadcrumb-item active">門市資料同步</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5>NSP 門市資料同步工具</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <p class="text-muted">
+                                此工具可用來手動執行 NSP 門市資料同步作業，包含從 Oracle 同步到 PostgreSQL 的兩階段同步流程。
+                            </p>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <button type="button" class="btn btn-info me-2" onclick="healthCheck()">
+                                <i class="fa fa-heartbeat"></i> 健康檢查
+                            </button>
+                            <button type="button" class="btn btn-secondary me-2" onclick="testOracle()">
+                                <i class="fa fa-search"></i> 測試Oracle連接
+                            </button>
+                            <button type="button" class="btn btn-primary me-2" onclick="syncData()">
+                                <i class="fa fa-refresh"></i> 執行同步
+                            </button>
+                            <button type="button" class="btn btn-success me-2" onclick="batchSync()">
+                                <i class="fa fa-cubes"></i> 批次同步到store_profile
+                            </button>
+                            <button type="button" class="btn btn-warning me-2" onclick="checkStatus()">
+                                <i class="fa fa-chart-bar"></i> 檢查狀態
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary" onclick="viewStores()">
+                                <i class="fa fa-eye"></i> 查看門市資料
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-12">
+                            <div id="result" class="alert" style="display:none;">
+                                <h5>執行結果：</h5>
+                                <div id="resultContent"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// 指定API服務的端點 - FTT_API專案端口
+//const API_BASE = 'https://localhost:50302';
+ //   const API_BASE = 'http://localhost:50302';
+    const API_BASE = '@config.GetBackendUrl()';//20260407
+
+async function healthCheck() {
+    const result = document.getElementById('result');
+    const content = document.getElementById('resultContent');
+    
+    result.style.display = 'block';
+    result.className = 'alert alert-info';
+    content.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 正在檢查API連接...';
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/NSPStoreSync/health`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.IsSuccess) {
+            result.className = 'alert alert-success';
+            content.innerHTML = `
+                <strong><i class="fa fa-check-circle"></i> API連接正常</strong><br><br>
+                訊息：${data.Message}<br>
+                時間：${data.Data}
+            `;
+        } else {
+            result.className = 'alert alert-danger';
+            content.innerHTML = `<i class="fa fa-exclamation-triangle"></i> API回應錯誤：${data.Message}`;
+        }
+    } catch (error) {
+        result.className = 'alert alert-danger';
+        content.innerHTML = `<i class="fa fa-times-circle"></i> 連接失敗：${error.message}<br><br>請確認：<br>1. FTT_API是否正在運行 (${API_BASE})<br>2. 網路連接是否正常<br>3. CORS設定是否正確`;
+    }
+}
+
+async function testOracle() {
+    const result = document.getElementById('result');
+    const content = document.getElementById('resultContent');
+    
+    result.style.display = 'block';
+    result.className = 'alert alert-info';
+    content.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 正在測試Oracle連接...';
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/NSPStoreSync/test-oracle`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.IsSuccess) {
+            result.className = 'alert alert-success';
+            const tableInfo = data.Data.replace(/\n/g, '<br>');
+            content.innerHTML = `
+                <strong><i class="fa fa-check-circle"></i> Oracle連接測試結果：</strong><br><br>
+                <div style="font-family: monospace; white-space: pre-wrap;">${tableInfo}</div>
+            `;
+        } else {
+            result.className = 'alert alert-danger';
+            content.innerHTML = `<i class="fa fa-exclamation-triangle"></i> 測試失敗：${data.Message}`;
+        }
+    } catch (error) {
+        result.className = 'alert alert-danger';
+        content.innerHTML = `<i class="fa fa-times-circle"></i> 網路錯誤：${error.message}`;
+    }
+}
+
+async function syncData() {
+    const btn = event.target;
+    const result = document.getElementById('result');
+    const content = document.getElementById('resultContent');
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 同步中...';
+    result.style.display = 'block';
+    result.className = 'alert alert-info';
+    content.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 正在執行同步作業，請稍候...';
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/NSPStoreSync/sync`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.IsSuccess) {
+            result.className = 'alert alert-success';
+            content.innerHTML = `
+                <strong><i class="fa fa-check-circle"></i> 同步成功！</strong><br>
+                訊息：${data.Message}<br>
+                詳細：${data.Data}
+            `;
+        } else {
+            result.className = 'alert alert-danger';
+            content.innerHTML = `
+                <strong><i class="fa fa-exclamation-triangle"></i> 同步失敗！</strong><br>
+                錯誤訊息：${data.Message}
+            `;
+        }
+    } catch (error) {
+        result.className = 'alert alert-danger';
+        content.innerHTML = `
+            <strong><i class="fa fa-times-circle"></i> 網路錯誤！</strong><br>
+            錯誤：${error.message}
+        `;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa fa-refresh"></i> 執行同步';
+    }
+}
+
+async function batchSync() {
+    const btn = event.target;
+    const result = document.getElementById('result');
+    const content = document.getElementById('resultContent');
+    
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 批次同步中...';
+    result.style.display = 'block';
+    result.className = 'alert alert-info';
+    content.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 正在執行批次同步到store_profile，請稍候...';
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/NSPStoreSync/batch-sync`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.IsSuccess) {
+            result.className = 'alert alert-success';
+            content.innerHTML = `
+                <strong><i class="fa fa-check-circle"></i> 批次同步成功！</strong><br>
+                訊息：${data.Message}<br>
+                詳細：${data.Data}
+            `;
+        } else {
+            result.className = 'alert alert-danger';
+            content.innerHTML = `
+                <strong><i class="fa fa-exclamation-triangle"></i> 批次同步失敗！</strong><br>
+                錯誤訊息：${data.Message}
+            `;
+        }
+    } catch (error) {
+        result.className = 'alert alert-danger';
+        content.innerHTML = `
+            <strong><i class="fa fa-times-circle"></i> 網路錯誤！</strong><br>
+            錯誤：${error.message}
+        `;
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="fa fa-cubes"></i> 批次同步到store_profile';
+    }
+}
+
+async function checkStatus() {
+    const result = document.getElementById('result');
+    const content = document.getElementById('resultContent');
+    
+    result.style.display = 'block';
+    result.className = 'alert alert-info';
+    content.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 正在檢查同步狀態...';
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/NSPStoreSync/sync-status`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.IsSuccess && data.Data) {
+            const info = data.Data;
+            const lastSyncTime = info.LastSyncTime ? 
+                new Date(info.LastSyncTime).toLocaleString('zh-TW') : 
+                '從未同步';
+            
+            result.className = 'alert alert-info';
+            content.innerHTML = `
+                <strong><i class="fa fa-info-circle"></i> 同步狀態統計：</strong><br><br>
+                <table class="table table-bordered">
+                    <tbody>
+                        <tr>
+                            <td class="fw-bold" style="width: 150px;">總門市數量</td>
+                            <td><span class="badge bg-primary fs-6">${info.TotalStores || 0}</span> 筆</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">今日同步數量</td>
+                            <td><span class="badge bg-success fs-6">${info.SyncedToday || 0}</span> 筆</td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">最後同步時間</td>
+                            <td><span class="text-info">${lastSyncTime}</span></td>
+                        </tr>
+                        <tr>
+                            <td class="fw-bold">同步覆蓋率</td>
+                            <td>
+                                <span class="badge bg-warning fs-6">
+                                    ${info.TotalStores > 0 ? Math.round((info.SyncedToday / info.TotalStores) * 100) : 0}%
+                                </span>
+                                (今日同步/總數)
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+        } else {
+            result.className = 'alert alert-warning';
+            content.innerHTML = `<i class="fa fa-exclamation-triangle"></i> 無法取得狀態：${data.Message}`;
+        }
+    } catch (error) {
+        result.className = 'alert alert-danger';
+        content.innerHTML = `<i class="fa fa-times-circle"></i> 網路錯誤：${error.message}`;
+    }
+}
+
+async function viewStores() {
+    const result = document.getElementById('result');
+    const content = document.getElementById('resultContent');
+    
+    result.style.display = 'block';
+    result.className = 'alert alert-info';
+    content.innerHTML = '<i class="fa fa-spinner fa-spin"></i> 正在載入門市資料...';
+    
+    try {
+        const response = await fetch(`${API_BASE}/api/NSPStoreSync/stores`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        const data = await response.json();
+        
+        if (data.IsSuccess && data.Data) {
+            const stores = data.Data;
+            let tableHtml = `
+                <strong><i class="fa fa-list"></i> 門市資料 (共 ${stores.length} 筆)：</strong><br><br>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead style="background-color: #e3f2fd;">
+                            <tr>
+                                <th style="color: #1976d2; font-weight: bold;">門市代碼</th>
+                                <th style="color: #1976d2; font-weight: bold;">門市名稱</th>
+                                <th style="color: #1976d2; font-weight: bold;">電話</th>
+                                <th style="color: #1976d2; font-weight: bold;">地址</th>
+                                <th style="color: #1976d2; font-weight: bold;">最後同步時間</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            // 只顯示前20筆，避免頁面過長
+            const displayStores = stores.slice(0, 20);
+            
+            displayStores.forEach((store, index) => {
+                const syncTime = store.ftt_synctime ? 
+                    new Date(store.ftt_synctime).toLocaleString('zh-TW') : 
+                    '未同步';
+                
+                // 交替使用淺色背景
+                const rowColor = index % 2 === 0 ? 'background-color: #f8f9fa;' : 'background-color: white;';
+                
+                tableHtml += `
+                    <tr style="${rowColor}">
+                        <td><span class="badge bg-primary">${store.ivr_code || 'N/A'}</span></td>
+                        <td style="font-weight: 500; color: #333;">${store.shop_name || 'N/A'}</td>
+                        <td style="color: #666;">${store.store_tel || 'N/A'}</td>
+                        <td style="color: #666; font-size: 0.9em;">${store.address || 'N/A'}</td>
+                        <td style="color: #28a745; font-size: 0.9em;">${syncTime}</td>
+                    </tr>
+                `;
+            });
+            
+            tableHtml += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+            
+            if (stores.length > 20) {
+                tableHtml += `<p class="text-muted"><i class="fa fa-info-circle"></i> 僅顯示前 20 筆資料，總共有 ${stores.length} 筆門市資料。</p>`;
+            }
+            
+            result.className = 'alert alert-info';
+            content.innerHTML = tableHtml;
+        } else {
+            result.className = 'alert alert-warning';
+            content.innerHTML = `<i class="fa fa-exclamation-triangle"></i> 無法載入門市資料：${data.Message}`;
+        }
+    } catch (error) {
+        result.className = 'alert alert-danger';
+        content.innerHTML = `<i class="fa fa-times-circle"></i> 網路錯誤：${error.message}`;
+    }
+}
+</script>

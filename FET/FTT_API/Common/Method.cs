@@ -18,7 +18,7 @@ using FTT_API.Models.Handler;
 using FTT_API.Common.OriginClass.EntiityClass;
 using Microsoft.AspNetCore.Components.Web;
 using System.Security.AccessControl;
-using Microsoft.Graph.Models;
+// using Microsoft.Graph.Models; // 註釋掉以避免套件依賴
 
 namespace FTT_API.Common
 {

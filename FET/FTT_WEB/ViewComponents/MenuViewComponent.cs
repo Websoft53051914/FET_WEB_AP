@@ -52,8 +52,9 @@ namespace FTT_WEB.ViewComponents
                 {
                     roleFunc = RoleFunc.MANAGER;
                 }
-                else if (userRoleList.Contains("SUBMITTER") || userRoleList.Contains("EMP") || userRoleList.Contains("STORE"))
-                {
+                //20260407 else if (userRoleList.Contains("SUBMITTER") || userRoleList.Contains("EMP") || userRoleList.Contains("STORE"))
+                else if (userRoleList.Contains("SUBMITTER") || userRoleList.Contains("EMP") || userRoleList.Contains("STORE") || userRoleList.Contains("VASS")) // 20260407 新增 VASS：修正前 VASS userrole 誤存為 "STORE"，修正後正確存為 "VASS"，需在此補對應
+                        {
                     roleFunc = RoleFunc.EMPLOYEE;
                 }
                 else

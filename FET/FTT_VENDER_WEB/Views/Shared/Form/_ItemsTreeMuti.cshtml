@@ -171,7 +171,7 @@ else
     ctxModal.ModalSelectedPool = {};
     ctxModal.ModalSelectedPool.init = function (selectedDatas) {
         const control = ctxModal.$ModalSelectedPool;
-        control.innerHTML = ""; // 清空
+        control[0].innerHTML = ""; // 清空
 
         ctxModal.Tree.selected = [];
         ctxModal.Tree.selectedItem = [];

@@ -388,5 +388,62 @@ namespace FTT_API.Controllers.Query
                 return JsonValidFail(_configHelper.GetMessage("SystemErrorMsg"));
             }
         }
+
+        /// <summary>
+        /// 測試查詢 access_role 表的資料（除錯用）
+        /// </summary>
+        [ValidateAntiForgeryToken]
+        [HttpPost("[action]")]
+        public IActionResult TestAccessRole()
+        {
+            try
+            {
+                var baseHandler = new FTT_API.Models.Handler.BaseDBHandler();
+
+                // 記錄當前用戶資訊
+                var logPath = Environment.OSVersion.Platform == PlatformID.Win32NT 
+                    ? @"d:\debug_query.log" 
+                    : "/tmp/debug_query.log";
+                System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] TestAccessRole - Current User - empno: {_sessionVO.empno}, usertype: {_sessionVO.usertype}, ivrcode: {_sessionVO.ivrcode}, userrole: {_sessionVO.userrole}\n");
+
+                // 查詢 access_role 表
+                string sql = @"
+                    SELECT COUNT(*) as total_count FROM access_role WHERE action = 'Y'
+                    UNION ALL
+                    SELECT COUNT(*) as empno_match FROM access_role WHERE action = 'Y' AND empno = @empno
+                    UNION ALL  
+                    SELECT COUNT(*) as deptcode_match FROM access_role WHERE action = 'Y' AND deptcode = @deptcode
+                    UNION ALL
+                    SELECT COUNT(*) as either_match FROM access_role WHERE action = 'Y' AND (empno = @empno OR deptcode = @deptcode)
+                ";
+                
+                var paras = new Dictionary<string, object>
+                {
+                    { "empno", _sessionVO.empno },
+                    { "deptcode", _sessionVO.ivrcode }
+                };
+
+                var result = baseHandler.GetDBHelper().FindDataTable(sql, paras);
+                
+                // 記錄查詢結果
+                if (result != null && result.Rows.Count >= 4)
+                {
+                    System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] TestAccessRole - Results - Total: {result.Rows[0]["total_count"]}, EmpnoMatch: {result.Rows[1]["empno_match"]}, DeptcodeMatch: {result.Rows[2]["deptcode_match"]}, EitherMatch: {result.Rows[3]["either_match"]}\n");
+                }
+
+                return JsonSuccess(new { 
+                    message = "Test completed, check debug log", 
+                    empno = _sessionVO.empno, 
+                    ivrcode = _sessionVO.ivrcode,
+                    usertype = _sessionVO.usertype,
+                    userrole = _sessionVO.userrole
+                });
+            }
+            catch (Exception ex)
+            {
+                this.LogError(ex.ToString());
+                return JsonValidFail("Test failed: " + ex.Message);
+            }
+        }
     }
 }

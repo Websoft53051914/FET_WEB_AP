@@ -400,13 +400,48 @@ namespace FTT_VENDER_API.Controllers.Pending
 
                     if (!string.IsNullOrEmpty(_Ftt_formDTO.CIDesc))
                     {
-                        string filePath = $"Item/{_Ftt_formDTO.CIDesc.Trim()}.jpg";
-                        string path = Path.Combine(_hostingEnvironment.WebRootPath, filePath);
-                        if (System.IO.File.Exists(path))
+                        string ciDesc = _Ftt_formDTO.CIDesc.Trim();
+                        string filePath = null;
+                        string path = null;
+                        
+                        // Debug log - 記錄原始 CIDesc
+                        this.LogError($"[DEBUG] 原始 CIDesc: '{ciDesc}'");
+                        
+                        // 處理可能的檔案名稱格式
+                        string[] possibleNames = {
+                            ciDesc,  // 原始名稱
+                            ciDesc.Replace("傢俱本體-", ""),  // 移除前綴
+                            ciDesc.Split('-').LastOrDefault()?.Trim() ?? ciDesc  // 取最後一段
+                        };
+                        
+                        // 嘗試不同的檔案副檔名 (.jpg, .JPG)
+                        string[] extensions = { ".jpg", ".JPG" };
+                        
+                        foreach (string possibleName in possibleNames)
                         {
-                            vm.hasTT_IMAGE = true;
-                            vm.newImageSRC = filePath;
-
+                            if (string.IsNullOrEmpty(possibleName)) continue;
+                            
+                            foreach (string ext in extensions)
+                            {
+                                filePath = $"Item/{possibleName}{ext}";
+                                path = Path.Combine(_hostingEnvironment.WebRootPath, filePath);
+                                
+                                this.LogError($"[DEBUG] 檢查檔案: '{path}', 存在: {System.IO.File.Exists(path)}");
+                                
+                                if (System.IO.File.Exists(path))
+                                {
+                                    vm.hasTT_IMAGE = true;
+                                    vm.newImageSRC = filePath;
+                                    this.LogError($"[DEBUG] 找到圖片檔案: '{filePath}'");
+                                    goto FoundImage;
+                                }
+                            }
+                        }
+                        
+                        FoundImage:
+                        if (!vm.hasTT_IMAGE)
+                        {
+                            this.LogError($"[DEBUG] 未找到任何圖片檔案，原始 CIDesc: '{ciDesc}'");
                         }
                     }
 
@@ -740,11 +775,45 @@ form_no=@form_no
                 switch (mFormAction)
                 {
                     case "TT_IMAGE":
-                        mCIName = Path.Combine(_hostingEnvironment.WebRootPath, "Images/Item/" + mCIName + ".jpg");
-                        if (System.IO.File.Exists(Path.Combine(_hostingEnvironment.WebRootPath, "Images/Item/" + mCIName + ".jpg")) == true)
-                            mResult = "/Images/Item/" + mCIName;
-                        else
-                            mResult = "/images/item/no-product.gif";
+                        string ciName = mCIName.Trim();
+                        
+                        this.LogError($"[DEBUG GetPreHandleDesc] 原始 ciName: '{ciName}'");
+                        
+                        // 處理可能的檔案名稱格式
+                        string[] possibleNames = {
+                            ciName,  // 原始名稱
+                            ciName.Replace("傢俱本體-", ""),  // 移除前綴
+                            ciName.Split('-').LastOrDefault()?.Trim() ?? ciName  // 取最後一段
+                        };
+                        
+                        string[] extensions = { ".jpg", ".JPG" };
+                        bool fileFound = false;
+                        
+                        foreach (string possibleName in possibleNames)
+                        {
+                            if (string.IsNullOrEmpty(possibleName)) continue;
+                            
+                            foreach (string ext in extensions)
+                            {
+                                string testPath = Path.Combine(_hostingEnvironment.WebRootPath, "Item/" + possibleName + ext);
+                                this.LogError($"[DEBUG GetPreHandleDesc] 檢查檔案: '{testPath}', 存在: {System.IO.File.Exists(testPath)}");
+                                
+                                if (System.IO.File.Exists(testPath))
+                                {
+                                    mResult = "/Item/" + possibleName + ext;
+                                    fileFound = true;
+                                    this.LogError($"[DEBUG GetPreHandleDesc] 找到圖片: '{mResult}'");
+                                    goto FoundImagePreHandle;
+                                }
+                            }
+                        }
+                        
+                        FoundImagePreHandle:
+                        if (!fileFound)
+                        {
+                            mResult = "/Item/no-product.gif";
+                            this.LogError($"[DEBUG GetPreHandleDesc] 使用預設圖片: '{mResult}'");
+                        }
                         break;
                     case "TT_CATEGORY_NOTE":
                         mResult = dtoTEMP.notes;

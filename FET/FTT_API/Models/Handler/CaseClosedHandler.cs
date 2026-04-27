@@ -26,6 +26,12 @@ namespace FTT_API.Models.Handler
             paras.Add("EMPNO", dto.EMPNO);
             paras.Add("IVRCODE", dto.IVRCODE);
 
+            // === 修正權限過濾邏輯並加入日誌 ===
+            try {
+                var logMessage = $"[{DateTime.Now}] CaseClosedHandler - USERROLE: {dto.USERROLE}, EMPNO: {dto.EMPNO}, IVRCODE: {dto.IVRCODE}\n";
+                System.IO.File.AppendAllText(@"d:\caseclosed_handler_debug.log", logMessage);
+            } catch { }
+
             if(dto.USERROLE == "MANAGER")
             {
                 condition.Append(@"
@@ -36,18 +42,29 @@ AND form_no IN (SELECT form_no
                         AND @IVRCODE IS NOT NULL) 
 ");
             }
+            else if (dto.USERROLE == "ADMIN" || dto.USERROLE == "SECURITY" || dto.USERROLE == "ASSETER" || dto.USERROLE == "ASSISTANT")
+            {
+                // 管理員角色不加權限過濾，可以看所有資料
+                try {
+                    System.IO.File.AppendAllText(@"d:\caseclosed_handler_debug.log", $"[{DateTime.Now}] Admin role detected - no access filter\n");
+                } catch { }
+            }
             else
             {
+                // === 修正：非管理員只能看自己有權限的資料，改用 AND 邏輯，並加上 action='Y' ===
                 condition.Append(@"
 AND form_no IN (SELECT form_no
                 FROM   access_role
-                WHERE  user_type = @USERROLE
-                        OR empno = @EMPNO
-                        OR deptcode = @IVRCODE) 
+                WHERE  action = 'Y'
+                       AND empno = @EMPNO)
+AND EXISTS (SELECT 1 FROM access_role WHERE action = 'Y' AND empno = @EMPNO)
 ");
+                try {
+                    System.IO.File.AppendAllText(@"d:\caseclosed_handler_debug.log", $"[{DateTime.Now}] Non-admin role - applying strict empno filter\n");
+                } catch { }
             }
 
-            string originSQL = @"
+            string originSQL = $@"
 SELECT DISTINCT form_no                                      AS form_no,
                 tt_category                                  AS tt_category,
                 l2_desc                                      AS l2_desc,
@@ -59,9 +76,15 @@ SELECT DISTINCT form_no                                      AS form_no,
 FROM   v_ftt_form2
 WHERE  statusid IN ( 'CLOSE', 'CANCEL', 'REJECT' )
        AND ( updatetime > SYSDATE - 180 )
-       
+       {condition}
 
 ";
+
+            // === 記錄最終 SQL 條件 ===
+            try {
+                System.IO.File.AppendAllText(@"d:\caseclosed_handler_debug.log", $"[{DateTime.Now}] Final SQL condition: {condition}\n");
+                System.IO.File.AppendAllText(@"d:\caseclosed_handler_debug.log", $"[{DateTime.Now}] Complete SQL: {originSQL}\n");
+            } catch { }
              
             string countSQL = @"
   SELECT  
@@ -87,6 +110,12 @@ WHERE  statusid IN ( 'CLOSE', 'CANCEL', 'REJECT' )
             paras.Add("EMPNO", dto.EMPNO);
             paras.Add("IVRCODE", dto.IVRCODE);
 
+            // === 修正計數查詢的權限過濾邏輯，與主查詢保持一致 ===
+            try {
+                var logMessage = $"[{DateTime.Now}] CaseClosedHandler.FindPageListForCount - USERROLE: {dto.USERROLE}, EMPNO: {dto.EMPNO}, IVRCODE: {dto.IVRCODE}\n";
+                System.IO.File.AppendAllText(@"d:\caseclosed_handler_debug.log", logMessage);
+            } catch { }
+
             if (dto.USERROLE == "MANAGER")
             {
                 condition.Append(@"
@@ -97,25 +126,42 @@ AND form_no IN (SELECT form_no
                         AND @IVRCODE IS NOT NULL) 
 ");
             }
+            else if (dto.USERROLE == "ADMIN" || dto.USERROLE == "SECURITY" || dto.USERROLE == "ASSETER" || dto.USERROLE == "ASSISTANT")
+            {
+                // 管理員角色不加權限過濾，可以看所有資料
+                try {
+                    System.IO.File.AppendAllText(@"d:\caseclosed_handler_debug.log", $"[{DateTime.Now}] FindPageListForCount - Admin role detected - no access filter\n");
+                } catch { }
+            }
             else
             {
+                // === 修正：非管理員只能看自己有權限的資料，改用 AND 邏輯，並加上 action='Y' ===
                 condition.Append(@"
 AND form_no IN (SELECT form_no
                 FROM   access_role
-                WHERE  user_type = @USERROLE
-                        OR empno = @EMPNO
-                        OR deptcode = @IVRCODE) 
+                WHERE  action = 'Y'
+                       AND empno = @EMPNO)
+AND EXISTS (SELECT 1 FROM access_role WHERE action = 'Y' AND empno = @EMPNO)
 ");
+                try {
+                    System.IO.File.AppendAllText(@"d:\caseclosed_handler_debug.log", $"[{DateTime.Now}] FindPageListForCount - Non-admin role - applying strict empno filter\n");
+                } catch { }
             }
 
-            string originSQL = @"
+            string originSQL = $@"
 SELECT DISTINCT form_no                                      AS form_no 
 FROM   v_ftt_form2
 WHERE  statusid IN ( 'CLOSE', 'CANCEL', 'REJECT' )
        AND ( updatetime > SYSDATE - 180 )
-       
+       {condition}
 
 ";
+
+            // === 記錄計數查詢的最終 SQL 條件 ===
+            try {
+                System.IO.File.AppendAllText(@"d:\caseclosed_handler_debug.log", $"[{DateTime.Now}] FindPageListForCount - Final SQL condition: {condition}\n");
+                System.IO.File.AppendAllText(@"d:\caseclosed_handler_debug.log", $"[{DateTime.Now}] FindPageListForCount - Complete SQL: {originSQL}\n");
+            } catch { }
 
             string countSQL = @"
   SELECT  

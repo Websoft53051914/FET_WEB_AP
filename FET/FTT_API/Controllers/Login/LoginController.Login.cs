@@ -391,6 +391,12 @@ namespace FTT_API.Controllers.Login
         }
 
         // --- 安全 API（Checkmarx/ Fortify 能辨識） ---
+        // 20260414 修正：移除 HttpUtility.UrlEncode，原因如下：
+        //   JWT Token 為 Base64Url 格式 (A-Za-z0-9-_.)，UrlEncode 會將 '.' 編碼為 '%2E'，
+        //   導致 BaseProjectController.OnActionExecuting 的正則驗證 (^[A-Za-z0-9\-_\.]+$)
+        //   因含 '%' 字元而將 Token 清空，造成每次請求都等同未認證狀態，登出後無法再登入。
+        // 20260414 若需還原：將 return value; 改回 return HttpUtility.UrlEncode(value);
+        //   並同步還原 LogoutController.cs 中的 Uri.UnescapeDataString 補丁。
         private string CookieSafeEncode(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -398,11 +404,11 @@ namespace FTT_API.Controllers.Login
 
             value = value.Trim();
 
-            // 第一層：清除注入字元（Checkmarx 看得見）
+            // 清除可能造成 Cookie Header 注入的危險字元
             value = Regex.Replace(value, @"[<>""'`;\\]", "");
 
-            // 第二層：UrlEncode → 防止 cookie injection
-            return HttpUtility.UrlEncode(value);
+            // 20260414 修正前原始碼：return HttpUtility.UrlEncode(value);
+            return value;
         }
 
         private string GetSafeUserLoginName(SessionVO sessionVO)

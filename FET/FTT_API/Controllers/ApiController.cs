@@ -38,6 +38,103 @@ namespace FTT_API.Controllers
         private readonly IWebHostEnvironment _env;
 
         /// <summary>
+        /// 🔧 取得圖片檔案路徑 (跨平台友善版本)
+        /// </summary>
+        /// <param name="itemName">品項名稱</param>
+        /// <returns>如果檔案存在，回傳相對路徑；否則回傳 null</returns>
+        private string? GetImagePath(string? itemName)
+        {
+            if (string.IsNullOrWhiteSpace(itemName))
+                return null;
+
+            try
+            {
+                // 1️⃣ 取安全檔名，移除路徑資訊
+                var safeName = Path.GetFileName(itemName.Trim());
+                
+                // 2️⃣ 確保 wwwroot 路徑正確
+                string webRootPath;
+                if (string.IsNullOrEmpty(_env.WebRootPath))
+                {
+                    webRootPath = Path.Combine(_env.ContentRootPath, "wwwroot");
+                    // 確保目錄存在
+                    if (!Directory.Exists(webRootPath))
+                        Directory.CreateDirectory(webRootPath);
+                }
+                else
+                {
+                    webRootPath = _env.WebRootPath;
+                }
+
+                var itemDir = Path.Combine(webRootPath, "Item");
+                
+                // 3️⃣ 確保 Item 目錄存在
+                if (!Directory.Exists(itemDir))
+                {
+                    Directory.CreateDirectory(itemDir);
+                    return null; // 目錄剛建立，不會有檔案
+                }
+
+                // 4️⃣ 支援多種圖片格式，並進行大小寫不敏感搜尋
+                string[] supportedExtensions = { ".jpg", ".jpeg", ".png", ".gif", ".bmp", ".webp" };
+                
+                foreach (var ext in supportedExtensions)
+                {
+                    // 先嘗試原始大小寫
+                    var fileName = safeName + ext;
+                    var fullPath = Path.Combine(itemDir, fileName);
+                    if (System.IO.File.Exists(fullPath))
+                    {
+                        return Path.Combine("Item", fileName).Replace('\\', '/');
+                    }
+
+                    // 再嘗試小寫副檔名
+                    fileName = safeName + ext.ToLower();
+                    fullPath = Path.Combine(itemDir, fileName);
+                    if (System.IO.File.Exists(fullPath))
+                    {
+                        return Path.Combine("Item", fileName).Replace('\\', '/');
+                    }
+
+                    // 最後嘗試大寫副檔名
+                    fileName = safeName + ext.ToUpper();
+                    fullPath = Path.Combine(itemDir, fileName);
+                    if (System.IO.File.Exists(fullPath))
+                    {
+                        return Path.Combine("Item", fileName).Replace('\\', '/');
+                    }
+                }
+
+                // 5️⃣ 如果上述都找不到，進行目錄掃描 (較耗效能，但更彈性)
+                try
+                {
+                    var files = Directory.GetFiles(itemDir, $"{safeName}.*", SearchOption.TopDirectoryOnly);
+                    var imageFile = files.FirstOrDefault(f =>
+                    {
+                        var ext = Path.GetExtension(f).ToLower();
+                        return supportedExtensions.Contains(ext);
+                    });
+
+                    if (!string.IsNullOrEmpty(imageFile))
+                    {
+                        var fileName = Path.GetFileName(imageFile);
+                        return Path.Combine("Item", fileName).Replace('\\', '/');
+                    }
+                }
+                catch
+                {
+                    // 忽略目錄掃描錯誤
+                }
+
+                return null;
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
         /// 取得自行尋商開單的維修品項分頁資料
         /// </summary>
         /// <param name="request"></param>
@@ -69,29 +166,11 @@ namespace FTT_API.Controllers
 
                     if (!string.IsNullOrWhiteSpace(data.ciname))
                     {
-                        // 1️⃣ 取安全檔名，移除路徑資訊
-                        var safeFileName = Path.GetFileName(data.ciname.Trim()) + ".jpg";
-
-                        // 2️⃣ 指定固定資料夾
-                        var filePath = Path.Combine("Item", safeFileName);
-                        var path = "";
-                        // ⭐ 修復：檢查 _env.WebRootPath 是否為 null
-                        if (string.IsNullOrEmpty(_env.WebRootPath))
+                        // 🔧 使用新的跨平台圖片搜尋方法
+                        var imagePath = GetImagePath(data.ciname);
+                        if (!string.IsNullOrEmpty(imagePath))
                         {
-                            // 🚨 選擇 ContentRootPath 作為備用路徑 (更穩定)
-                            path = Path.Combine(_env.ContentRootPath, "wwwroot", filePath);
-                            // 建議同時檢查並建立 'wwwroot' 目錄如果它不存在
-                            // Directory.CreateDirectory(Path.Combine(_env.ContentRootPath, "wwwroot"));
-                        }
-                        else
-                        {
-                            path = Path.Combine(_env.WebRootPath, filePath);
-                        }
-
-                        // 3️⃣ 驗證檔案存在
-                        if (System.IO.File.Exists(path))
-                        {
-                            item.TT_IMAGE = filePath;
+                            item.TT_IMAGE = imagePath;
                         }
                     }
 
@@ -149,16 +228,11 @@ namespace FTT_API.Controllers
 
                     if (!dto.HasChildren && !string.IsNullOrWhiteSpace(dto.ciname))
                     {
-                        // 只取檔名，去掉路徑
-                        var safeFileName = Path.GetFileName(dto.ciname.Trim()) + ".jpg";
-
-                        // 固定存放資料夾
-                        var filePath = Path.Combine("Item", safeFileName);
-                        var path = Path.Combine(_env.WebRootPath, filePath);
-
-                        if (System.IO.File.Exists(path))
+                        // 🔧 使用新的跨平台圖片搜尋方法
+                        var imagePath = GetImagePath(dto.ciname);
+                        if (!string.IsNullOrEmpty(imagePath))
                         {
-                            item.OtherAttr.Add("TT_IMAGE", filePath);
+                            item.OtherAttr.Add("TT_IMAGE", imagePath);
                         }
                     }
 
@@ -213,29 +287,11 @@ namespace FTT_API.Controllers
 
                     if (!dto.HasChildren && !string.IsNullOrWhiteSpace(dto.ciname))
                     {
-                        // 1️⃣ 取安全檔名，去掉路徑
-                        var safeFileName = Path.GetFileName(dto.ciname.Trim()) + ".jpg";
-
-                        // 2️⃣ 指定固定資料夾
-                        var filePath = Path.Combine("images", "Item", safeFileName);
-                        var path = "";
-                        // ⭐ 修復：檢查 _env.WebRootPath 是否為 null
-                        if (string.IsNullOrEmpty(_env.WebRootPath))
+                        // 🔧 使用新的跨平台圖片搜尋方法
+                        var imagePath = GetImagePath(dto.ciname);
+                        if (!string.IsNullOrEmpty(imagePath))
                         {
-                            // 🚨 選擇 ContentRootPath 作為備用路徑 (更穩定)
-                            path = Path.Combine(_env.ContentRootPath, "wwwroot", filePath);
-                            // 建議同時檢查並建立 'wwwroot' 目錄如果它不存在
-                            // Directory.CreateDirectory(Path.Combine(_env.ContentRootPath, "wwwroot"));
-                        }
-                        else
-                        {
-                            path = Path.Combine(_env.WebRootPath, filePath);
-                        }
-
-                        // 3️⃣ 驗證檔案存在
-                        if (System.IO.File.Exists(path))
-                        {
-                            item.OtherAttr.Add("TT_IMAGE", filePath);
+                            item.OtherAttr.Add("TT_IMAGE", imagePath);
                         }
                     }
 
@@ -417,6 +473,12 @@ namespace FTT_API.Controllers
                     }
                     else if (funcId == Enums.FuncID.CaseClosed_View.ToInt())
                     {
+                        // === 加入日誌確認計數查詢被呼叫 ===
+                        try {
+                            System.IO.File.AppendAllText(@"d:\caseclosed_api_debug.log", 
+                                $"[{DateTime.Now}] ApiController CaseClosed_View - User: {_sessionVO.username}, Role: {_sessionVO.userrole}, EmpNo: {_sessionVO.empno}\n");
+                        } catch { }
+                        
                         CaseClosedHandler handler = new(_configHelper, HttpContext);
                         PageResult<v_ftt_form2DTO> pageResult = handler.FindPageListForCount(pageEntity, new v_ftt_form2DTO
                         {
@@ -424,6 +486,13 @@ namespace FTT_API.Controllers
                             IVRCODE = _sessionVO.ivrcode,
                             EMPNO = _sessionVO.empno,
                         });
+                        
+                        // === 記錄計數結果 ===
+                        try {
+                            System.IO.File.AppendAllText(@"d:\caseclosed_api_debug.log", 
+                                $"[{DateTime.Now}] ApiController CaseClosed_View - Count Result: {pageResult.DataCount}\n");
+                        } catch { }
+                        
                         result.Add(funcId.ToString(), pageResult.DataCount);
                     }
                 }

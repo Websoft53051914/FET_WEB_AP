@@ -17,6 +17,11 @@ IConfiguration Config = new ConfigurationBuilder().AddJsonFile("appsettings.json
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
+
+// --- 關鍵修正：在 Linux 環境必須註冊編碼提供者 ---
+System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+// ------
+
 #region Localization
 var localizationoptions = new RequestLocalizationOptions();
 var supportedCultures = new List<System.Globalization.CultureInfo> {
@@ -36,6 +41,7 @@ localizationoptions.ApplyCurrentCultureToResponseHeaders = true;
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddDistributedMemoryCache();
+builder.Services.AddMemoryCache(); // 修正：加入 IMemoryCache 服務註冊
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -129,9 +135,12 @@ builder.Services.AddAuthentication(options =>
 //builder.Services.AddHostedService(provider => provider.GetRequiredService<FETTaskService>());
 
 // 加入 Data Protection 設定 - 跨平台相容
-var dataProtectionKeysPath = Environment.OSVersion.Platform == PlatformID.Win32NT
-    ? Path.Combine(Directory.GetCurrentDirectory(), "DataProtectionKeys")
-    : "/home/wmliou75/FTT/DataProtectionKeys";
+//20260202 var dataProtectionKeysPath = Environment.OSVersion.Platform == PlatformID.Win32NT
+//    ? Path.Combine(Directory.GetCurrentDirectory(), "DataProtectionKeys")
+//    : "/home/wmliou75/FTT/DataProtectionKeys";
+//20260202
+var dataProtectionKeysPath = builder.Configuration["DataProtectionPath"]
+?? Path.Combine(AppContext.BaseDirectory, "DataProtectionKeys");
 
 // 確保目錄存在
 Directory.CreateDirectory(dataProtectionKeysPath);
@@ -168,8 +177,13 @@ builder.Services.AddCors(options =>
                   "https://10.68.16.109:50402",       // 測試區 Ubuntu HTTPS for 廠商                  
                   "http://10.68.16.109:50902",        // Ubuntu HTTP (備用)
                   "http://192.168.1.107:50902",       // 原有設定
-                 
-                  "https://61.20.223.1:50402"         // 正式區 Ubuntu HTTPS for franchise
+
+                  "https://ftt-vender.fareastone.com.tw",
+                  "https://61.20.223.1",         
+                  "https://ftt-vender.fareastone.com.tw:50402",
+                  "https://ftt-vender.fareastone.com.tw:50702",
+                  "https://61.20.223.1:50402",         // 正式區 Ubuntu HTTPS for franchise
+                  "https://61.20.223.1:50702"         // 正式區 Ubuntu HTTPS for franchise
               )
               .AllowAnyHeader()
               .AllowAnyMethod()
@@ -208,6 +222,19 @@ if (!app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseStaticFiles();
 
+// 設定 PublicStaticFile 目錄為可下載的靜態檔案
+var publicStaticFilePath = Path.Combine(builder.Environment.ContentRootPath, "PublicStaticFile");
+if (!Directory.Exists(publicStaticFilePath))
+{
+    Directory.CreateDirectory(publicStaticFilePath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(publicStaticFilePath),
+    RequestPath = "/download"
+});
+
 #region Localization
 //app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
 app.UseRequestLocalization(localizationoptions);
@@ -232,17 +259,6 @@ app.MapControllerRoute(
     pattern: "swagger/index.html");
 //pattern: "triptest/{controller=Home}/{action=Index}/{id?}");
 
-//app.UseStaticFiles(new StaticFileOptions
-//{
-//    FileProvider = new PhysicalFileProvider(
-//        Path.Combine(builder.Environment.ContentRootPath, "PublicStaticFile")
-//    ),
-//    RequestPath = "/download"
-//});
-
-//// 專案啟動時載入
-//var container = new Unity.UnityContainer();
-//Business.BusinessFactory.Register(container);
 FTT_VENDER_API.Common.HttpContext.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());
 
 //RecurringJob.AddOrUpdate<SendMailHandler>(

@@ -61,9 +61,15 @@ namespace FTT_VENDER_API.Controllers.Login
                 string safeToken = "";
                 if (!string.IsNullOrEmpty(resultVO.Token.TokenId))
                 {
-                    resultVO.Token.TokenId = InputSanitizer.SanitizeForCookie(resultVO.Token.TokenId);
-                    // 安全編碼 Token
-                    safeToken = string.IsNullOrEmpty(resultVO?.Token?.TokenId) ? string.Empty : Uri.EscapeDataString(resultVO.Token.TokenId);
+                    // 20260414 修正：移除 Uri.EscapeDataString，JWT 本身為 Base64Url 格式 (A-Za-z0-9-_.)，不需要編碼。
+                    // 原因：EscapeDataString 會將 '.' 編碼為 '%2E'，
+                    //       導致 BaseProjectController.OnActionExecuting 的正則驗證 (^[A-Za-z0-9\-_\.]+$)
+                    //       因含 '%' 字元而將 Token 清空，造成認證失敗，登出後無法再登入。
+                    // 20260414 修正前原始碼：
+                    //   resultVO.Token.TokenId = InputSanitizer.SanitizeForCookie(resultVO.Token.TokenId);
+                    //   safeToken = Uri.EscapeDataString(resultVO.Token.TokenId);
+                    // 20260414 若需還原：將下行改回上方兩行原始碼，並同步還原 LogoutController.cs 的 Uri.UnescapeDataString 補丁。
+                    safeToken = InputSanitizer.SanitizeForCookie(resultVO.Token.TokenId);
                     Response.Cookies.Append("Token", safeToken, new CookieOptions
                     {
                         HttpOnly = false,   // 防止 JS 讀取

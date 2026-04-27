@@ -3,6 +3,7 @@ using Core.Utility.Helper.DB.Entity;
 using FTT_API.Common;
 using FTT_API.Common.ConfigurationHelper;
 using System.Text;
+using System.IO;
 
 namespace FTT_API.Models.Handler
 {
@@ -64,6 +65,19 @@ namespace FTT_API.Models.Handler
             }
             if (!string.IsNullOrWhiteSpace(searchVO.StatusIdEq))
             {
+                // 除錯：記錄狀態過濾條件 - 寫入檔案
+                try { 
+                    var logPath = Environment.OSVersion.Platform == PlatformID.Win32NT 
+                        ? @"d:\debug_query.log" 
+                        : "/tmp/debug_query.log";
+                    System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] GetPageList - StatusIdEq filter: {searchVO.StatusIdEq}\n"); 
+                } catch (Exception ex) { 
+                    // 如果檔案寫入失敗，嘗試寫入應用程式目錄
+                    try {
+                        var fallbackPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "debug_query_fallback.log");
+                        System.IO.File.AppendAllText(fallbackPath, $"[{DateTime.Now}] GetPageList - StatusIdEq filter: {searchVO.StatusIdEq} (Fallback: {ex.Message})\n");
+                    } catch { }
+                }
                 condition.Append($"AND {nameof(VFttForm2DTO.statusid)} = @{nameof(searchVO.StatusIdEq)} ");
                 paras.Add(nameof(searchVO.StatusIdEq), searchVO.StatusIdEq);
             }
@@ -131,8 +145,9 @@ WHERE instr('-' || acisid || '-', '-' || @{nameof(searchVO.CategoryIdFilter)} ||
 AND statusid IN ( 'AGREE', 'OFFER', 'PRWP', 'COMPLETE', 'CLOSE' )
 AND form_no IN (SELECT form_no
                 FROM   access_role
-                WHERE  user_type = @user_type
-                        AND deptcode = @deptcode)
+                WHERE  action = 'Y'
+                       AND user_type = @user_type
+                       AND deptcode = @deptcode)
 ");
                     paras.Add("user_type", SessionVO.userrole);
                     paras.Add("deptcode", SessionVO.ivrcode);
@@ -142,18 +157,57 @@ AND form_no IN (SELECT form_no
             {
                 if (SessionVO != null)
                 {
-                    condition.Append($@"
+                    // 除錯：記錄使用者權限查詢條件 - 寫入檔案
+                    try { 
+                        // 跨平台日誌路徑：Windows固定d:\，Linux使用/tmp/
+                        var logPath = Environment.OSVersion.Platform == PlatformID.Win32NT 
+                            ? @"d:\debug_query.log" 
+                            : "/tmp/debug_query.log";
+                        System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] GetPageList - UserRoleOtherFilter empno: {SessionVO.empno}, usertype: {SessionVO.usertype}, ivrcode: {SessionVO.ivrcode}\n"); 
+                    } catch { }
+                    
+                    // 針對門市人員(RETAIL 或 STORE)使用不同的查詢邏輯
+                    if (SessionVO.usertype == "RETAIL" || SessionVO.usertype == "STORE")
+                    {
+                        // 除錯：記錄門市人員查詢參數
+                        try { 
+                            var logPath2 = Environment.OSVersion.Platform == PlatformID.Win32NT 
+                                ? @"d:\debug_query.log" 
+                                : "/tmp/debug_query.log";
+                            System.IO.File.AppendAllText(logPath2, $"[{DateTime.Now}] GetPageList - STORE/RETAIL Query - empno: {SessionVO.empno}, deptcode: {SessionVO.ivrcode}\n"); 
+                        } catch { }
+                        
+                        condition.Append($@"
 AND form_no IN (SELECT form_no
                        FROM   access_role
-                       WHERE  user_type = @user_type
-                               OR empno = @empno
-                               OR deptcode = @deptcode)
+                       WHERE  action = 'Y'
+                              AND (empno = @empno OR deptcode = @deptcode))
 ");
-                    paras.Add("user_type", SessionVO.userrole);
-                    paras.Add("deptcode", SessionVO.ivrcode);
-                    paras.Add("empno", SessionVO.empno);
+                        paras.Add("empno", SessionVO.empno);
+                        paras.Add("deptcode", SessionVO.ivrcode);
+                    }
+                    else
+                    {
+                        condition.Append($@"
+AND form_no IN (SELECT form_no
+                       FROM   access_role
+                       WHERE  action = 'Y'
+                              AND empno = @empno)
+AND EXISTS (SELECT 1 FROM access_role WHERE action = 'Y' AND empno = @empno)
+");
+                        paras.Add("empno", SessionVO.empno);
+                    }
                 }
             }
+            
+            // 除錯：記錄最終的 SQL 條件 - 寫入檔案
+            try { 
+                // 跨平台日誌路徑：Windows固定d:\，Linux使用/tmp/
+                var logPath = Environment.OSVersion.Platform == PlatformID.Win32NT 
+                    ? @"d:\debug_query.log" 
+                    : "/tmp/debug_query.log";
+                System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] GetPageList - Final SQL condition: {condition}\n"); 
+            } catch { }
 
             string sql = $@"
 SELECT DISTINCT form_no
@@ -228,6 +282,19 @@ WHERE
             }
             if (!string.IsNullOrWhiteSpace(searchVO.StatusIdEq))
             {
+                // 除錯：記錄狀態過濾條件 - 寫入檔案
+                try { 
+                    var logPath = Environment.OSVersion.Platform == PlatformID.Win32NT 
+                        ? @"d:\debug_query.log" 
+                        : "/tmp/debug_query.log";
+                    System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] GetPageListExport - StatusIdEq filter: {searchVO.StatusIdEq}\n"); 
+                } catch (Exception ex) { 
+                    // 如果檔案寫入失敗，嘗試寫入應用程式目錄
+                    try {
+                        var fallbackPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "debug_query_fallback.log");
+                        System.IO.File.AppendAllText(fallbackPath, $"[{DateTime.Now}] GetPageListExport - StatusIdEq filter: {searchVO.StatusIdEq} (Fallback: {ex.Message})\n");
+                    } catch { }
+                }
                 condition.Append($"AND {nameof(VFttForm2DTO.statusid)} = @{nameof(searchVO.StatusIdEq)} ");
                 paras.Add(nameof(searchVO.StatusIdEq), searchVO.StatusIdEq);
             }
@@ -295,8 +362,9 @@ WHERE instr('-' || acisid || '-', '-' || @{nameof(searchVO.CategoryIdFilter)} ||
 AND statusid IN ( 'AGREE', 'OFFER', 'PRWP', 'COMPLETE', 'CLOSE' )
 AND form_no IN (SELECT form_no
                 FROM   access_role
-                WHERE  user_type = @user_type
-                        AND deptcode = @deptcode)
+                WHERE  action = 'Y'
+                       AND user_type = @user_type
+                       AND deptcode = @deptcode)
 ");
                     paras.Add("user_type", SessionVO.userrole);
                     paras.Add("deptcode", SessionVO.ivrcode);
@@ -306,17 +374,58 @@ AND form_no IN (SELECT form_no
             {
                 if (SessionVO != null)
                 {
-                    condition.Append($@"
+                    // 除錯：記錄使用者權限查詢條件 - 寫入檔案
+                    try { 
+                        var logPath = Environment.OSVersion.Platform == PlatformID.Win32NT 
+                            ? @"d:\debug_query.log" 
+                            : "/tmp/debug_query.log";
+                        System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] GetPageListExport - UserRoleOtherFilter empno: {SessionVO.empno}, usertype: {SessionVO.usertype}, ivrcode: {SessionVO.ivrcode}\n"); 
+                    } catch (Exception ex) { 
+                        // 如果檔案寫入失敗，嘗試寫入應用程式目錄
+                        try {
+                            var fallbackPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "debug_query_fallback.log");
+                            System.IO.File.AppendAllText(fallbackPath, $"[{DateTime.Now}] GetPageListExport - UserRoleOtherFilter empno: {SessionVO.empno} (Fallback: {ex.Message})\n");
+                        } catch { }
+                    }
+                    
+                    // 針對門市人員(RETAIL 或 STORE)使用不同的查詢邏輯
+                    if (SessionVO.usertype == "RETAIL" || SessionVO.usertype == "STORE")
+                    {
+                        condition.Append($@"
 AND form_no IN (SELECT form_no
                        FROM   access_role
-                       WHERE  user_type = @user_type
-                               OR empno = @empno
-                               OR deptcode = @deptcode)
+                       WHERE  action = 'Y'
+                              AND (empno = @empno OR deptcode = @deptcode))
 ");
-                    paras.Add("user_type", SessionVO.userrole);
-                    paras.Add("deptcode", SessionVO.ivrcode);
-                    paras.Add("empno", SessionVO.empno);
+                        paras.Add("empno", SessionVO.empno);
+                        paras.Add("deptcode", SessionVO.ivrcode);
+                    }
+                    else
+                    {
+                        condition.Append($@"
+AND form_no IN (SELECT form_no
+                       FROM   access_role
+                       WHERE  action = 'Y'
+                              AND empno = @empno)
+AND EXISTS (SELECT 1 FROM access_role WHERE action = 'Y' AND empno = @empno)
+");
+                        paras.Add("empno", SessionVO.empno);
+                    }
                 }
+            }
+            
+            // 除錯：記錄最終的 SQL 條件 - 寫入檔案
+            try { 
+                var logPath = Environment.OSVersion.Platform == PlatformID.Win32NT 
+                    ? @"d:\debug_query.log" 
+                    : "/tmp/debug_query.log";
+                System.IO.File.AppendAllText(logPath, $"[{DateTime.Now}] GetPageListExport - Final SQL condition: {condition}\n"); 
+            } catch (Exception ex) { 
+                // 如果檔案寫入失敗，嘗試寫入應用程式目錄
+                try {
+                    var fallbackPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "debug_query_fallback.log");
+                    System.IO.File.AppendAllText(fallbackPath, $"[{DateTime.Now}] GetPageListExport - Final SQL condition: {condition} (Fallback: {ex.Message})\n");
+                } catch { }
             }
 
             string sql = $@"

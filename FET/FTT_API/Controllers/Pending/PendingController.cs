@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.StaticFiles;
 using NPOI.HSSF.UserModel;
 using NPOI.SS.UserModel;
+using System.IO;
 using System.Runtime.Intrinsics.X86;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
@@ -73,21 +74,36 @@ namespace FTT_API.Controllers.Pending
         
         [ValidateAntiForgeryToken]
         [HttpPost("[action]")]
-        public IActionResult FileUpload(IFormFile file, string formNo)
+        public async Task<IActionResult> FileUpload(IFormFile file, string formNo)
         {
             try
             {
+                // 基本檔案檢查
                 if (file == null || file.Length == 0)
                 {
                     return JsonValidFail("未選擇檔案");
                 }
 
-                //紀錄舊檔名
+                // 從配置取得允許的副檔名和檔案大小限制
+                var allowedExtensions = _config.Config.GetSection("FileUpload:AllowedExtensions").Get<string[]>() 
+                    ?? new[] { ".pdf", ".jpg", ".jpeg", ".png", ".docx", ".xlsx" };
+                var maxSizeMB = _config.Config.GetValue<int>("FileUpload:MaxFileSizeMB", 10);
+
+                // 副檔名檢查
+                var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
+                if (!allowedExtensions.Contains(extension))
+                {
+                    return JsonValidFail($"不允許的檔案格式。允許的格式：{string.Join(", ", allowedExtensions)}");
+                }
+
+                // 檔案大小檢查
+                if (file.Length > maxSizeMB * 1024 * 1024)
+                {
+                    return JsonValidFail($"檔案過大，最大允許 {maxSizeMB}MB");
+                }
+
                 var originFileName = file.FileName;
-                //新檔案名稱
-                var newFileName = _sessionVO.empno + "_" + DateTime.Now.ToString("HHmmss") + "_" + file.FileName;
-                //檔案路徑
-                string destFilePath = _config.Config["OutputPath"] + System.IO.Path.GetFileName(_config.Config["OutputPath"] + newFileName);
+                string destFilePath = Path.Combine(_config.Config["OutputPath"], originFileName);
 
                 // 檢查資料夾是否存在
                 if (!Directory.Exists(_config.Config["OutputPath"]))
@@ -95,21 +111,27 @@ namespace FTT_API.Controllers.Pending
                     Directory.CreateDirectory(_config.Config["OutputPath"]);
                 }
 
+                // 如果檔案已存在，產生新檔名
+                int counter = 1;
+                string fileNameWithoutExt = Path.GetFileNameWithoutExtension(originFileName);
+                string fileExt = Path.GetExtension(originFileName);
+                while (System.IO.File.Exists(destFilePath))
+                {
+                    string newFileName = $"{fileNameWithoutExt}_{counter}{fileExt}";
+                    destFilePath = Path.Combine(_config.Config["OutputPath"], newFileName);
+                    counter++;
+                }
+
                 // 儲存檔案
                 using (var stream = new FileStream(destFilePath, FileMode.Create))
                 {
-                    //file.CopyToAsync(stream); 非同步導致檔案是 0 kb 時就被使用
-                    file.CopyTo(stream);
+                    await file.CopyToAsync(stream);
                 }
 
                 DateTime dtNow = DateTime.Now;
 
-                var fileOriginName = Path.GetFileName(file.FileName);
-                var fileExt = Path.GetExtension(fileOriginName);
-
-                //存至TABLE
+                // 存至TABLE
                 FileHandler _FileHandler = new FileHandler();
-
                 int fileId = 0;
 
                 var msg = _FileHandler.Insert(new FileEntity()
@@ -122,23 +144,22 @@ namespace FTT_API.Controllers.Pending
                     filesize = file.Length,
                     updater = _sessionVO.empno,
                     updatetime = dtNow,
-                    fileext = fileExt,
-
+                    fileext = Path.GetExtension(originFileName),
                 },
                 formNo,
                 out fileId
                 );
 
-
                 if (string.IsNullOrEmpty(msg) == false)
                 {
+                    // 如果資料庫儲存失敗，刪除已上傳的檔案
+                    try { System.IO.File.Delete(destFilePath); } catch { }
                     this.LogError(msg);
                     return JsonValidFail("新增檔案時發生異常");
                 }
                 else
                 {
-                    this.LogSuccess("新增檔案成功");
-                    return JsonSuccess(new SelectListItem() { Text = originFileName, Value = fileId.ToString() }); ;
+                    return JsonSuccess(new SelectListItem() { Text = originFileName, Value = fileId.ToString() });
                 }
             }
             catch (Exception ex)

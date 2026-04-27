@@ -171,8 +171,7 @@ else
     ctxModal.ModalSelectedPool = {};
     ctxModal.ModalSelectedPool.init = function (selectedDatas) {
         const control = ctxModal.$ModalSelectedPool;
-        control.innerHTML = ""; // 清空
-
+        control[0].innerHTML = ""; // 清空
         ctxModal.Tree.selected = [];
         ctxModal.Tree.selectedItem = [];
 
@@ -194,7 +193,7 @@ else
 
             // 安全地加入 span
             span.appendChild(btnDelete);
-            control.appendChild(span);
+            control[0].appendChild(span);
 
             // 更新選取陣列
             ctxModal.Tree.selected.push(value.id);

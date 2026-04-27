@@ -1,8 +1,8 @@
-﻿
-using FTT_API.Common.ConfigurationHelper;
+﻿using FTT_API.Common.ConfigurationHelper;
 using Microsoft.Extensions.FileProviders;
 using Hangfire;
 using FTT_API.Models.Handler;
+using FTT_API.Background;
 using Microsoft.OpenApi.Models;
 using System.Reflection;
 using Const.VO;
@@ -11,12 +11,18 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Extensions.Options;
 using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.HttpOverrides;
 
 
 IConfiguration Config = new ConfigurationBuilder().AddJsonFile("appsettings.json").Build();
 
 var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
+
+// --- 關鍵修正：在 Linux 環境必須註冊編碼提供者 ---
+System.Text.Encoding.RegisterProvider(System.Text.CodePagesEncodingProvider.Instance);
+// ------
+
 #region Localization
 var localizationoptions = new RequestLocalizationOptions();
 var supportedCultures = new List<System.Globalization.CultureInfo> {
@@ -36,6 +42,7 @@ localizationoptions.ApplyCurrentCultureToResponseHeaders = true;
 
 builder.Services.AddControllersWithViews();
 builder.Services.AddDistributedMemoryCache();
+builder.Services.AddMemoryCache(); // 明確註冊 IMemoryCache 服務
 
 builder.Services.AddSwaggerGen(c =>
 {
@@ -79,10 +86,12 @@ builder.Services.AddAntiforgery(options =>
     options.Cookie.Name = "CSRF-COOKIE";
 
     // 🌟 錯誤點 2：跨域必須設置為 None
-    options.Cookie.SameSite = SameSiteMode.None;
+    //20260203 options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SameSite = SameSiteMode.Lax;
 
     // 🌟 錯誤點 1：設置為 None 時，Secure 必須為 Always
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解  2025/12/8解除
+    //20260203 options.Cookie.SecurePolicy = CookieSecurePolicy.Always; //架設http 非 https 要註解  2025/12/8解除
+    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
 });
 
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
@@ -132,9 +141,12 @@ builder.Services.AddSingleton<FETUnlockService>();
 builder.Services.AddHostedService(provider => provider.GetRequiredService<FETUnlockService>());
 
 // 加入 Data Protection 設定 - 跨平台相容
-var dataProtectionKeysPath = Environment.OSVersion.Platform == PlatformID.Win32NT
-    ? Path.Combine(Directory.GetCurrentDirectory(), "DataProtectionKeys")
-    : "/home/wmliou75/FTT/DataProtectionKeys";
+//20260202 var dataProtectionKeysPath = Environment.OSVersion.Platform == PlatformID.Win32NT
+//    ? Path.Combine(Directory.GetCurrentDirectory(), "DataProtectionKeys")
+//    : "/home/wmliou75/FTT/DataProtectionKeys";
+//20260202
+var dataProtectionKeysPath = builder.Configuration["DataProtectionPath"]
+?? Path.Combine(AppContext.BaseDirectory, "DataProtectionKeys");
 
 // 確保目錄存在
 Directory.CreateDirectory(dataProtectionKeysPath);
@@ -155,7 +167,9 @@ builder.Services.AddHangfire(config =>
 builder.Services.AddHangfireServer();
 //builder.Services.AddSingleton<SendMailHandler>();
 builder.Services.AddScoped<SendMailHandler>();
-//builder.Services.AddScoped<CheckVenderPWLoginTimeHandler>();
+builder.Services.AddScoped<CheckVenderPWLoginTimeHandler>();  // ← 取消註解
+builder.Services.AddScoped<CheckReminderTimeHandler>();       // ← 新增催單服務註冊
+builder.Services.AddScoped<NSPStoreSyncJobHandler>();         // ← NSP門市資料同步 Hangfire Job（已從 BackgroundService 移轉）
 
 // 註冊 CORS - 統一設定，適用於所有環境
 builder.Services.AddCors(options =>
@@ -170,8 +184,11 @@ builder.Services.AddCors(options =>
                       "http://10.68.16.109:50102",        // Ubuntu HTTP (備用)
                       "http://192.168.1.107:50102",       // 原有設定
 
-                      "https://10.68.58.133:50102",       // 正式區 Ubuntu HTTPS for 門市
-                      "https://61.20.223.2:50702"         // 正式區 Ubuntu HTTPS for Franchise
+                      "https://ftt-web-api",                    // 正式區 Intranet DNS
+                      "https://10.68.58.133:50102",             // 正式區 Ubuntu HTTPS for 門市
+                      "https://10.68.58.133",                   // 正式區 Ubuntu HTTPS for 門市
+                      "https://61.20.223.2:50702",              // 正式區 Ubuntu HTTPS for Franchise
+                      "https://ftt-vender.fareastone.com.tw"    // 正式區 DMZ VIP DNS
                   )
                   .AllowAnyHeader()
                   .AllowAnyMethod()
@@ -188,6 +205,11 @@ builder.Services.AddHsts(options =>
 });
 
 var app = builder.Build();
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 app.UseSwagger();
 if (Config.GetValue<string>("EnableSwaggerUI") == "Y")
@@ -207,15 +229,28 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts(); //架設http 非 https 要註解
 }
 
-app.UseHttpsRedirection();
+//20260203 app.UseHttpsRedirection();
 app.UseStaticFiles();
+
+// 設定 PublicStaticFile 目錄為可下載的靜態檔案
+var publicStaticFilePath = Path.Combine(builder.Environment.ContentRootPath, "PublicStaticFile");
+if (!Directory.Exists(publicStaticFilePath))
+{
+    Directory.CreateDirectory(publicStaticFilePath);
+}
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(publicStaticFilePath),
+    RequestPath = "/download"
+});
 
 #region Localization
 //app.UseRequestLocalization(app.Services.GetRequiredService<IOptions<RequestLocalizationOptions>>().Value);
 app.UseRequestLocalization(localizationoptions);
 #endregion
 
-app.UseHangfireDashboard();
+//20260126 app.UseHangfireDashboard();
 
 app.UseRouting();
 
@@ -227,24 +262,27 @@ app.UseAuthorization();
 
 app.UseSession();
 
+// 修改這裡：
+app.UseHangfireDashboard("/hangfire", new DashboardOptions
+{
+    Authorization = new[] { new MyAuthorizationFilter() }
+});
+
 //app.MapRazorPages();
+
+//20260208 Add begin
+app.MapControllerRoute(
+    name: "api_standard",
+    pattern: "{controller}/{action}/{id?}");
+//20260208 Add end
 
 app.MapControllerRoute(
     name: "default",
     pattern: "swagger/index.html");
 //pattern: "triptest/{controller=Home}/{action=Index}/{id?}");
 
-//app.UseStaticFiles(new StaticFileOptions
-//{
-//    FileProvider = new PhysicalFileProvider(
-//        Path.Combine(builder.Environment.ContentRootPath, "PublicStaticFile")
-//    ),
-//    RequestPath = "/download"
-//});
 
-//// 專案啟動時載入
-//var container = new Unity.UnityContainer();
-//Business.BusinessFactory.Register(container);
+
 FTT_API.Common.HttpContext.Configure(app.Services.GetRequiredService<IHttpContextAccessor>());
 RecurringJob.AddOrUpdate<SendMailHandler>(
     nameof(SendMailHandler.Send),
@@ -276,4 +314,38 @@ RecurringJob.AddOrUpdate<CheckVenderPWLoginTimeHandler>(
          }
     );
 
+//20260309 - 每日催單檢查排程
+RecurringJob.AddOrUpdate<CheckReminderTimeHandler>(
+        nameof(CheckReminderTimeHandler.CheckReminderTask),
+        (job) => job.CheckReminderTask(),
+         builder.Configuration["HangFireScheduledTime:DailyReminderCheck"],
+         new RecurringJobOptions
+         {
+             TimeZone = TimeZoneInfo.FindSystemTimeZoneById("Taipei Standard Time")
+         }
+    );
+
+//20260421 - NSP門市資料同步排程（從 BackgroundService 移轉至 Hangfire，cron 由 appsettings HangFireScheduledTime:NSPStoreSyncJob 控制）
+RecurringJob.AddOrUpdate<NSPStoreSyncJobHandler>(
+        nameof(NSPStoreSyncJobHandler.RunSync),
+        (job) => job.RunSync(),
+         builder.Configuration["HangFireScheduledTime:NSPStoreSyncJob"],
+         new RecurringJobOptions
+         {
+             TimeZone = TimeZoneInfo.FindSystemTimeZoneById("Taipei Standard Time")
+         }
+    );
+
 app.Run();
+
+//20260126 begin
+public class MyAuthorizationFilter : Hangfire.Dashboard.IDashboardAuthorizationFilter
+{
+    public bool Authorize(Hangfire.Dashboard.DashboardContext context)
+    {
+        // 測試階段：先讓所有人都能存取
+        // 正式環境建議：return context.GetHttpContext().User.Identity.IsAuthenticated;
+        return true;
+    }
+}
+//20260126 end

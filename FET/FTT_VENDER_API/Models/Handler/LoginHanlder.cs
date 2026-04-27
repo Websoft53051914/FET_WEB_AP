@@ -164,14 +164,51 @@ INSERT INTO tb_vender_password_history(
                         }
                         else
                         {
-                            var over90DaysNoLogin = IsOver90DaysNoLogin(vm.AC);
-                            if (storeVenderProfileVM != null && (storeVenderProfileVM.pw_chgtime < DateTime.Now.AddDays(-90) || over90DaysNoLogin == true))
+                            // 帳號被鎖定，檢查鎖定原因
+                            if (storeVenderProfileVM != null)
                             {
-                                errorMsg = "您的FTT帳號已被鎖定，請直接進行密碼變更。";
+                                var over90DaysNoLogin = IsOver90DaysNoLogin(vm.AC);
+                                var tempDtNow = DateTime.Now;
+                                
+                                switch (storeVenderProfileVM.locked_reason)
+                                {
+                                    case 1: // 密碼90天未更換
+                                        errorMsg = "您的FTT帳號已被鎖定，原因：密碼90天未更換，請直接進行密碼變更。";
+                                        break;
+                                        
+                                    case 2: // 90天未登入
+                                        errorMsg = "您的FTT帳號已被鎖定，原因：90天未登入，請直接進行密碼變更。";
+                                        break;
+                                        
+                                    case 5: // 密碼輸入錯誤鎖定
+                                        if (storeVenderProfileVM.locked_time.AddMinutes(15) >= tempDtNow)
+                                        {
+                                            var remainingTime = storeVenderProfileVM.locked_time.AddMinutes(15) - tempDtNow;
+                                            var minutes = (int)remainingTime.TotalMinutes + 1;
+                                            errorMsg = $"您的FTT帳號因密碼輸入錯誤被鎖定，請等待約{minutes}分鐘後再試，或直接進行密碼變更。";
+                                        }
+                                        else
+                                        {
+                                            errorMsg = "您的FTT帳號因密碼輸入錯誤被鎖定，但已可重新嘗試登入。如仍無法登入，請聯繫系統管理員。";
+                                        }
+                                        break;
+                                        
+                                    default:
+                                        // 其他原因或通用鎖定
+                                        if (storeVenderProfileVM.pw_chgtime < DateTime.Now.AddDays(-90) || over90DaysNoLogin == true)
+                                        {
+                                            errorMsg = "您的FTT帳號已被鎖定，請直接進行密碼變更。";
+                                        }
+                                        else
+                                        {
+                                            errorMsg = "您的FTT帳號已被鎖定，請聯繫系統管理員或直接進行密碼變更。";
+                                        }
+                                        break;
+                                }
                             }
                             else
                             {
-                                errorMsg = "您的FTT帳號已被鎖定，15分鐘後可以請再嘗試，或直接進行密碼變更。";
+                                errorMsg = "帳號或密碼輸入錯誤，請重新輸入！";
                             }
                         }
                     }
@@ -189,7 +226,77 @@ INSERT INTO tb_vender_password_history(
                 }
                 else
                 {
-                    boolIsAuthenticated = true;
+                    // 即使不檢查用戶認證，仍需檢查帳號鎖定狀態
+                    try
+                    {
+                        Dictionary<string, object> paras = new Dictionary<string, object>
+                        {
+                            { "MERCHANT_LOGIN", vm.AC },
+                        };
+                        string Locked = base.dbHelper.Find<string>("SELECT LOCKED FROM STORE_VENDER_PROFILE WHERE MERCHANT_LOGIN = @MERCHANT_LOGIN", paras);
+                        
+                        if (Locked == "Y")
+                        {
+                            StoreVenderProfileVM storeVenderProfileVM = GetStoreVenderProfileNoPWD(vm.AC);
+                            if (storeVenderProfileVM != null)
+                            {
+                                var over90DaysNoLogin = IsOver90DaysNoLogin(vm.AC);
+                                var tempDtNow = DateTime.Now;
+                                
+                                switch (storeVenderProfileVM.locked_reason)
+                                {
+                                    case 1: // 密碼90天未更換
+                                        errorMsg = "您的FTT帳號已被鎖定，原因：密碼90天未更換，請直接進行密碼變更。";
+                                        break;
+                                        
+                                    case 2: // 90天未登入
+                                        errorMsg = "您的FTT帳號已被鎖定，原因：90天未登入，請直接進行密碼變更。";
+                                        break;
+                                        
+                                    case 5: // 密碼輸入錯誤鎖定
+                                        if (storeVenderProfileVM.locked_time.AddMinutes(15) >= tempDtNow)
+                                        {
+                                            var remainingTime = storeVenderProfileVM.locked_time.AddMinutes(15) - tempDtNow;
+                                            var minutes = (int)remainingTime.TotalMinutes + 1;
+                                            errorMsg = $"您的FTT帳號因密碼輸入錯誤被鎖定，請等待約{minutes}分鐘後再試，或直接進行密碼變更。";
+                                        }
+                                        else
+                                        {
+                                            errorMsg = "您的FTT帳號因密碼輸入錯誤被鎖定，但已可重新嘗試登入。如仍無法登入，請聯繫系統管理員。";
+                                        }
+                                        break;
+                                        
+                                    default:
+                                        // 其他原因或通用鎖定
+                                        if (storeVenderProfileVM.pw_chgtime < DateTime.Now.AddDays(-90) || over90DaysNoLogin == true)
+                                        {
+                                            errorMsg = "您的FTT帳號已被鎖定，請直接進行密碼變更。";
+                                        }
+                                        else
+                                        {
+                                            errorMsg = "您的FTT帳號已被鎖定，請聯繫系統管理員或直接進行密碼變更。";
+                                        }
+                                        break;
+                                }
+                            }
+                            else
+                            {
+                                errorMsg = "帳號不存在或狀態異常。";
+                            }
+                        }
+                        else if (Locked == null)
+                        {
+                            errorMsg = "帳號或密碼輸入錯誤，請重新輸入！";
+                        }
+                        else
+                        {
+                            boolIsAuthenticated = true;
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        errorMsg = "檢查帳號狀態時發生錯誤: " + ex.Message;
+                    }
                 }
 
                 if (true == boolIsAuthenticated)
@@ -298,24 +405,44 @@ INSERT INTO tb_vender_password_history(
 
         private bool IsOver90DaysNoLogin(string ac)
         {
-            string sql = @"
-SELECT *
-	FROM public.user_login_log 
-	where loginstatus in ('True','TRUE')
-	and account=@AC
-	and createtime>=@dtNow
-	order by createtime desc limit 1
-";
-            Dictionary<string, object> parameters = new Dictionary<string, object>
+            try
             {
-                { "dtNow", DateTime.Now.AddDays(-90)},
-                { "AC", ac },
-            };
-            StoreVenderProfileVM? result = base.dbHelper.Find<StoreVenderProfileVM>(sql, parameters);
-            if (result == null)
+                // 寬鬆模式：考慮登入和密碼變更時間
+                // 任一活動都算作使用者活動
+                
+                // 1. 檢查90天內是否有登入記錄
+                string loginSql = @"
+SELECT COUNT(1)
+FROM USER_LOGIN_LOG 
+WHERE loginstatus in ('True','TRUE')
+  AND account = @AC
+  AND createtime >= @Date90DaysAgo";
+                
+                // 2. 檢查密碼變更時間是否在90天內
+                string pwChangeSql = @"
+SELECT COUNT(1)
+FROM STORE_VENDER_PROFILE 
+WHERE merchant_login = @AC
+  AND pw_chgtime >= @Date90DaysAgo";
+                
+                Dictionary<string, object> parameters = new Dictionary<string, object>
+                {
+                    { "AC", ac },
+                    { "Date90DaysAgo", DateTime.Now.AddDays(-90) }
+                };
+                
+                var recentLoginCount = base.dbHelper.Find<int>(loginSql, parameters);
+                var recentPwChangeCount = base.dbHelper.Find<int>(pwChangeSql, parameters);
+                
+                // 如果90天內沒有登入記錄且沒有密碼變更，視為超過90天未活動
+                return recentLoginCount == 0 && recentPwChangeCount == 0;
+            }
+            catch (Exception ex)
+            {
+                // 發生錯誤時，基於安全考量，假設已超過90天未活動
+                Console.WriteLine($"檢查90天未活動時發生錯誤: {ex.Message}");
                 return true;
-
-            return false;
+            }
         }
 
         private StoreVenderProfileVM GetStoreVenderProfileNoPWD(string AC)

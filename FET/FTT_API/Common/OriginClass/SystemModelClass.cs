@@ -46,6 +46,14 @@ namespace FTT_API.Common.OriginClass
                     {
                         return "EMP";
                     }
+                    else if (sessionVO.usertype == "VASS")
+                    {
+                        // 20260407 修正：VASS（加盟店）以 IVR Code 做為 empno，不會出現在 FTT_GROUP，
+                        // 必須明確回傳 "VASS" 以確保後續 OnActionExecuting 能正確判斷角色分支。
+                        // 修正前此處走 else 回傳 "STORE"，導致 JWT userrole 寫入錯誤值，
+                        // OnActionExecuting 找不到對應分支，_sessionVO.ivrcode 為空，新開單初始化失敗。
+                        return "VASS";
+                    }
                     else
                     {
                         return "STORE";

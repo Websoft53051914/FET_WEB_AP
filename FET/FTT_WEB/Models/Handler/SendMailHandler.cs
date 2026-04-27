@@ -3,7 +3,7 @@ using Core.Utility.Helper.Mail;
 using FTT_WEB.Common;
 using FTT_WEB.Common.ConfigurationHelper;
 using FTT_WEB.Common.OriginClass.EntiityClass;
-using Microsoft.Graph.DeviceManagement.WindowsInformationProtectionAppLearningSummaries.Item;
+// using Microsoft.Graph.DeviceManagement.WindowsInformationProtectionAppLearningSummaries.Item;
 using Org.BouncyCastle.Utilities.Encoders;
 using static Const.Enums;
 

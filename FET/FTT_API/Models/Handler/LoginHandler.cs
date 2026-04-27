@@ -1,6 +1,9 @@
 ﻿using Const;
 using Const.VO;
 using Core.Utility.Extensions;
+using Core.Utility.Helper.DB;
+using Core.Utility.Helper.DB.Entity;
+using DocumentFormat.OpenXml.Bibliography;
 using FTT_API.Common;
 using FTT_API.Common.ConfigurationHelper;
 using FTT_API.Common.OriginClass;
@@ -129,25 +132,42 @@ namespace FTT_API.Models.Handler
 
                     if (emp.hasData())
                     {
-                        logLoginStatus = true;
-                        sessionVO = new SessionVO
+                        // 只有 EMPLOYEE 需要檢查 ADMIN 群組，RETAIL 和 FRANCHISE 不需要
+                        bool needAdminCheck = (vm.Role == "EMPLOYEE");
+                        bool isAdmin = true; // 預設允許
+                        
+                        if (needAdminCheck)
                         {
-                            empno = emp.EmpNO,
-                            empname = emp.EmployeeName,
-                            engname = emp.EnglishName,
-                            ext = emp.Mobile + "(" + emp.Ext + ")",
-                            username = vm.AC,
-                            deptcode = emp.DeptCode,
-                            usertype = vm.Role,
-                            ivrcode = vm.IVR_Code.IsNullOrEmpty() ? "NULL" : vm.IVR_Code,
-                        };
-                        //LogSuccess("login/login/login/GetUserRole---開始");
-                        sessionVO.userrole = SystemModelClass.GetUserRole(sessionVO.empno, sessionVO);
-                        //LogSuccess("login/login/login/GetUserRole---結束 sessionVO.userrole=" + sessionVO.userrole);
+                            isAdmin = CheckUserIsAdmin(emp.EmpNO);
+                        }
+                        
+                        if (needAdminCheck && !isAdmin)
+                        {
+                            errorMsg = "請以正確身分登入系統";
+                            logLoginStatus = false;
+                        }
+                        else
+                        {
+                            logLoginStatus = true;
+                            sessionVO = new SessionVO
+                            {
+                                empno = emp.EmpNO,
+                                empname = emp.EmployeeName,
+                                engname = emp.EnglishName,
+                                ext = emp.Mobile + "(" + emp.Ext + ")",
+                                username = vm.AC,
+                                deptcode = emp.DeptCode,
+                                usertype = vm.Role,
+                                ivrcode = vm.IVR_Code.IsNullOrEmpty() ? "NULL" : vm.IVR_Code,
+                            };
+                            //LogSuccess("login/login/login/GetUserRole---開始");
+                            sessionVO.userrole = SystemModelClass.GetUserRole(sessionVO.empno, sessionVO);
+                            //LogSuccess("login/login/login/GetUserRole---結束 sessionVO.userrole=" + sessionVO.userrole);
 
-                        //LogSuccess("login/login/login/GenerateJwtToken---開始");
-                        token = Method.GenerateJwtToken(sessionVO, jwtConfigVO);
-                        //LogSuccess("login/login/login/GenerateJwtToken---結束");
+                            //LogSuccess("login/login/login/GenerateJwtToken---開始");
+                            token = Method.GenerateJwtToken(sessionVO, jwtConfigVO);
+                            //LogSuccess("login/login/login/GenerateJwtToken---結束");
+                        }
                     }
                     else
                     {
@@ -318,6 +338,33 @@ namespace FTT_API.Models.Handler
             base.dbHelper.Commit();
         }
 
+        /// <summary>
+        /// 檢查使用者是否屬於ADMIN群組
+        /// </summary>
+        /// <param name="empno">員工編號</param>
+        /// <returns>是否為ADMIN群組成員</returns>
+        private bool CheckUserIsAdmin(string empno)
+        {
+            try
+            {
+                Dictionary<string, object> parameters = new Dictionary<string, object>
+                {
+                    { "empno", empno },
+                    { "ftt_group", "ADMIN" }
+                };
+
+                string sql = "SELECT COUNT(*) FROM ftt_group WHERE empno = @empno AND ftt_group = @ftt_group";
+                int count = base.dbHelper.Find<int>(sql, parameters);
+                
+                return count > 0;
+            }
+            catch (Exception ex)
+            {
+                // 記錄錯誤資訊，預設拒絕存取以保障安全
+                Console.WriteLine($"檢查ADMIN權限時發生錯誤: {ex.Message}");
+                return false;
+            }
+        }
 
     }
 }

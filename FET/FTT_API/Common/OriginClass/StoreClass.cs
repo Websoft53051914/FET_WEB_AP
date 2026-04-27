@@ -358,15 +358,15 @@ namespace FTT_API.Common.OriginClass
                 if (storeData.Rows.Count == 1)
                 {
                     mCompany = storeData.Rows[0]["COMPANY_LEAVES"].ToString();
-                    mStoreType = storeData.Rows[0]["STORE_TYPE"].ToString();
+                    //20260408與FTT Admin討論後不顯示 mStoreType = storeData.Rows[0]["STORE_TYPE"].ToString();
                     mChannel = storeData.Rows[0]["CHANNEL"].ToString();
                     mArea = storeData.Rows[0]["AREA"].ToString();
                     mStoreName = storeData.Rows[0]["SHOP_NAME"].ToString();
                     mEMail = storeData.Rows[0]["EMAIL"].ToString();
-                    mOwner = storeData.Rows[0]["OWNER_CNAME"].ToString();
+                    mOwner = storeData.Rows[0]["OWNER_CNAME"].ToString(); // 使用中文名稱
                     mManager = storeData.Rows[0]["AS_CNAME"].ToString();
                     mManagerEmpno = storeData.Rows[0]["AS_EMPNO"].ToString();
-                    mPhone = storeData.Rows[0]["OWNER_TEL"].ToString();
+                    //20260408與FTT Admin討論後不顯示 mPhone = storeData.Rows[0]["OWNER_TEL"].ToString();
                     mPhoneUrgent = storeData.Rows[0]["URGENT_TEL"].ToString();
                     mPhoneFax = storeData.Rows[0]["FAX_TEL"].ToString();
                     mAddress = storeData.Rows[0]["ADDRESS"].ToString();
@@ -374,7 +374,7 @@ namespace FTT_API.Common.OriginClass
                     mBusinessTime2 = storeData.Rows[0]["BUSINESS_HOUR_RANGE2"].ToString();
                     mBusinessTime3 = storeData.Rows[0]["BUSINESS_HOUR_RANGE3"].ToString();
                     mBusinessTime4 = storeData.Rows[0]["BUSINESS_HOUR_RANGE4"].ToString();
-                    mDecoration = storeData.Rows[0]["DECORATION_CONDITION"].ToString();
+                    //20260408與FTT Admin討論後不顯示 mDecoration = storeData.Rows[0]["DECORATION_CONDITION"].ToString();
                     mNote = storeData.Rows[0]["NOTE"].ToString();
                     mApprovalDate = storeData.Rows[0]["APPROVAL_DATE"].ToString();
                 }

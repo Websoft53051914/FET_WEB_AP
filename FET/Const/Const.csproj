@@ -7,7 +7,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Core.8.Utility.Web\Core.8.Utility.Web.csproj" />
+    <PackageReference Include="AutoMapper" Version="14.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+   <ProjectReference Include="..\Core.8.Utility.Web\Core.8.Utility.Web.csproj" />
   </ItemGroup>
 
 </Project>

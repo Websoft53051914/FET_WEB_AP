@@ -29,7 +29,16 @@ namespace FTT_API.Models.Handler
             };
 
             string tableName = " APPROVE_FORM ";
-            string strWhere = " FORM_NO=@FORM_NO AND CHK_WORKING_DAY2(UPDATETIME,SYSDATE,'S') > @kpiTime ";
+            
+            // 【原始版本 - CHK_WORKING_DAY2 函數有問題時暫時保留】
+            // string strWhere = " FORM_NO=@FORM_NO AND CHK_WORKING_DAY2(UPDATETIME,SYSDATE,'S') > @kpiTime ";
+            
+            // 【替代方案 - 簡單工作日計算，排除週末但不含國定假日】
+            // 【20260408 EDB PostgreSQL 修正】
+            // Oracle: SYSDATE - UPDATETIME 回傳數值(天數)，TRUNC(天數/7) 合法
+            // EDB PostgreSQL: SYSDATE - UPDATETIME 回傳 interval，TRUNC(interval) 不支援
+            // 修正: 使用 EXTRACT(EPOCH FROM ...) 將 interval 轉換為秒數，再除以 86400 得到天數
+            string strWhere = " FORM_NO=@FORM_NO AND EXTRACT(EPOCH FROM (SYSDATE - UPDATETIME)) / 86400.0 - (FLOOR(EXTRACT(EPOCH FROM (SYSDATE - UPDATETIME)) / 604800.0) * 2) > @kpiTime ";
 
             return CheckDataExist(tableName, strWhere, paras);
         }
