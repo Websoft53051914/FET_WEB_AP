@@ -1,0 +1,27 @@
+可以把@deptcode換成廠商deptcode後執行，確認一下查詢所需時間
+
+
+SELECT *
+FROM (
+SELECT DISTINCT form_no
+                , tt_category
+                , ciname
+                , TO_CHAR(createtime, 'YYYY/MM/DD HH24:MI:SS')   AS createtime_text
+                , shop_name
+                , statusname
+                , TO_CHAR(dispatchtime, 'YYYY/MM/DD HH24:MI:SS') AS dispatchtime_text
+                , vender
+                , descr
+                , FIND_ACTION_NAME(form_no)                      AS processer
+FROM v_ftt_form2
+WHERE  1 = 1
+AND createtime >= '2026/01/01 00:00:00' AND createtime < '2026/04/25 00:00:00' 
+AND form_no IN (SELECT form_no
+                FROM   access_role
+                WHERE  user_type = 'VENDOR'
+                        AND deptcode = @deptcode
+						)
+
+) pageData 
+ORDER BY form_no ASC
+OFFSET 0 LIMIT 10
