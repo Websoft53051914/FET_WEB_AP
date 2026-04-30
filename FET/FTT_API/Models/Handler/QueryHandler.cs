@@ -210,7 +210,7 @@ AND EXISTS (SELECT 1 FROM access_role WHERE action = 'Y' AND empno = @empno)
             } catch { }
 
             string sql = $@"
-SELECT DISTINCT form_no
+SELECT  form_no
                 , tt_category
                 , ciname
                 , TO_CHAR(createtime, 'YYYY/MM/DD HH24:MI:SS')   AS createtime_text

@@ -157,7 +157,7 @@ AND form_no IN (SELECT form_no
             }
 
             string sql = $@"
-SELECT DISTINCT form_no
+SELECT  form_no
                 , tt_category
                 , ciname
                 , TO_CHAR(createtime, 'YYYY/MM/DD HH24:MI:SS')   AS createtime_text
