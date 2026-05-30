@@ -702,12 +702,12 @@ namespace FTT_API.Common
             {
                 if (!string.IsNullOrEmpty(newStatus) && newStatus != oldStatus)
                 {
-                    var mail_reciver = "";
-                    var mail_reciver_cc = "";
-                    var reviverName = "";
                     var list = _MailPoolHandlerHandler.FindMailPoolRuleList(oldStatus + "," + newStatus);
                     foreach (var item in list)
                     {
+                        var mail_reciver = "";
+                        var mail_reciver_cc = "";
+                        var reviverName = "";
                         var _AccessRole = _MailPoolHandlerHandler.FindAccessRole(form_no, item.mail_reciver);
                         if (_AccessRole != null)
                         {

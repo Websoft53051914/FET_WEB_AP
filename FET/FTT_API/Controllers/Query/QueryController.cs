@@ -294,33 +294,13 @@ namespace FTT_API.Controllers.Query
                     writer.GetSheet().SetColumnWidth(writer.GetCellIndex(), (lenTitle + 6) * 256);
                 }
 
-                int totalPage = 1;
-                int currentPage = 1;
-                int pageDataSize = 100;
+                // 取得全部資料（一次查詢，避免 OFFSET 分頁重複揃描造成逾時）
+                List<VFttForm2DTO> exportList = queryHandler.GetPageListExport(searchVO);
                 int posRow = 1;
-                request.pageSize = pageDataSize;
-                do
+                foreach (VFttForm2DTO item in exportList)
                 {
-                    request.pageIndex = currentPage;
-
-                    PageEntity pageEntity = GetPageEntity<QueryGridVO>(request);
-                    // 取得資料
-                    PageResult<VFttForm2DTO> pageList = queryHandler.GetPageListExport(pageEntity, searchVO);
-
-                    if (currentPage == 1)
-                    {
-                        totalPage = (int)Math.Ceiling((double)pageList.DataCount / pageDataSize);
-                    }
-
-                    if (pageList.Results.Count == 0)
-                    {
-                        break;
-                    }
-
-                    foreach (VFttForm2DTO item in pageList.Results)
-                    {
-                        writer.SetRowCellIndex(posRow, 0);
-                        writer.SetCellValue(item.company ?? string.Empty);           // 公司別
+                    writer.SetRowCellIndex(posRow, 0);
+                    writer.SetCellValue(item.company ?? string.Empty);           // 公司別
                         writer.SetCellValue(item.store_type ?? string.Empty);        // 店格
                         writer.SetCellValue(item.channel ?? string.Empty);           // 通路
                         writer.SetCellValue(item.area ?? string.Empty);              // 區域
@@ -364,11 +344,8 @@ namespace FTT_API.Controllers.Query
                         writer.SetCellValue(item.kpi_result ?? string.Empty);        // KPI Result
                         writer.SetCellValue(item.delay_reason ?? string.Empty);      // 延遲原因
 
-                        posRow++;
-                    }
-
-                    currentPage++;
-                } while (currentPage <= totalPage);
+                    posRow++;
+                }
 
                 MemoryStream? memoryStream = null;
                 using (MemoryStream stream = new())
@@ -380,7 +357,7 @@ namespace FTT_API.Controllers.Query
                 writer.GetWorkBook().Close();
 
                 this.LogSuccess();
-                return File(memoryStream, "application/vnd.ms-excel", "CodeList.xls");
+                return File(memoryStream, "application/vnd.ms-excel", $"excel_out_{DateTime.Now:yyyyMMddHHmm}.xls");
             }
             catch (Exception ex)
             {

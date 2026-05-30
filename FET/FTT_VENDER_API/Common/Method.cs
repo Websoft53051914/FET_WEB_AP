@@ -701,12 +701,12 @@ namespace FTT_VENDER_API.Common
             {
                 if (!string.IsNullOrEmpty(newStatus) && newStatus != oldStatus)
                 {
-                    var mail_reciver = "";
-                    var mail_reciver_cc = "";
-                    var reviverName = "";
                     var list = _MailPoolHandler.FindMailPoolRuleList(oldStatus + "," + newStatus);
                     foreach (var item in list)
                     {
+                        var mail_reciver = "";
+                        var mail_reciver_cc = "";
+                        var reviverName = "";
                         var _AccessRole = _MailPoolHandler.FindAccessRole(form_no, item.mail_reciver);
                         if (_AccessRole != null)
                         {

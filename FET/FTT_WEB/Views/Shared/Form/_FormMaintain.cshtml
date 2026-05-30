@@ -337,6 +337,8 @@
                 success: function (data) {
                     if (data.Success == true) {
                         alert(data.Data);
+                        // 重新載入 Grid1，使「對應名稱」欄位反映最新 deptcode 對應之名稱
+                        $("#@(mapAttr.IdGrid1)").jsGrid("loadData");
                     } else {
                         alert(data.Data);
                     }

@@ -156,7 +156,10 @@ AND form_no IN (SELECT form_no
                 }
             }
 
-            string sql = $@"
+            // 直接在 SQL 內嵌 ORDER BY / OFFSET / LIMIT，確保 PostgreSQL 只對當頁
+            // 實際回傳的行數呼叫 FIND_ACTION_NAME，而非全量資料集
+            int offset = pageEntity.CurrentPage <= 1 ? 0 : (pageEntity.CurrentPage - 1) * pageEntity.PageDataSize;
+            string sqlData = $@"
 SELECT  form_no
                 , tt_category
                 , ciname
@@ -170,32 +173,35 @@ SELECT  form_no
 FROM v_ftt_form2
 WHERE  1 = 1
 {condition}
+ORDER BY {pageEntity.Sort} {pageEntity.Asc}
+OFFSET {offset} LIMIT {pageEntity.PageDataSize}
 ";
+            // 獨立計數 SQL，不呼叫 FIND_ACTION_NAME，避免對每筆資料執行函數造成效能瓶頸
             string sqlCount = $@"
-SELECT
-    COUNT(*)
-FROM(
-{sql}
-) AS pageData
-WHERE
-    1 = 1
+SELECT COUNT(*)
+FROM v_ftt_form2
+WHERE 1 = 1
+{condition}
 ";
 
-            return GetDBHelper().FindPageList<VFttForm2DTO>(sql, sqlCount, pageEntity.CurrentPage, pageEntity.PageDataSize, paras, $"{pageEntity.Sort} {pageEntity.Asc}");
+            var dbHelper = GetDBHelper();
+            return new PageResult<VFttForm2DTO>
+            {
+                CurrentPage = pageEntity.CurrentPage,
+                PageDataSize = pageEntity.PageDataSize,
+                Results = dbHelper.FindList<VFttForm2DTO>(sqlData, paras),
+                DataCount = dbHelper.FindScalar<int>(sqlCount, paras),
+            };
         }
 
         /// <summary>
         /// 取得匯出用的分頁資料
         /// </summary>
         /// <returns></returns>
-        public PageResult<VFttForm2DTO> GetPageListExport(PageEntity pageEntity, VFttForm2DTO searchVO)
+        public List<VFttForm2DTO> GetPageListExport(VFttForm2DTO searchVO)
         {
             StringBuilder condition = new();
             Dictionary<string, object> paras = [];
-            if (string.IsNullOrWhiteSpace(pageEntity.Sort))
-            {
-                pageEntity.Sort = nameof(VFttForm2DTO.form_no);
-            }
 
             if (searchVO.CreateDateGte.HasValue)
             {
@@ -383,18 +389,10 @@ SELECT company
 FROM   v_ftt_form2 
 WHERE 1 = 1
 {condition}
-";
-            string sqlCount = $@"
-SELECT
-    COUNT(*)
-FROM(
-{sql}
-) AS pageData
-WHERE
-    1 = 1
+ORDER BY form_no ASC
 ";
 
-            return GetDBHelper().FindPageList<VFttForm2DTO>(sql, sqlCount, pageEntity.CurrentPage, pageEntity.PageDataSize, paras, $"{pageEntity.Sort} {pageEntity.Asc}");
+            return GetDBHelper().FindList<VFttForm2DTO>(sql, paras);
         }
 
         /// <summary>
