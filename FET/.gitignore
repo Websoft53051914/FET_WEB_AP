@@ -37,3 +37,10 @@ obj
 .vs
 packages
 *.user
+# 在檔案最末端加上這行
+**/appsettings.json
+/FTT_WEB/PublicStaticFile
+/FTT_API/PublicStaticFile
+/FTT_VENDER_API/PublicStaticFile
+/FTT_VENDER_WEB/PublicStaticFile
+/Documents
