@@ -718,10 +718,13 @@ namespace FTT_VENDER_API.Common
                             //取得CC
                             if (!string.IsNullOrEmpty(item.mail_reciver_cc))
                             {
+                                var nouseName = "";
                                 var ccs = item.mail_reciver_cc.Split(',');
                                 foreach (var cc in ccs)
                                 {
-                                    mails.Add(GetReciverMail(_MailPoolHandler, _AccessRole, item.mail_reciver, out reviverName));
+                                    var add_CC = GetReciverMail(_MailPoolHandler, _AccessRole, cc, out nouseName);
+                                    if (!string.IsNullOrEmpty(add_CC))
+                                        mails.Add(add_CC);
                                 }
                             }
 
@@ -729,7 +732,9 @@ namespace FTT_VENDER_API.Common
                             var other_cc = Method.GetAppSettingsDataByName(oldStatus + "," + newStatus);
                             if (!string.IsNullOrEmpty(other_cc))
                             {
-                                mails.AddRange(other_cc.Split(','));
+                                var ccs = other_cc.Split(',');
+                                foreach (var cc in ccs)
+                                    mails.Add(cc);
                             }
 
                             mail_reciver_cc = string.Join(",", mails);
@@ -738,6 +743,32 @@ namespace FTT_VENDER_API.Common
                         if (!string.IsNullOrEmpty(mail_reciver))
                         {
                             var fttForm = _MailPoolHandler.GetFttForm(form_no);
+
+                            var subject = item.mailsubject
+                                .Replace("([FORM_NO])", form_no)
+                                .Replace("([STORE])", reviverName)
+                                .Replace("([VENDOR])", reviverName);
+
+                            var content =
+                                "<html>" +
+                                item.mailhead
+                                .Replace("([FORM_NO])", form_no)
+                                .Replace("([STORE])", reviverName)
+                                .Replace("([VENDOR])", reviverName)
+                                .Replace("([REVIVERNAME])", reviverName)
+                                .Replace("([MailURL])", Method.GetAppSettingsDataByName("MailURL"))
+                                .Replace("([MailURL_VENDOR])", Method.GetAppSettingsDataByName("MailURL_VENDOR"))
+                                + "<br>"
+                                + "<br>"
+                                + item.mailcontent
+                                .Replace("([FORM_NO])", form_no)
+                                .Replace("([STORE])", reviverName)
+                                .Replace("([VENDOR])", reviverName)
+                                .Replace("([REVIVERNAME])", reviverName)
+                                .Replace("([EMPNAME])", fttForm.empname)
+                                .Replace("([CREATETIME])", DateTime.Parse(fttForm.createtime).ToString("yyyy/MM/dd HH:mm:ss"))
+                                .Replace("([CATEGORY_NAME])", fttForm.category_name)
+                                + "</html>";
 
                             _MailPoolHandler.Insert(new MailPoolEntity()
                             {
@@ -750,33 +781,9 @@ namespace FTT_VENDER_API.Common
 
                                 DestinationEmail = mail_reciver,
                                 DestinationEmail_CC = mail_reciver_cc,
-                                Subject = item.mailsubject
-                                .Replace("([FORM_NO])", form_no)
-                                .Replace("([STORE])", reviverName)
-                                .Replace("([VENDOR])", reviverName)
-                                ,
+                                Subject = subject,
                                 Status = 1,
-                                Content =
-                                "<html>" +
-                                item.mailhead
-                                .Replace("([FORM_NO])", form_no)
-                                .Replace("([STORE])", reviverName)
-                                .Replace("([VENDOR])", reviverName)
-                                .Replace("([MailURL])", Method.GetAppSettingsDataByName("MailURL"))
-                                .Replace("([MailURL_VENDOR])", Method.GetAppSettingsDataByName("MailURL_VENDOR"))
-                                + "<br>"
-                                + "<br>"
-                                + item.mailcontent
-                                .Replace("([FORM_NO])", form_no)
-                                .Replace("([STORE])", reviverName)
-                                .Replace("([VENDOR])", reviverName)
-
-                                .Replace("([EMPNAME])", fttForm.empname)
-                                .Replace("([CREATETIME])", DateTime.Parse(fttForm.createtime).ToString("yyyy/MM/dd HH:mm:ss"))
-                                .Replace("([CATEGORY_NAME])", fttForm.category_name)
-
-                                + "</html>"
-                                ,
+                                Content = content,
                             });
 
                             _MailPoolHandler.Commit();
@@ -809,7 +816,8 @@ namespace FTT_VENDER_API.Common
                     break;
                 case "SUBMITTER"://creater
                                  //取得申請者mail
-                    var storeProfile = _MailPoolHandler.GetStoreProfile(_AccessRole.deptcode);
+                    var temp = _MailPoolHandler.FindAccessRole(_AccessRole.form_no, mail_reciver);
+                    var storeProfile = _MailPoolHandler.GetStoreProfile(temp.deptcode);
                     if (storeProfile != null)
                     {
                         revier = storeProfile.email;

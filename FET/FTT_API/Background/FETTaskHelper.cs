@@ -23,37 +23,35 @@ namespace FTT_API.Background
         {
             BaseDBHandler baseHandler = new BaseDBHandler();
 
-            string sql = @"SELECT * FROM APPROVE_FORM 
-                       WHERE status='DISPATCH' 
-                         AND form_no IN (
-                             SELECT FORM_NO FROM V_FTT_FORM WHERE STATUSID='DISPATCH'
-                         )";
+            // 原子操作：SELECT + UPDATE 合一，使用 FOR UPDATE SKIP LOCKED 防止多個 instance 同時處理同一筆
+            string claimSql = @"
+                UPDATE approve_form
+                SET status = 'ASSIGN', update_empno = '', update_engname = 'SYSTEM'
+                WHERE form_no = (
+                    SELECT form_no FROM approve_form
+                    WHERE status = 'DISPATCH'
+                    AND form_no IN (
+                        SELECT FORM_NO FROM V_FTT_FORM WHERE STATUSID = 'DISPATCH'
+                    )
+                    ORDER BY form_no
+                    LIMIT 1
+                    FOR UPDATE SKIP LOCKED
+                )
+                RETURNING form_no";
 
             try
             {
-                var approve_formDTO = baseHandler.GetDBHelper().Find<approve_formDTO>(sql);
+                var claimedFormNo = baseHandler.GetDBHelper().FindScalar<string>(claimSql, null);
 
-                if (approve_formDTO == null)
+                if (string.IsNullOrEmpty(claimedFormNo))
                 {
-                    //InsertLog("eof get TT data !");
                     return;
                 }
 
-                //InsertLog("get TT data ! SQL=" + sql);
-
-                Dictionary<string, object> dic = new();
-                dic.Add("form_no", approve_formDTO.form_no);
-                //取得更新前的狀態
-                var oldEntity = baseHandler.GetDBHelper().Find<approve_formEntity>("select * from approve_form where form_no=@form_no ", dic);
-
-                UpdateForm(approve_formDTO.form_no);
-                InsertFormDesc(approve_formDTO.form_no);
-
-                //取得更新完的狀態
-                var newEntity = baseHandler.GetDBHelper().Find<approve_formEntity>("select * from approve_form where form_no=@form_no ", dic);
+                InsertFormDesc(claimedFormNo);
 
                 MailPoolHandler _MailPoolHandlerHandler = new MailPoolHandler();
-                var result = Method.CreateMailPool(approve_formDTO.form_no, oldEntity.status, newEntity.status, _MailPoolHandlerHandler);
+                var result = Method.CreateMailPool(claimedFormNo, "DISPATCH", "ASSIGN", _MailPoolHandlerHandler);
                 if (!string.IsNullOrEmpty(result))
                 {
                     var entity = new TB_Control_LogEntity()
